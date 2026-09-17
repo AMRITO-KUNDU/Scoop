@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #111111;
+  --color-paper: #faf6f0;
+  --color-paper-2: #fff8ee;
+  --color-yolk: #ffd700;
+  --color-hot: #ff3ea5;
+  --color-cyan: #00d4ff;
+  --color-grape: #7b2fff;
+  --color-volt: #00d4ff;
+  --color-mute: #4a4654;
+  --color-cream: #ffe9a8;
+  --color-danger: #e11d48;
+
+  --font-sans: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --shadow-hard: 4px 4px 0 0 #111111;
+  --shadow-hard-sm: 3px 3px 0 0 #111111;
+  --shadow-hard-lg: 6px 6px 0 0 #111111;
+  --shadow-press: 2px 2px 0 0 #111111;
+
+  --border-width-thick: 3px;
+
+  --text-display: clamp(2.6rem, 1rem + 8vw, 5.4rem);
+  --text-title: clamp(1.7rem, 1.1rem + 2.2vw, 2.6rem);
+  --text-lead: clamp(1rem, 0.92rem + 0.45vw, 1.2rem);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: var(--color-yolk);
+    color: var(--color-ink);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .page-grid {
+    background-color: var(--color-paper);
+  }
+
+  .chunky {
+    border: 3px solid var(--color-ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+    transition:
+      transform 150ms var(--ease-out),
+      box-shadow 150ms var(--ease-out);
+  }
+
+  .chunky:hover:not(:disabled):not([aria-disabled="true"]) {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-ink);
+  }
+
+  .chunky:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 0 var(--color-ink);
+  }
+
+  .panel {
+    border: 3px solid var(--color-ink);
+    border-radius: 16px;
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+    background: #fff;
+  }
+
+  .field {
+    width: 100%;
+    border: 3px solid var(--color-ink);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--color-ink);
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    outline: none;
+    transition:
+      box-shadow 150ms var(--ease-out),
+      background-color 150ms var(--ease-out);
+  }
+
+  .field:focus {
+    background: #fff;
+    box-shadow: 3px 3px 0 0 var(--color-ink);
+  }
+
+  .field::placeholder {
+    color: color-mix(in oklab, var(--color-ink) 42%, transparent);
+  }
+
+  .sticker {
+    border: 3px solid var(--color-ink);
+    box-shadow: 3px 3px 0 0 var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .dot-shape {
+    border: 3px solid var(--color-ink);
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  .sq-shape {
+    border: 3px solid var(--color-ink);
+    flex-shrink: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chunky,
+  .chunky:hover,
+  .chunky:active,
+  .field {
+    transition: none;
+    transform: none;
+  }
+
+  .tilt-l,
+  .tilt-r {
+    transform: none !important;
+  }
+}
+
+.brutal-toast {
+  border: 3px solid var(--color-ink) !important;
+  box-shadow: 4px 4px 0 0 var(--color-ink) !important;
+  border-radius: 12px !important;
+  background: var(--color-paper) !important;
+  color: var(--color-ink) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important;
+}

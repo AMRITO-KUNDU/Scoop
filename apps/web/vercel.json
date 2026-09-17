@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://schoollife-communication-hub.onrender.com/api/:path*"
-    }
-  ]
-}

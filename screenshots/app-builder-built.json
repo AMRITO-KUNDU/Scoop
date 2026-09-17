@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "SCOOP",
+      "hasCanvas": false,
+      "bodyTextLen": 994,
+      "bodyTextHash": "0a3c022eddf040ec34328bc9ececb5e3940dd2bd4c27e8c0785f3f11e4b09160",
+      "bodyTextPrefix": "S SCOOP Sign in Sign up THE FAMILY ADMIN APP STOP SWEATING THE S",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "SCOOP",
+      "hasCanvas": false,
+      "bodyTextLen": 975,
+      "bodyTextHash": "561cc37f56b2bb38c401f3546276eb21f1060d1d9b33ebbb558971a720d3589b",
+      "bodyTextPrefix": "S SCOOP Sign up THE FAMILY ADMIN APP STOP SWEATING THE SCHOOL ST",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}
