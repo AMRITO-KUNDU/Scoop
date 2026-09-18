@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CaptureRouteImport } from './routes/capture'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const CaptureRoute = CaptureRouteImport.update({
   id: '/capture',
   path: '/capture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -50,6 +56,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/signup': typeof SignupRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/signup': typeof SignupRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/connect': typeof ConnectRoute
   '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
   '/signup': typeof SignupRoute
@@ -74,13 +83,28 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/capture' | '/login' | '/plan' | '/signup' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/capture'
+    | '/connect'
+    | '/login'
+    | '/plan'
+    | '/signup'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/capture' | '/login' | '/plan' | '/signup' | '/api/auth/$'
+  to:
+    | '/'
+    | '/capture'
+    | '/connect'
+    | '/login'
+    | '/plan'
+    | '/signup'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
     | '/capture'
+    | '/connect'
     | '/login'
     | '/plan'
     | '/signup'
@@ -90,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CaptureRoute: typeof CaptureRoute
+  ConnectRoute: typeof ConnectRoute
   LoginRoute: typeof LoginRoute
   PlanRoute: typeof PlanRoute
   SignupRoute: typeof SignupRoute
@@ -110,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/capture'
       fullPath: '/capture'
       preLoaderRoute: typeof CaptureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -146,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CaptureRoute: CaptureRoute,
+  ConnectRoute: ConnectRoute,
   LoginRoute: LoginRoute,
   PlanRoute: PlanRoute,
   SignupRoute: SignupRoute,

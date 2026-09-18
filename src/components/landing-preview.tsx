@@ -4,12 +4,12 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { TypeBadge } from "@/components/type-badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { EXAMPLE_CHIPS } from "@/lib/examples";
+import { EXAMPLE_CHIPS, LANDING_CHIPS } from "@/lib/examples";
 import { localExtract } from "@/lib/local-extract";
 import { formatWhen } from "@/lib/plan";
 import { cn } from "@/lib/utils";
 
-const DEMO_CHIPS = EXAMPLE_CHIPS.slice(0, 4);
+const DEMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
 
 export function LandingPreview() {
   const [text, setText] = useState(DEMO_CHIPS[0]?.text ?? "");
@@ -22,9 +22,6 @@ export function LandingPreview() {
     <div className="relative mx-auto w-full max-w-md px-2 pt-3 lg:max-w-none">
       <div className="sticker absolute top-0 left-3 z-10 rotate-[-8deg] rounded-full bg-hot px-3 py-1 text-xs text-paper">
         Live demo
-      </div>
-      <div className="sticker absolute top-16 right-1 z-10 hidden rotate-[7deg] rounded-full bg-cyan px-3 py-1 text-xs text-ink sm:block">
-        Try a chip
       </div>
 
       <div className="panel overflow-hidden bg-paper">
@@ -46,7 +43,7 @@ export function LandingPreview() {
               setSorted(false);
             }}
             rows={5}
-            placeholder="Paste a message, email, or letter…"
+            placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
             className="min-h-28 text-sm"
           />
 

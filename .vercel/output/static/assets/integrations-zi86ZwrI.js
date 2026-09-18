@@ -1,0 +1,1 @@
+import{n as e,t}from"./middleware-Bgc6R09P.js";import{d as n}from"./index-DmHarjev.js";var r=e({method:`GET`}).middleware([t]).handler(n(`1b3697949cdd69f8c7f9185b1ea2a53cc66001ea47279c6ff87991c4d0bf8de5`));export{r as t};

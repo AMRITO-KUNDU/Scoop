@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EXAMPLE_CHIPS } from "./examples.ts";
+import { EXAMPLE_CHIPS, LANDING_CHIPS } from "./examples.ts";
 import { localExtract } from "./local-extract.ts";
 
 const FROM = new Date("2026-09-16T12:00:00");
@@ -72,5 +72,61 @@ describe("localExtract examples", () => {
     assert.equal(appt?.time, "16:20");
     assert.match(appt?.location ?? "", /smile kids/i);
     assert.ok(items.some((i) => i.type === "rsvp"));
+  });
+
+  it("welcome letter: meet the teacher, INSET, form, uniform", () => {
+    const items = byLabel("welcome");
+    assert.ok(items.length >= 3);
+    const meet = items.find((i) => /meet the teacher/i.test(i.title));
+    assert.equal(meet?.type, "event");
+    assert.equal(meet?.date, "2026-09-24");
+    assert.equal(meet?.time, "15:30");
+    assert.match(meet?.location ?? "", /year 3 classroom/i);
+    const inset = items.find((i) => /inset/i.test(i.title));
+    assert.equal(inset?.type, "event");
+    assert.equal(inset?.date, "2026-09-26");
+    assert.ok(items.some((i) => i.type === "deadline" && /data collection/i.test(i.title)));
+    assert.ok(items.some((i) => /uniform/i.test(i.title)));
+  });
+
+  it("after-school club: event + rsvp + bottle + pay", () => {
+    const items = byLabel("club");
+    const club = items.find((i) => i.type === "event");
+    assert.match(club?.title ?? "", /coding club/i);
+    assert.equal(club?.date, "2026-09-25");
+    assert.equal(club?.time, "15:20");
+    assert.match(club?.location ?? "", /ict suite/i);
+    assert.ok(items.some((i) => i.type === "rsvp"));
+    assert.ok(items.some((i) => /water bottle/i.test(i.title)));
+    assert.ok(items.some((i) => /parentpay|£4/i.test(i.title)));
+  });
+
+  it("bus times: pickup event + seat rsvp", () => {
+    const items = byLabel("bus");
+    const bus = items.find((i) => i.type === "event");
+    assert.match(bus?.title ?? "", /bus|route 7/i);
+    assert.equal(bus?.date, "2026-09-22");
+    assert.equal(bus?.time, "08:10");
+    assert.match(bus?.location ?? "", /oak street/i);
+    assert.ok(items.some((i) => i.type === "rsvp" && /seat|bus/i.test(i.title)));
+  });
+
+  it("supply list: deadline, kit tasks, welcome evening", () => {
+    const items = byLabel("supplies");
+    assert.ok(items.some((i) => i.type === "deadline" && /supply/i.test(i.title)));
+    assert.ok(items.some((i) => /pe kit/i.test(i.title)));
+    assert.ok(items.some((i) => /wellies/i.test(i.title)));
+    const evening = items.find((i) => /welcome evening/i.test(i.title));
+    assert.equal(evening?.type, "event");
+    assert.equal(evening?.date, "2026-09-23");
+    assert.equal(evening?.time, "17:00");
+    assert.match(evening?.location ?? "", /hall/i);
+  });
+
+  it("landing demo chips are the back-to-school set", () => {
+    assert.deepEqual(
+      LANDING_CHIPS.map((c) => c.id),
+      ["welcome", "club", "bus", "supplies"],
+    );
   });
 });

@@ -1,6 +1,6 @@
 import { useState, useSyncExternalStore } from "react";
 import { Link } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { Cable, LogOut } from "lucide-react";
 import { authEnabled, signOut } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
 import { useCurrentUser, useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -74,6 +74,14 @@ export function AccountMenu() {
 
   return (
     <div className="flex items-center gap-2">
+      <Link
+        to="/connect"
+        className="inline-flex size-10 items-center justify-center rounded-full border-thick border-ink bg-paper shadow-hard-sm hover:bg-yolk"
+        aria-label="Connect services"
+        title="Connect"
+      >
+        <Cable className="size-4" strokeWidth={2.4} />
+      </Link>
       <Avatar name={label} src={liveUser?.profileImageUrl ?? null} />
       <span className="hidden max-w-28 truncate font-display text-sm font-bold lg:inline">
         {label}

@@ -117,7 +117,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DxDbXwiu.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-CFaTckrO.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -137,6 +137,10 @@ async function getStartManifest(matchedRoutes) {
 	};
 }
 var manifest = {
+	"1b3697949cdd69f8c7f9185b1ea2a53cc66001ea47279c6ff87991c4d0bf8de5": {
+		functionName: "getIntegrationsStatus_createServerFn_handler",
+		importer: () => import("./integrations-Do8aEHI2.mjs")
+	},
 	"470537fd05a64e25d67c5bcc85a556c7a1c16bb58cd4e6fc40873277902a4260": {
 		functionName: "deletePlanItem_createServerFn_handler",
 		importer: () => import("./plan-items-qKSYG-ST.mjs")
@@ -147,7 +151,7 @@ var manifest = {
 	},
 	"78f7a18ba111d88ad19628e64f106f8887fc5d87366aa23e066488a3e3b0fd28": {
 		functionName: "extractItems_createServerFn_handler",
-		importer: () => import("./extract-BB7OLo_j.mjs")
+		importer: () => import("./extract-6lJmDHyW.mjs")
 	},
 	"7fbb144dd9d68839339e4cfe8b2ba4d9cb4200dee1f14b6f54738dc92729c4b2": {
 		functionName: "setPlanItemDone_createServerFn_handler",
@@ -1425,7 +1429,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-B2mYh5L1.mjs").then((n) => n.t),
+		import("./router-BtEHhl1C.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

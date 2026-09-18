@@ -1,0 +1,1 @@
+import{u as e}from"./index-DmHarjev.js";import{n as t}from"./logo-VoK8Ua0F.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`input`,{className:t(`field`,e),...r})}function i({className:e,...r}){return(0,n.jsx)(`label`,{className:t(`text-xs font-bold uppercase tracking-wider text-mute`,e),...r})}export{r as n,i as t};

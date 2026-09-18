@@ -9,9 +9,11 @@ import {
   Smartphone,
 } from "lucide-react";
 import { AccountMenu } from "@/components/account-menu";
+import { GoogleMark } from "@/components/brand-marks";
 import { LandingPreview } from "@/components/landing-preview";
 import { Wordmark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { authEnabled, signIn } from "@/lib/auth/client";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -27,14 +29,14 @@ const STEPS = [
   {
     num: "02",
     title: "AI makes sense of it",
-    body: "SCOOP pulls out events, deadlines, tasks and RSVPs you can edit.",
+    body: "Groq (or Grok) pulls out events, deadlines, tasks and RSVPs you can edit.",
     tone: "bg-hot text-paper",
     tilt: "rotate-1",
   },
   {
     num: "03",
     title: "Your family gets the plan",
-    body: "One tap to confirm. Into your plan — tick things off when they’re done.",
+    body: "One tap to confirm. Into your plan — or straight into Google Calendar.",
     tone: "bg-grape text-paper",
     tilt: "-rotate-1",
   },
@@ -93,16 +95,31 @@ function Landing({ pending = false }: { pending?: boolean }) {
                 SCOOP turns school letters, party invites and WhatsApp chaos into
                 a calm family plan — in seconds.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" variant="yolk">
-                  <Link to="/signup">Start your SCOOP</Link>
-                </Button>
-                <Button asChild size="lg" variant="paper">
-                  <Link to="/login">Sign in</Link>
-                </Button>
+              <div className="mt-8 flex flex-col gap-3 sm:max-w-md">
+                {authEnabled && !pending ? (
+                  <Button
+                    size="lg"
+                    variant="yolk"
+                    className="w-full"
+                    onClick={() => {
+                      void signIn("grok-google", { callbackURL: "/capture" });
+                    }}
+                  >
+                    <GoogleMark className="size-5" />
+                    Continue with Google
+                  </Button>
+                ) : null}
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg" variant="ink" className="flex-1">
+                    <Link to="/signup">Start with email</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="paper" className="flex-1">
+                    <Link to="/login">Sign in</Link>
+                  </Button>
+                </div>
               </div>
               <p className="mt-4 text-sm font-medium text-mute">
-                Paste the chaos. Get the plan.
+                Real Google accounts. Not a mock login.
               </p>
             </div>
             <LandingPreview />
@@ -171,15 +188,29 @@ function Landing({ pending = false }: { pending?: boolean }) {
               alone.
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm font-medium text-paper/85">
-              Sign up, paste the next school email, and keep the plan in one
-              place.
+              Sign in with Google, paste the next school email, and keep the plan
+              in one place.
             </p>
-            <Button asChild size="lg" variant="yolk" className="mt-8">
-              <Link to="/signup">
-                Start your SCOOP
-                <ScanText className="size-5" strokeWidth={2.4} />
-              </Link>
-            </Button>
+            {authEnabled && !pending ? (
+              <Button
+                size="lg"
+                variant="yolk"
+                className="mt-8"
+                onClick={() => {
+                  void signIn("grok-google", { callbackURL: "/capture" });
+                }}
+              >
+                <GoogleMark className="size-5" />
+                Continue with Google
+              </Button>
+            ) : (
+              <Button asChild size="lg" variant="yolk" className="mt-8">
+                <Link to="/signup">
+                  Start your SCOOP
+                  <ScanText className="size-5" strokeWidth={2.4} />
+                </Link>
+              </Button>
+            )}
             <p className="mt-4 text-xs font-bold uppercase tracking-widest text-paper/70">
               No credit card. Works on your phone.
             </p>
@@ -191,7 +222,7 @@ function Landing({ pending = false }: { pending?: boolean }) {
             Paste the chaos. Get the plan.
           </p>
           <p className="text-xs font-bold uppercase tracking-wider text-mute">
-            Party invites · trips · newsletters · slips · dentist
+            Welcome letters · clubs · bus times · supplies · trips
           </p>
         </footer>
       </main>

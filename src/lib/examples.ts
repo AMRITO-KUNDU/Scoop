@@ -62,4 +62,59 @@ Please arrive 10 minutes early for new patient forms. Reply yes if that still wo
 Thanks,
 Smile Kids Dental`,
   },
+  {
+    id: "welcome",
+    label: "Welcome letter",
+    text: `Dear families,
+
+Welcome back to St. Helen's, Year 3.
+
+Meet the teacher is Wednesday 24 September, 3:30–4:15pm in the Year 3 classroom.
+INSET day Friday 26 September — school closed.
+Please return the data collection form by Friday 26 September.
+Uniform: labelled jumpers, black shoes, no jewellery.
+
+Ms. Okonkwo, Year 3`,
+  },
+  {
+    id: "club",
+    label: "After-school club",
+    text: `Year 3 & 4 Coding Club starts Thursday 25 September, 3:20–4:30pm in the ICT suite.
+
+Places limited. Reply yes by Monday 22 September to reserve a spot.
+Please bring a water bottle.
+Pay £4 per week via ParentPay after the first free session.
+
+Mr. Shah, Computing`,
+  },
+  {
+    id: "bus",
+    label: "Bus times",
+    text: `School bus — Route 7
+
+First morning run is Monday 22 September. Pickup at Oak Street stop at 8:10am. Drop-off 3:25pm at the same stop.
+
+Please be 5 minutes early. Reply if you still need a seat this term.
+
+Transport office`,
+  },
+  {
+    id: "supplies",
+    label: "Supply list",
+    text: `Year 4 supply list — please have these by Friday 26 September.
+
+Bring a named water bottle and a pencil case (HB pencils, rubber, sharpener).
+PE kit: white t-shirt, navy shorts, trainers — labelled please.
+Wellies needed for forest Friday.
+
+PTA will sell packs at the welcome evening on Tuesday 23 September, 5pm in the hall.`,
+  },
 ];
+
+const LANDING_IDS = ["welcome", "club", "bus", "supplies"] as const;
+
+export const LANDING_CHIPS: ExampleChip[] = LANDING_IDS.map((id) => {
+  const chip = EXAMPLE_CHIPS.find((c) => c.id === id);
+  if (!chip) throw new Error(`Missing landing chip: ${id}`);
+  return chip;
+});

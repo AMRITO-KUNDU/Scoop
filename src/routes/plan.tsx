@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, Check, MapPin, ScanText, Trash2 } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, Download, MapPin, ScanText, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { TypeBadge } from "@/components/type-badge";
 import { Button } from "@/components/ui/button";
+import { downloadIcs, googleCalendarUrl } from "@/lib/calendar";
 import {
   formatWhen,
   matchesFilter,
@@ -97,7 +98,7 @@ function PlanScreen() {
           Your plan.
         </h1>
         <p className="mt-1 text-sm font-medium text-mute">
-          What’s on — today, this week, or everything.
+          What’s on — today, this week, or everything. Push dated items to Google Calendar.
         </p>
       </div>
 
@@ -175,7 +176,7 @@ function PlanScreen() {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex gap-2 sm:flex-col">
+                <div className="flex flex-wrap gap-2 sm:w-40 sm:flex-col sm:flex-nowrap">
                   <button
                     type="button"
                     onClick={() => void toggleDone(item)}
@@ -187,6 +188,30 @@ function PlanScreen() {
                     <Check className="size-4" strokeWidth={2.6} />
                     {item.done ? "Done" : "Mark done"}
                   </button>
+                  {item.date ? (
+                    <>
+                      <a
+                        href={googleCalendarUrl(item) ?? undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-thick border-ink bg-cyan px-3 font-display text-sm font-bold hover:bg-yolk sm:flex-none"
+                      >
+                        <CalendarPlus className="size-4" strokeWidth={2.4} />
+                        Google
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (downloadIcs(item)) toast.success("Calendar file saved.");
+                          else toast.error("Couldn’t export that item.");
+                        }}
+                        className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-thick border-ink bg-paper px-3 font-display text-sm font-bold hover:bg-paper-2 sm:flex-none"
+                      >
+                        <Download className="size-4" strokeWidth={2.4} />
+                        .ics
+                      </button>
+                    </>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => void remove(item)}

@@ -42,6 +42,9 @@ const MONTH_RE =
   "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec";
 const WEEKDAY_RE = "sunday|monday|tuesday|wednesday|thursday|friday|saturday";
 
+const EVENT_RE =
+  /\b(party|trip|appointment|conferences?|parent-teacher|fair|photos?|swimming|bake sale|museum|dentist|club|coding club|inset|meet the teacher|welcome evening|bus|pickup)\b/i;
+
 function iso(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -96,7 +99,7 @@ function extractDate(text: string, from: Date): string | null {
   const onDay = text.match(new RegExp(`\\b(${WEEKDAY_RE})\\b`, "i"));
   if (
     onDay &&
-    /\b(party|trip|appointment|photos?|bake|fair|swimming|after school|conferences?|dentist)\b/i.test(
+    /\b(party|trip|appointment|photos?|bake|fair|swimming|after school|conferences?|dentist|club|inset|bus|welcome evening|forest)\b/i.test(
       text,
     )
   ) {
@@ -123,43 +126,50 @@ function extractTime(text: string): string | null {
 function extractLocation(text: string): string | null {
   const at = text.match(/\bat\s+([A-Z][^,.]+(?:,\s*\d+[^,.]+)?)/);
   if (at) {
-    const loc = at[1].replace(/\s+/g, " ").trim();
+    const loc = at[1]
+      .replace(/\s+at\s+\d.*$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
     if (loc.length > 3 && loc.length < 80) return loc;
+  }
+  const pickup = text.match(/\bpickup at ([A-Z][^,.]+?)(?:\s+at\s+\d|\.|$)/i);
+  if (pickup) {
+    const loc = pickup[1].replace(/\s+/g, " ").trim();
+    if (loc.length > 3) return loc;
   }
   const fromGate = text.match(/\bfrom the ([^,.]+)/i);
   if (fromGate) {
     const loc = fromGate[1].trim();
     return loc.charAt(0).toUpperCase() + loc.slice(1);
   }
-  const inHall = text.match(/\bin the (hall|playground|gym|library|canteen)\b/i);
-  if (inHall) return inHall[1].charAt(0).toUpperCase() + inHall[1].slice(1);
+  const inNamed = text.match(
+    /\bin the ([A-Z][^,.]{2,48}|hall|playground|gym|library|canteen|ict suite)\b/i,
+  );
+  if (inNamed) {
+    const loc = inNamed[1].trim();
+    return loc.charAt(0).toUpperCase() + loc.slice(1);
+  }
   return null;
 }
 
 function classify(text: string): ItemType {
   if (/\brsvp\b|\breply yes\b|\breply if\b/i.test(text)) return "rsvp";
   if (
-    /\b(sign and return|return the|return this|due by|book your slot|pay by)\b/i.test(
+    /\b(sign and return|return the|return this|due by|book your slot|pay by|pay £|have these by|data collection form|supply list)\b/i.test(
       text,
     ) ||
     (/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i.test(
       text,
     ) &&
-      !/\b(party|trip|appointment|conferences?|parent-teacher|fair|photos?|swimming|bake sale|dentist)\b/i.test(
-        text,
-      ))
+      !EVENT_RE.test(text))
   ) {
     return "deadline";
   }
+  if (EVENT_RE.test(text)) return "event";
   if (
-    /\b(party|trip|appointment|conferences?|parent-teacher|fair|photos?|swimming|bake sale|museum|dentist)\b/i.test(
+    /\b(need|bring|pack|packed lunch|swimsuit|volunteers needed|water bottle|pe kit|wellies|uniform|pencil case)\b/i.test(
       text,
     )
-  ) {
-    return "event";
-  }
-  if (
-    /\b(need|bring|pack|packed lunch|swimsuit|volunteers needed)\b/i.test(text)
   ) {
     return "task";
   }
@@ -169,7 +179,7 @@ function classify(text: string): ItemType {
 function tidyLead(text: string): string {
   return text
     .replace(/^[•\-–]\s*/, "")
-    .replace(/^(hi|hello|hey)(\s+\w+)?[!.,]?\s*/i, "")
+    .replace(/^(hi|hello|hey|dear)(\s+\w+)?[!.,]?\s*/i, "")
     .replace(/^just confirming\s+/i, "")
     .replace(/^you're invited to\s+/i, "")
     .replace(/^please\s+/i, "")
@@ -193,10 +203,38 @@ function shortenTitle(raw: string, type: ItemType): string {
   const appt = t.match(/^(.{3,56}?\bappointment)\b/i);
   if (appt) return cap(appt[1]);
 
+  if (/\bmeet the teacher\b/i.test(t)) return "Meet the teacher";
+  if (/\binset\b/i.test(t)) return "INSET day (school closed)";
+  if (/\bcoding club\b/i.test(t)) return "Coding Club";
+  if (/\bwelcome evening\b/i.test(t)) return "PTA welcome evening";
+  if (/\b(first morning run|route \d|school bus)\b/i.test(t)) {
+    const route = raw.match(/route\s+\d+/i);
+    return route ? `School bus ${cap(route[0])}` : "School bus pickup";
+  }
+  if (/\bphotos?\b/i.test(t)) return "School photos";
+  if (/\bpe kit\b/i.test(t)) return "PE kit";
+  if (/\bwellies\b/i.test(t)) return "Wellies for forest Friday";
+  if (/\bparentpay\b/i.test(t) || /\bpay £\d/i.test(t)) {
+    const money = t.match(/£[\d.]+/);
+    return money ? `Pay ${money[0]} per week on ParentPay` : "Pay on ParentPay";
+  }
+  if (/\bwater bottle\b/i.test(t) && /pencil/i.test(t)) {
+    return "Named water bottle and pencil case";
+  }
+  if (/\bwater bottle\b/i.test(t)) return "Bring a water bottle";
+  if (/\buniform\b/i.test(t)) return "Label school uniform";
+  if (/\bdata collection form\b/i.test(t)) return "Return data collection form";
+  if (/\bsupply list\b/i.test(t) || /\bhave these by\b/i.test(t)) {
+    return "Year 4 supply list";
+  }
+
   if (type === "rsvp") {
     const who = raw.match(/\b([A-Z][a-z]+)'s\b/);
     if (who && /party/i.test(raw)) return `RSVP for ${who[1]}'s party`;
     if (/dentist|appointment/i.test(t)) return "Confirm the appointment";
+    if (/club|spot|seat/i.test(t)) {
+      return /seat/i.test(t) ? "Confirm a bus seat" : "Reserve a club spot";
+    }
     return "RSVP";
   }
 
@@ -223,6 +261,7 @@ function shortenTitle(raw: string, type: ItemType): string {
   if (type === "event" && /\bswimming\b/i.test(t)) {
     return /term/i.test(t) ? "Term swimming" : "Swimming";
   }
+  if (/\b5 minutes early\b/i.test(t)) return "Be 5 minutes early for the bus";
 
   t = t.replace(
     new RegExp(
@@ -267,24 +306,25 @@ function isNoise(text: string): boolean {
   const t = text.trim();
   return (
     t.length < 8 ||
-    /^(thanks|thank you|hope you can|have a good|contact:|ms\.|mr\.|from,)/i.test(
+    /^(thanks|thank you|hope you can|have a good|contact:|ms\.|mr\.|from,|dear families|welcome back|places limited|label everything|transport office)/i.test(
       t,
     ) ||
     /newsletter$/i.test(t) ||
     /^permission slip/i.test(t) ||
-    /^no gifts needed/i.test(t)
+    /^no gifts needed/i.test(t) ||
+    /^school bus\s*[—–-]/i.test(t)
   );
 }
 
 function isEnrichment(text: string): boolean {
-  return /^(coach leaves|sessions?\b|return approx|arrive \d)/i.test(
+  return /^(coach leaves|sessions?\b|return approx|arrive \d|drop-?off)/i.test(
     text.trim(),
   );
 }
 
 function splitCombined(chunk: string): string[] {
   const m = chunk.match(
-    /^(.*?)(?:[.!]\s+|\s+[—–]\s+)((?:please\s+)?(?:return the|sign and return|book your slot|rsvp\b|reply yes|pay by|volunteers needed).+)$/i,
+    /^(.*?)(?:[.!]\s+|\s+[—–]\s+|;\s+then\s+)((?:please\s+)?(?:return the|sign and return|book your slot|rsvp\b|reply yes|pay by|pay £|volunteers needed).+)$/i,
   );
   if (m && m[1].trim().length > 12 && m[2].trim().length > 10) {
     return [m[1].trim(), m[2].trim()];
@@ -319,7 +359,7 @@ function splitChunks(text: string): string[] {
 function leftoverNotes(chunk: string, title: string): string | null {
   let extra = chunk.replace(title, "").replace(/\s+/g, " ").trim();
   extra = extra
-    .replace(/^(hi|hello|hey)(\s+\w+)?[!.,]?\s*/i, "")
+    .replace(/^(hi|hello|hey|dear)(\s+\w+)?[!.,]?\s*/i, "")
     .replace(/^you're invited to\s+/i, "")
     .replace(/^just confirming\s+/i, "")
     .replace(/^please\s+/i, "")
@@ -360,7 +400,7 @@ export function localExtract(text: string, from = new Date()): ExtractedItem[] {
       Boolean(time) ||
       type === "rsvp" ||
       type === "deadline" ||
-      /\b(need|bring|pack|appointment|trip|party|photos|swimming|conference|bake|fair|dentist|swimsuit|volunteers)\b/i.test(
+      /\b(need|bring|pack|appointment|trip|party|photos|swimming|conference|bake|fair|dentist|swimsuit|volunteers|club|bus|uniform|pe kit|wellies|water bottle|inset|form|minutes early)\b/i.test(
         chunk,
       );
     if (!actionable) continue;

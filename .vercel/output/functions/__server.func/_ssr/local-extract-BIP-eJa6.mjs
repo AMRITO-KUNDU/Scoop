@@ -1,0 +1,252 @@
+import { a as format, n as nextDay } from "../_libs/date-fns.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/local-extract-BIP-eJa6.js
+var WEEKDAYS = {
+	sunday: 0,
+	monday: 1,
+	tuesday: 2,
+	wednesday: 3,
+	thursday: 4,
+	friday: 5,
+	saturday: 6
+};
+var MONTHS = {
+	january: 1,
+	february: 2,
+	march: 3,
+	april: 4,
+	may: 5,
+	june: 6,
+	july: 7,
+	august: 8,
+	september: 9,
+	october: 10,
+	november: 11,
+	december: 12,
+	jan: 1,
+	feb: 2,
+	mar: 3,
+	apr: 4,
+	jun: 6,
+	jul: 7,
+	aug: 8,
+	sep: 9,
+	sept: 9,
+	oct: 10,
+	nov: 11,
+	dec: 12
+};
+var MONTH_RE = "january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec";
+var WEEKDAY_RE = "sunday|monday|tuesday|wednesday|thursday|friday|saturday";
+var EVENT_RE = /\b(party|trip|appointment|conferences?|parent-teacher|fair|photos?|swimming|bake sale|museum|dentist|club|coding club|inset|meet the teacher|welcome evening|bus|pickup)\b/i;
+function iso(year, month, day) {
+	return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function nextNamedDay(from, weekday) {
+	return format(nextDay(from, weekday), "yyyy-MM-dd");
+}
+function resolveMonthDay(from, day, month) {
+	const year = from.getFullYear();
+	if (new Date(year, month - 1, day) < new Date(from.getFullYear(), from.getMonth(), from.getDate())) return iso(year + 1, month, day);
+	return iso(year, month, day);
+}
+function extractDate(text, from) {
+	const range = text.match(new RegExp(`\\b(\\d{1,2})\\s*[–-]\\s*(\\d{1,2})\\s+(${MONTH_RE})\\b`, "i"));
+	if (range) {
+		const day = Number(range[1]);
+		const month = MONTHS[range[3].toLowerCase()];
+		if (month) return resolveMonthDay(from, day, month);
+	}
+	const monthDay = text.match(new RegExp(`\\b(?:(?:${WEEKDAY_RE})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_RE})\\b`, "i"));
+	if (monthDay) {
+		const day = Number(monthDay[1]);
+		const month = MONTHS[monthDay[2].toLowerCase()];
+		if (month) return resolveMonthDay(from, day, month);
+	}
+	const thisDay = text.match(new RegExp(`\\b(?:this|next)\\s+(${WEEKDAY_RE})\\b`, "i"));
+	if (thisDay) return nextNamedDay(from, WEEKDAYS[thisDay[1].toLowerCase()]);
+	const byDay = text.match(new RegExp(`\\b(?:by|on)\\s+(${WEEKDAY_RE})\\b`, "i"));
+	if (byDay) return nextNamedDay(from, WEEKDAYS[byDay[1].toLowerCase()]);
+	const onDay = text.match(new RegExp(`\\b(${WEEKDAY_RE})\\b`, "i"));
+	if (onDay && /\b(party|trip|appointment|photos?|bake|fair|swimming|after school|conferences?|dentist|club|inset|bus|welcome evening|forest)\b/i.test(text)) return nextNamedDay(from, WEEKDAYS[onDay[1].toLowerCase()]);
+	return null;
+}
+function extractTime(text) {
+	const m = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*[–-]\s*\d{1,2}(?::\d{2})?\s*(am|pm)\b/i) ?? text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+	if (!m) return null;
+	let hours = Number(m[1]);
+	const minutes = m[2] ?? "00";
+	const ap = m[3].toLowerCase();
+	if (ap === "pm" && hours < 12) hours += 12;
+	if (ap === "am" && hours === 12) hours = 0;
+	return `${String(hours).padStart(2, "0")}:${minutes}`;
+}
+function extractLocation(text) {
+	const at = text.match(/\bat\s+([A-Z][^,.]+(?:,\s*\d+[^,.]+)?)/);
+	if (at) {
+		const loc = at[1].replace(/\s+at\s+\d.*$/, "").replace(/\s+/g, " ").trim();
+		if (loc.length > 3 && loc.length < 80) return loc;
+	}
+	const pickup = text.match(/\bpickup at ([A-Z][^,.]+?)(?:\s+at\s+\d|\.|$)/i);
+	if (pickup) {
+		const loc = pickup[1].replace(/\s+/g, " ").trim();
+		if (loc.length > 3) return loc;
+	}
+	const fromGate = text.match(/\bfrom the ([^,.]+)/i);
+	if (fromGate) {
+		const loc = fromGate[1].trim();
+		return loc.charAt(0).toUpperCase() + loc.slice(1);
+	}
+	const inNamed = text.match(/\bin the ([A-Z][^,.]{2,48}|hall|playground|gym|library|canteen|ict suite)\b/i);
+	if (inNamed) {
+		const loc = inNamed[1].trim();
+		return loc.charAt(0).toUpperCase() + loc.slice(1);
+	}
+	return null;
+}
+function classify(text) {
+	if (/\brsvp\b|\breply yes\b|\breply if\b/i.test(text)) return "rsvp";
+	if (/\b(sign and return|return the|return this|due by|book your slot|pay by|pay £|have these by|data collection form|supply list)\b/i.test(text) || /\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i.test(text) && !EVENT_RE.test(text)) return "deadline";
+	if (EVENT_RE.test(text)) return "event";
+	if (/\b(need|bring|pack|packed lunch|swimsuit|volunteers needed|water bottle|pe kit|wellies|uniform|pencil case)\b/i.test(text)) return "task";
+	return "task";
+}
+function tidyLead(text) {
+	return text.replace(/^[•\-–]\s*/, "").replace(/^(hi|hello|hey|dear)(\s+\w+)?[!.,]?\s*/i, "").replace(/^just confirming\s+/i, "").replace(/^you're invited to\s+/i, "").replace(/^please\s+/i, "").replace(/^reminder:\s*/i, "").replace(/^your child will\s+/i, "").replace(/^children\s+/i, "").replace(/^need (?:a |an |to )?/i, "").replace(/\s+/g, " ").trim();
+}
+function shortenTitle(raw, type) {
+	let t = tidyLead(raw).replace(/[.!?]+$/, "").trim();
+	const party = t.match(/^(.{3,48}?\b(?:birthday )?party)\b/i);
+	if (party) return cap(party[1]);
+	const trip = t.match(/^(.{3,56}?\btrip)\b/i);
+	if (trip) return cap(trip[1]);
+	const appt = t.match(/^(.{3,56}?\bappointment)\b/i);
+	if (appt) return cap(appt[1]);
+	if (/\bmeet the teacher\b/i.test(t)) return "Meet the teacher";
+	if (/\binset\b/i.test(t)) return "INSET day (school closed)";
+	if (/\bcoding club\b/i.test(t)) return "Coding Club";
+	if (/\bwelcome evening\b/i.test(t)) return "PTA welcome evening";
+	if (/\b(first morning run|route \d|school bus)\b/i.test(t)) {
+		const route = raw.match(/route\s+\d+/i);
+		return route ? `School bus ${cap(route[0])}` : "School bus pickup";
+	}
+	if (/\bphotos?\b/i.test(t)) return "School photos";
+	if (/\bpe kit\b/i.test(t)) return "PE kit";
+	if (/\bwellies\b/i.test(t)) return "Wellies for forest Friday";
+	if (/\bparentpay\b/i.test(t) || /\bpay £\d/i.test(t)) {
+		const money = t.match(/£[\d.]+/);
+		return money ? `Pay ${money[0]} per week on ParentPay` : "Pay on ParentPay";
+	}
+	if (/\bwater bottle\b/i.test(t) && /pencil/i.test(t)) return "Named water bottle and pencil case";
+	if (/\bwater bottle\b/i.test(t)) return "Bring a water bottle";
+	if (/\buniform\b/i.test(t)) return "Label school uniform";
+	if (/\bdata collection form\b/i.test(t)) return "Return data collection form";
+	if (/\bsupply list\b/i.test(t) || /\bhave these by\b/i.test(t)) return "Year 4 supply list";
+	if (type === "rsvp") {
+		const who = raw.match(/\b([A-Z][a-z]+)'s\b/);
+		if (who && /party/i.test(raw)) return `RSVP for ${who[1]}'s party`;
+		if (/dentist|appointment/i.test(t)) return "Confirm the appointment";
+		if (/club|spot|seat/i.test(t)) return /seat/i.test(t) ? "Confirm a bus seat" : "Reserve a club spot";
+		return "RSVP";
+	}
+	if (type === "deadline") {
+		if (/permission slip/i.test(t) && /£|\$|pay|£\d/i.test(t)) {
+			const money = t.match(/£[\d.]+|\$[\d.]+/);
+			return money ? `Return permission slip + ${money[0]}` : "Return the permission slip";
+		}
+		if (/permission slip|sign and return/i.test(t)) return "Sign and return permission slip";
+		if (/book your slot/i.test(t)) return "Book parent-teacher slot";
+		const beforeBy = t.split(/\bby\b/i)[0]?.trim();
+		if (beforeBy && beforeBy.length >= 8 && beforeBy.length < 64) t = beforeBy;
+	}
+	if (/\bswimsuit\b/i.test(t)) return "Pack swimsuit, towel and goggles";
+	if (/\bpacked lunch\b/i.test(t)) return "Packed lunch (no nuts) and coat";
+	if (/^bring socks/i.test(t)) return "Bring socks";
+	if (type === "event" && /\bswimming\b/i.test(t)) return /term/i.test(t) ? "Term swimming" : "Swimming";
+	if (/\b5 minutes early\b/i.test(t)) return "Be 5 minutes early for the bus";
+	t = t.replace(new RegExp(`\\s+(?:this|next|on|by)\\s+(?:${WEEKDAY_RE})\\b.*$`, "i"), "");
+	t = t.replace(new RegExp(`\\s+(?:${WEEKDAY_RE})\\b.*$`, "i"), "");
+	t = t.replace(new RegExp(`\\s*:?\\s*\\d{1,2}\\s*[–-]\\s*\\d{1,2}\\s+(?:${MONTH_RE})\\b.*$`, "i"), "");
+	t = t.replace(/:\s*\d.*$/, "");
+	t = t.replace(new RegExp(`\\s+(?:(?:${WEEKDAY_RE})\\s+)?\\d{1,2}(?:st|nd|rd|th)?\\s+(?:${MONTH_RE})\\b.*$`, "i"), "");
+	t = t.replace(/\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b.*$/i, "");
+	t = t.replace(/\s+at\s+[A-Z].*$/, "");
+	t = t.replace(/\s*[—–:-]+\s*$/, "").replace(/:$/, "").trim();
+	t = t.replace(/[.!?]+$/, "").trim();
+	if (!t) t = tidyLead(raw).slice(0, 64);
+	if (t.length > 64) t = `${t.slice(0, 61).replace(/\s+\S*$/, "").trim()}…`;
+	return cap(t);
+}
+function cap(value) {
+	const t = value.trim();
+	if (!t) return t;
+	return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function isNoise(text) {
+	const t = text.trim();
+	return t.length < 8 || /^(thanks|thank you|hope you can|have a good|contact:|ms\.|mr\.|from,|dear families|welcome back|places limited|label everything|transport office)/i.test(t) || /newsletter$/i.test(t) || /^permission slip/i.test(t) || /^no gifts needed/i.test(t) || /^school bus\s*[—–-]/i.test(t);
+}
+function isEnrichment(text) {
+	return /^(coach leaves|sessions?\b|return approx|arrive \d|drop-?off)/i.test(text.trim());
+}
+function splitCombined(chunk) {
+	const m = chunk.match(/^(.*?)(?:[.!]\s+|\s+[—–]\s+|;\s+then\s+)((?:please\s+)?(?:return the|sign and return|book your slot|rsvp\b|reply yes|pay by|pay £|volunteers needed).+)$/i);
+	if (m && m[1].trim().length > 12 && m[2].trim().length > 10) return [m[1].trim(), m[2].trim()];
+	return [chunk];
+}
+function splitChunks(text) {
+	return text.split(/\n+/).flatMap((line) => line.split(/\s*[•]\s+/)).flatMap((line) => {
+		const parts = line.split(/(?<=(?<!\b(?:Dr|Mr|Ms|Mrs|St|Prof))\.)\s+(?=[A-Z])/);
+		if (parts.length === 1) return [line];
+		if (/[.!?]\s+(?:please\s+)?(?:bring|pack|need|return|sign|rsvp|reply|book)/i.test(line) || line.length > 120) return parts;
+		return [line];
+	}).flatMap(splitCombined).map((s) => s.replace(/^[•\-–]\s*/, "").trim()).filter((s) => s.length > 0);
+}
+function leftoverNotes(chunk, title) {
+	let extra = chunk.replace(title, "").replace(/\s+/g, " ").trim();
+	extra = extra.replace(/^(hi|hello|hey|dear)(\s+\w+)?[!.,]?\s*/i, "").replace(/^you're invited to\s+/i, "").replace(/^just confirming\s+/i, "").replace(/^please\s+/i, "").replace(/^reminder:\s*/i, "").replace(/^[•\-–.!,;:\s]+/, "").trim();
+	if (extra.length < 12) return null;
+	return extra.slice(0, 220);
+}
+function localExtract(text, from = /* @__PURE__ */ new Date()) {
+	const chunks = splitChunks(text);
+	const items = [];
+	const seen = /* @__PURE__ */ new Set();
+	for (const chunk of chunks) {
+		if (isNoise(chunk)) continue;
+		const date = extractDate(chunk, from);
+		const time = extractTime(chunk);
+		const location = extractLocation(chunk);
+		if (isEnrichment(chunk) && items.length) {
+			const prev = items[items.length - 1];
+			if (!prev.time && time) prev.time = time;
+			if (!prev.location && location) prev.location = location;
+			continue;
+		}
+		const type = classify(chunk);
+		const title = shortenTitle(chunk, type);
+		if (title.length < 4) continue;
+		const key = `${type}:${title.toLowerCase()}`;
+		if (seen.has(key)) continue;
+		if (!(Boolean(date) || Boolean(time) || type === "rsvp" || type === "deadline" || /\b(need|bring|pack|appointment|trip|party|photos|swimming|conference|bake|fair|dentist|swimsuit|volunteers|club|bus|uniform|pe kit|wellies|water bottle|inset|form|minutes early)\b/i.test(chunk))) continue;
+		seen.add(key);
+		items.push({
+			type,
+			title,
+			date,
+			time,
+			location,
+			notes: leftoverNotes(chunk, title)
+		});
+		if (items.length >= 12) break;
+	}
+	const namedEvent = items.find((i) => i.type === "event");
+	if (namedEvent) {
+		for (const item of items) if (item.type === "rsvp" && item.title === "RSVP") {
+			const next = `RSVP: ${namedEvent.title}`;
+			if (next.length <= 64) item.title = next;
+		}
+	}
+	return items;
+}
+//#endregion
+export { localExtract as t };

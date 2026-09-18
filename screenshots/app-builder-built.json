@@ -7,8 +7,8 @@
       "status": 200,
       "title": "SCOOP",
       "hasCanvas": false,
-      "bodyTextLen": 994,
-      "bodyTextHash": "0a3c022eddf040ec34328bc9ececb5e3940dd2bd4c27e8c0785f3f11e4b09160",
+      "bodyTextLen": 1041,
+      "bodyTextHash": "188e5a64903847138cdcfb67234555639d632913575a2cc441d2e129fc62103f",
       "bodyTextPrefix": "S SCOOP Sign in Sign up THE FAMILY ADMIN APP STOP SWEATING THE S",
       "horizontalOverflow": false,
       "consoleErrors": [],
@@ -21,8 +21,8 @@
       "status": 200,
       "title": "SCOOP",
       "hasCanvas": false,
-      "bodyTextLen": 975,
-      "bodyTextHash": "561cc37f56b2bb38c401f3546276eb21f1060d1d9b33ebbb558971a720d3589b",
+      "bodyTextLen": 1033,
+      "bodyTextHash": "33f87aaae98f3d7de415c9a427b3a9ca892071bb9e694c0baf788149efb8bb25",
       "bodyTextPrefix": "S SCOOP Sign up THE FAMILY ADMIN APP STOP SWEATING THE SCHOOL ST",
       "horizontalOverflow": false,
       "consoleErrors": [],
@@ -33,6 +33,8 @@
   "brandWarnings": [],
   "authWarnings": [],
   "verdictFile": "/workspace/screenshots/app-builder-built.json",
-  "divergesFromBaseline": false,
-  "baselineReasons": []
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text replaced (similar length, page start changed)"
+  ]
 }
