@@ -1,12 +1,17 @@
 /**
- * Production wiring. Preview already works with nothing set.
+ * Production wiring — paste values and restart. No code changes.
  *
- *   DATABASE_URL     Neon pooled connection string (injected on publish)
- *   GROQ_API_KEY     Groq console key (gsk_…)
- *   GROQ_MODEL       optional, default llama-3.3-70b-versatile
- *   XAI_API_KEY      Grok extract backup (injected when available)
+ * In `.grok/app-env.json`:
  *
- * Google sign-in is already live. No Clerk, no Google Cloud project.
+ *   "env": {
+ *     "DATABASE_URL": "postgres://…neon.tech/…?sslmode=require",
+ *     "GROQ_API_KEY": "gsk_…",
+ *     "GROQ_MODEL": "llama-3.3-70b-versatile",
+ *     "XAI_API_KEY": ""
+ *   }
+ *
+ * Blank strings are ignored. Host/process env always wins. Google sign-in
+ * is already live.
  */
 
 export const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";

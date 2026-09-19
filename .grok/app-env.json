@@ -1,5 +1,11 @@
 {
   "deploy": {
     "database": true
+  },
+  "env": {
+    "DATABASE_URL": "",
+    "GROQ_API_KEY": "",
+    "GROQ_MODEL": "",
+    "XAI_API_KEY": ""
   }
 }

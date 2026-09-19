@@ -7,17 +7,13 @@
  * `VITE_AUTH_ENABLED` — a divergence that only shows up as a built-output
  * mismatch long after the fact. Anything that starts Vite directly bypasses it.
  *
- * Only `VITE_`-prefixed keys are honored: the file is a build flag carrier, not
- * a secret store, and only `VITE_` vars reach the browser anyway. A real
- * `process.env` entry always wins, so an explicit override still works.
+ * Top-level `VITE_`-prefixed keys are build flags (they reach the browser).
+ * Nested `env` keys are server-only (GROQ_API_KEY, DATABASE_URL, …). Empty
+ * strings are ignored so you can paste values later without a restart-breaking
+ * dummy secret. A real `process.env` entry always wins.
  *
- * That precedence also means the file governs this workspace only. A deployed
- * build runs with the provider's project env, where the deployer sets
- * `VITE_AUTH_ENABLED` itself (today unconditionally `"true"`), so the deployed
- * flag is the platform's, not this file's.
- *
- * Vite picks the values up because `loadEnv` prefix-matches entries already in
- * `process.env`, which is why the merge has to happen before Vite starts.
+ * Vite picks VITE_ values up because `loadEnv` prefix-matches entries already
+ * in `process.env`, which is why the merge has to happen before Vite starts.
  */
 import { spawn } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
@@ -51,10 +47,44 @@ export function parseAppEnv(text) {
   return env;
 }
 
+/**
+ * Server-only secrets from the nested `env` object. VITE_ keys are refused
+ * here so they cannot leak to the browser by accident. Blank values skip.
+ */
+export function parseServerEnv(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return {};
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return {};
+  }
+  const nested = parsed.env;
+  if (nested === null || typeof nested !== "object" || Array.isArray(nested)) {
+    return {};
+  }
+  const env = {};
+  for (const [key, value] of Object.entries(nested)) {
+    if (key.startsWith(VITE_PREFIX)) continue;
+    if (typeof value !== "string") continue;
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+    env[key] = trimmed;
+  }
+  return env;
+}
+
+function readAppEnvFile(root) {
+  return readFileSync(join(root, APP_ENV_REL_PATH), "utf8");
+}
+
 /** The app env recorded under `root`, or `{}` when the file is absent. */
 export function readAppEnv(root) {
   try {
-    return parseAppEnv(readFileSync(join(root, APP_ENV_REL_PATH), "utf8"));
+    const text = readAppEnvFile(root);
+    return { ...parseServerEnv(text), ...parseAppEnv(text) };
   } catch {
     return {};
   }

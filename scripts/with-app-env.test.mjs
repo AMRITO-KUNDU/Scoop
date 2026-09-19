@@ -9,6 +9,7 @@ import {
   APP_ENV_REL_PATH,
   mergeAppEnv,
   parseAppEnv,
+  parseServerEnv,
   projectRoot,
   readAppEnv,
 } from "./with-app-env.mjs";
@@ -39,6 +40,38 @@ test("drops non-VITE keys, non-string values and malformed documents", () => {
   assert.deepEqual(parseAppEnv("not json"), {});
   assert.deepEqual(parseAppEnv('["VITE_AUTH_ENABLED"]'), {});
   assert.deepEqual(parseAppEnv("null"), {});
+});
+
+test("nested env keys are server-only and skip blanks", () => {
+  assert.deepEqual(
+    parseServerEnv(
+      JSON.stringify({
+        env: {
+          GROQ_API_KEY: "  gsk_live  ",
+          DATABASE_URL: "",
+          GROQ_MODEL: "   ",
+          VITE_AUTH_ENABLED: "false",
+          FLAG: 1,
+        },
+      }),
+    ),
+    { GROQ_API_KEY: "gsk_live" },
+  );
+  assert.deepEqual(parseServerEnv("{}"), {});
+  assert.deepEqual(parseServerEnv("not json"), {});
+});
+
+test("readAppEnv merges nested env with VITE_ flags", () => {
+  const root = makeWorkspace(
+    JSON.stringify({
+      VITE_AUTH_ENABLED: "false",
+      env: { GROQ_API_KEY: "gsk_x", DATABASE_URL: "" },
+    }),
+  );
+  assert.deepEqual(readAppEnv(root), {
+    GROQ_API_KEY: "gsk_x",
+    VITE_AUTH_ENABLED: "false",
+  });
 });
 
 test("a missing app-env.json is a clean no-op", () => {

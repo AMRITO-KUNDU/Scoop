@@ -45,8 +45,9 @@ function ConnectScreen() {
         The real product stack.
       </h1>
       <p className="mt-2 max-w-lg text-sm font-medium text-mute">
-        Google login is live now. Neon, Groq and Grok light up from host env —
-        preview still works without them.
+        Paste keys into the nested <code className="font-bold">env</code> object
+        in the app env file, or the host env. Empty values stay off. Restart
+        after you paste.
       </p>
 
       {error ? (

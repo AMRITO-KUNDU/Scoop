@@ -4,7 +4,6 @@ import { Cable, LogOut } from "lucide-react";
 import { authEnabled, signOut } from "@/lib/auth/client";
 import { hasGateSessionMarker } from "@/lib/auth/gate-session-marker";
 import { useCurrentUser, useCurrentUserState } from "@/lib/auth/use-current-user";
-import { cn } from "@/lib/utils";
 
 const subscribeToNothing = () => () => {};
 const noGateSessionOnServer = () => false;
@@ -32,7 +31,7 @@ function Avatar({
   );
 }
 
-export function AccountMenu() {
+export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
   const { user, isPending } = useCurrentUserState();
   const liveUser = useCurrentUser();
   const [signingOut, setSigningOut] = useState(false);
@@ -53,18 +52,18 @@ export function AccountMenu() {
       <div className="flex items-center gap-2">
         <Link
           to="/login"
-          className="hidden h-10 items-center rounded-full border-thick border-ink bg-paper px-3 font-display text-sm font-bold shadow-hard-sm sm:inline-flex"
+          className="inline-flex h-10 items-center rounded-full border-thick border-ink bg-paper px-3 font-display text-sm font-bold shadow-hard-sm hover:bg-paper-2"
         >
           Sign in
         </Link>
-        <Link
-          to="/signup"
-          className={cn(
-            "chunky inline-flex h-10 items-center rounded-full bg-yolk px-3 font-display text-sm font-bold",
-          )}
-        >
-          Sign up
-        </Link>
+        {showSignup ? (
+          <Link
+            to="/signup"
+            className="chunky inline-flex h-10 items-center rounded-full bg-yolk px-3 font-display text-sm font-bold"
+          >
+            Sign up
+          </Link>
+        ) : null}
       </div>
     );
   }
