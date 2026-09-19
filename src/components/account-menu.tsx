@@ -32,7 +32,7 @@ function Avatar({
 }
 
 export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
-  const { user, isPending } = useCurrentUserState();
+  const { user } = useCurrentUserState();
   const liveUser = useCurrentUser();
   const [signingOut, setSigningOut] = useState(false);
   const gateSession = useSyncExternalStore(
@@ -40,12 +40,6 @@ export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
     hasGateSessionMarker,
     noGateSessionOnServer,
   );
-
-  if (isPending) {
-    return (
-      <div className="h-10 w-24 animate-pulse rounded-full border-thick border-ink bg-paper-2 sm:w-28" />
-    );
-  }
 
   if (!user) {
     return (

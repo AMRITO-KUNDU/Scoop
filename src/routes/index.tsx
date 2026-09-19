@@ -50,12 +50,12 @@ const FEATURES = [
 ];
 
 function Home() {
-  const { user, isPending } = useCurrentUserState();
+  const { user } = useCurrentUserState();
   if (user) return <Navigate to="/capture" />;
-  return <Landing pending={isPending} />;
+  return <Landing />;
 }
 
-function Landing({ pending = false }: { pending?: boolean }) {
+function Landing() {
   return (
     <div className="min-h-dvh bg-paper">
       <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper/95 backdrop-blur-sm">
@@ -63,11 +63,7 @@ function Landing({ pending = false }: { pending?: boolean }) {
           <Link to="/" aria-label="SCOOP">
             <Wordmark />
           </Link>
-          {pending ? (
-            <div className="h-10 w-24 animate-pulse rounded-xl border-thick border-ink bg-paper-2" />
-          ) : (
-            <AccountMenu showSignup={false} />
-          )}
+          <AccountMenu showSignup={false} />
         </div>
       </header>
 
@@ -93,7 +89,7 @@ function Landing({ pending = false }: { pending?: boolean }) {
                 SCOOP turns school letters, party invites and WhatsApp chaos into
                 a calm family plan — in seconds.
               </p>
-              <Button asChild size="lg" variant="yolk" className="mt-8">
+              <Button asChild size="lg" variant="yolk" className="mt-8 w-full sm:w-auto">
                 <Link to="/signup">
                   Start your SCOOP
                   <ScanText className="size-5" strokeWidth={2.4} />
