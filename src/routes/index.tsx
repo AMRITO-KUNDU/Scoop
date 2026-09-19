@@ -50,12 +50,14 @@ const FEATURES = [
 ];
 
 function Home() {
-  const { user } = useCurrentUserState();
-  if (user) return <Navigate to="/capture" />;
-  return <Landing />;
+  const { user, isPending } = useCurrentUserState();
+  if (!isPending && user) return <Navigate to="/capture" />;
+  return <Landing user={user} isPending={isPending} />;
 }
 
-function Landing() {
+function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserState>["user"]; isPending: boolean }) {
+  const destination = !isPending && user ? "/capture" : "/signup";
+
   return (
     <div className="min-h-dvh bg-paper">
       <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper/95 backdrop-blur-sm">
@@ -90,8 +92,8 @@ function Landing() {
                 a calm family plan — in seconds.
               </p>
               <Button asChild size="lg" variant="yolk" className="mt-8 w-full sm:w-auto">
-                <Link to="/signup">
-                  Start your SCOOP
+                <Link to={destination}>
+                  Start with SCOOP
                   <ScanText className="size-5" strokeWidth={2.4} />
                 </Link>
               </Button>
@@ -169,8 +171,8 @@ function Landing() {
               place.
             </p>
             <Button asChild size="lg" variant="yolk" className="mt-8">
-              <Link to="/signup">
-                Start your SCOOP
+              <Link to={destination}>
+                Start with SCOOP
                 <ScanText className="size-5" strokeWidth={2.4} />
               </Link>
             </Button>
