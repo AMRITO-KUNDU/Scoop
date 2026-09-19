@@ -9,9 +9,13 @@ import { localExtract } from "@/lib/local-extract";
 import { formatWhen } from "@/lib/plan";
 import { cn } from "@/lib/utils";
 
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
+
 const DEMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
 
 export function LandingPreview() {
+  const { user, isPending } = useCurrentUserState();
+  const destination = !isPending && user ? "/capture" : "/signup";
   const [text, setText] = useState(DEMO_CHIPS[0]?.text ?? "");
   const [active, setActive] = useState<string | null>(DEMO_CHIPS[0]?.id ?? null);
   const [sorted, setSorted] = useState(false);
@@ -108,7 +112,7 @@ export function LandingPreview() {
               )}
               {items.length ? (
                 <Button asChild variant="ink" className="w-full" size="lg">
-                  <Link to="/signup">
+                  <Link to={destination}>
                     Looks Good — save my plan
                     <Sparkles className="size-4" strokeWidth={2.4} />
                   </Link>
