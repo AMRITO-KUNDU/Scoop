@@ -80,14 +80,53 @@ function readAppEnvFile(root) {
   return readFileSync(join(root, APP_ENV_REL_PATH), "utf8");
 }
 
-/** The app env recorded under `root`, or `{}` when the file is absent. */
+/** Parse simple KEY=VALUE or KEY="VALUE" format from .env files. */
+export function parseDotEnv(text) {
+  const env = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eqIdx = line.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = line.slice(0, eqIdx).trim();
+    let val = line.slice(eqIdx + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (key && val) {
+      env[key] = val;
+    }
+  }
+  return env;
+}
+
+export function readDotEnvFiles(root) {
+  let result = {};
+  for (const filename of [".env", ".env.local"]) {
+    try {
+      const text = readFileSync(join(root, filename), "utf8");
+      result = { ...result, ...parseDotEnv(text) };
+    } catch {
+      /* missing file is fine */
+    }
+  }
+  return result;
+}
+
+/** The app env recorded under `root`, merged with any root `.env` / `.env.local`. */
 export function readAppEnv(root) {
+  let grokEnv = {};
   try {
     const text = readAppEnvFile(root);
-    return { ...parseServerEnv(text), ...parseAppEnv(text) };
+    grokEnv = { ...parseServerEnv(text), ...parseAppEnv(text) };
   } catch {
-    return {};
+    /* ignore missing app-env.json */
   }
+  const dotEnv = readDotEnvFiles(root);
+  return { ...grokEnv, ...dotEnv };
 }
 
 /** File values under the process environment: an explicit override wins. */

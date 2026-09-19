@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, Database, KeyRound, Sparkles, Zap } from "lucide-react";
+import { Check, Copy, Database, KeyRound, Lock, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { getIntegrationsStatus } from "@/lib/server/integrations";
 import type { ServiceStatus } from "@/lib/integrations";
@@ -25,7 +25,14 @@ function ConnectScreen() {
     void getIntegrationsStatus()
       .then((status) => {
         if (!alive) return;
-        setServices([status.google, status.neon, status.groq, status.grok]);
+        setServices([
+          status.neon,
+          status.groq,
+          status.clerk,
+          status.googleCloud,
+          status.google,
+          status.grok,
+        ]);
       })
       .catch((err: unknown) => {
         if (!alive) return;
@@ -45,9 +52,7 @@ function ConnectScreen() {
         The real product stack.
       </h1>
       <p className="mt-2 max-w-lg text-sm font-medium text-mute">
-        Paste keys into the nested <code className="font-bold">env</code> object
-        in the app env file, or the host env. Empty values stay off. Restart
-        after you paste.
+        Drop keys into a <code className="font-bold">.env</code> file in the project root, or into host environment variables. Restart after saving your <code className="font-bold">.env</code> file.
       </p>
 
       {error ? (
@@ -61,7 +66,7 @@ function ConnectScreen() {
           ? services.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))
-          : [0, 1, 2, 3].map((i) => (
+          : [0, 1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
                 className="h-40 animate-pulse rounded-2xl border-thick border-ink bg-paper-2"
@@ -74,21 +79,25 @@ function ConnectScreen() {
 
 function ServiceCard({ service }: { service: ServiceStatus }) {
   const Icon =
-    service.id === "google"
+    service.id === "google" || service.id === "googleCloud"
       ? KeyRound
-      : service.id === "neon"
-        ? Database
-        : service.id === "groq"
-          ? Zap
-          : Sparkles;
+      : service.id === "clerk"
+        ? ShieldCheck
+        : service.id === "neon"
+          ? Database
+          : service.id === "groq"
+            ? Zap
+            : Sparkles;
   const tone =
-    service.id === "google"
+    service.id === "google" || service.id === "googleCloud"
       ? "bg-cyan"
-      : service.id === "neon"
-        ? "bg-yolk"
-        : service.id === "groq"
-          ? "bg-hot text-paper"
-          : "bg-grape text-paper";
+      : service.id === "clerk"
+        ? "bg-paper-2"
+        : service.id === "neon"
+          ? "bg-yolk"
+          : service.id === "groq"
+            ? "bg-hot text-paper"
+            : "bg-grape text-paper";
 
   return (
     <section className="panel p-5 sm:p-6">
@@ -125,13 +134,13 @@ function ServiceCard({ service }: { service: ServiceStatus }) {
           {service.extraEnvVar ? (
             <EnvRow
               name={service.extraEnvVar}
-              hint="optional — defaults to llama-3.3-70b-versatile"
+              hint={envHint(service.extraEnvVar)}
             />
           ) : null}
         </div>
       ) : (
         <p className="mt-4 rounded-xl border-thick border-ink bg-paper-2 px-3 py-2 text-sm font-semibold">
-          Continue with Google is already on. Email and X work too.
+          Continue with Google is already active via built-in broker. Email and X work too.
         </p>
       )}
     </section>
@@ -141,6 +150,11 @@ function ServiceCard({ service }: { service: ServiceStatus }) {
 function envHint(name: string) {
   if (name === "DATABASE_URL") return "postgres://…neon.tech/…?sslmode=require";
   if (name === "GROQ_API_KEY") return "gsk_… from console.groq.com";
+  if (name === "GROQ_MODEL") return "optional — defaults to llama-3.3-70b-versatile";
+  if (name === "VITE_CLERK_PUBLISHABLE_KEY") return "pk_test_… from dashboard.clerk.com";
+  if (name === "CLERK_SECRET_KEY") return "sk_test_… from dashboard.clerk.com";
+  if (name === "GOOGLE_CLIENT_ID") return "…apps.googleusercontent.com";
+  if (name === "GOOGLE_CLIENT_SECRET") return "GOCSPX-… from Google Cloud Console";
   if (name === "XAI_API_KEY") return "injected automatically when available";
   return "";
 }
