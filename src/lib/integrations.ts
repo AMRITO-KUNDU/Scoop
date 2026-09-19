@@ -73,7 +73,7 @@ export function resolveIntegrations(
       wired: true,
       detail: googleCloudWired
         ? "Bypassed — Direct Google Cloud OAuth is active."
-        : "Real Google + X + email login via built-in auth broker.",
+        : "Real Google and email sign-in via Clerk / Google OAuth.",
     },
     googleCloud: {
       id: "googleCloud",

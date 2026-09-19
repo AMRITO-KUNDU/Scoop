@@ -140,7 +140,7 @@ function ServiceCard({ service }: { service: ServiceStatus }) {
         </div>
       ) : (
         <p className="mt-4 rounded-xl border-thick border-ink bg-paper-2 px-3 py-2 text-sm font-semibold">
-          Continue with Google is already active via built-in broker. Email and X work too.
+          Continue with Google is already active via Clerk / Google OAuth. Email sign-in works too.
         </p>
       )}
     </section>

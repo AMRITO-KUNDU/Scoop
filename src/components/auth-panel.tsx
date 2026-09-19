@@ -31,9 +31,9 @@ export function AuthPanel({ mode }: { mode: "signin" | "signup" }) {
         {clerkPublishableKey ? (
           <div className="w-full flex justify-center">
             {isSignup ? (
-              <SignUp routing="path" path="/signup" fallbackRedirectUrl="/capture" />
+              <SignUp routing="hash" fallbackRedirectUrl="/capture" />
             ) : (
-              <SignIn routing="path" path="/login" fallbackRedirectUrl="/capture" />
+              <SignIn routing="hash" fallbackRedirectUrl="/capture" />
             )}
           </div>
         ) : (
