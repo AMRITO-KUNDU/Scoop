@@ -3,9 +3,14 @@ import { SignIn, SignUp } from "@clerk/tanstack-start";
 import { Wordmark } from "@/components/logo";
 
 const clerkPublishableKey =
-  typeof process !== "undefined"
-    ? process.env.VITE_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY
-    : (import.meta as { env?: Record<string, string> }).env?.VITE_CLERK_PUBLISHABLE_KEY;
+  (typeof process !== "undefined"
+    ? process.env.VITE_CLERK_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+      process.env.CLERK_PUBLISHABLE_KEY
+    : undefined) ||
+  (import.meta as { env?: Record<string, string> }).env?.VITE_CLERK_PUBLISHABLE_KEY ||
+  (import.meta as { env?: Record<string, string> }).env?.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  (import.meta as { env?: Record<string, string> }).env?.CLERK_PUBLISHABLE_KEY;
 
 export function AuthPanel({ mode }: { mode: "signin" | "signup" }) {
   const isSignup = mode === "signup";
