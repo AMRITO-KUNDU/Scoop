@@ -25,7 +25,6 @@ import { createMiddleware } from "@tanstack/react-start";
  * all. On the auth-on path, use it on every server function that touches
  * per-user data and scope every query by `context.userId`.
  */
-import { createMiddleware } from "@tanstack/react-start";
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
