@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ClerkProvider } from "@clerk/tanstack-start";
+import { ClerkProvider } from "@clerk/tanstack-react-start";
 
 const clerkPublishableKey =
   (typeof process !== "undefined"
