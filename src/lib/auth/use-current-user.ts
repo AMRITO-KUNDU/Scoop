@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/tanstack-start";
+import { useUser } from "@clerk/tanstack-react-start";
 
 /** Normalized user shape used across the app, auth on or off. */
 export type AppUser = {
