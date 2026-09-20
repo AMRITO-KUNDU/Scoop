@@ -1,5 +1,4 @@
-import { getAuth } from "@clerk/tanstack-react-start/server";
-import { getRequest } from "@tanstack/react-start/server";
+import { auth } from "@clerk/tanstack-react-start/server";
 
 const clerkSecret = process.env.CLERK_SECRET_KEY?.trim();
 const clerkPub =
@@ -22,10 +21,8 @@ export class UnauthorizedError extends Error {
 export type VerifiedUser = { id: string; email: string | null };
 
 export async function getSessionUser(): Promise<VerifiedUser | null> {
-  const request = getRequest();
-  if (!request) return null;
   try {
-    const authState = await getAuth(request);
+    const authState = await auth();
     if (authState?.userId) {
       return { id: authState.userId, email: null };
     }
