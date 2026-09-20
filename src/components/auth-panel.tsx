@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { SignIn, SignUp } from "@clerk/tanstack-start";
+import { SignIn, SignUp } from "@clerk/tanstack-react-start";
 import { Wordmark } from "@/components/logo";
 
 export function AuthPanel({ mode }: { mode: "signin" | "signup" }) {

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Cable } from "lucide-react";
-import { UserButton } from "@clerk/tanstack-start";
+import { UserButton } from "@clerk/tanstack-react-start";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
