@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, Database, KeyRound, Lock, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Database, KeyRound, Lock, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { getIntegrationsStatus } from "@/lib/server/integrations";
 import type { ServiceStatus } from "@/lib/integrations";
@@ -160,8 +160,6 @@ function envHint(name: string) {
 }
 
 function EnvRow({ name, hint }: { name: string; hint: string }) {
-  const [copied, setCopied] = useState(false);
-
   return (
     <div className="flex items-center gap-2 rounded-xl border-thick border-ink bg-paper-2 px-3 py-2">
       <code className="min-w-0 flex-1 truncate font-display text-sm font-bold">
@@ -170,26 +168,6 @@ function EnvRow({ name, hint }: { name: string; hint: string }) {
       {hint ? (
         <span className="hidden text-xs font-medium text-mute sm:inline">{hint}</span>
       ) : null}
-      <button
-        type="button"
-        className="inline-flex size-9 items-center justify-center rounded-lg border-thick border-ink bg-paper hover:bg-yolk"
-        aria-label={`Copy ${name}`}
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(name);
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1200);
-          } catch {
-            /* ignore */
-          }
-        }}
-      >
-        {copied ? (
-          <Check className="size-4" strokeWidth={2.6} />
-        ) : (
-          <Copy className="size-4" strokeWidth={2.4} />
-        )}
-      </button>
     </div>
   );
 }
