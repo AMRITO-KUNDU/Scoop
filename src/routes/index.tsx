@@ -51,7 +51,24 @@ const FEATURES = [
 
 function Home() {
   const { user, isPending } = useCurrentUserState();
-  if (!isPending && user) return <Navigate to="/capture" />;
+  // Show loading state while auth is resolving to prevent flicker
+  if (isPending) {
+    return (
+      <div className="min-h-dvh bg-paper">
+        <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper/95 backdrop-blur-sm">
+          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+            <Link to="/" aria-label="SCOOP">
+              <Wordmark />
+            </Link>
+          </div>
+        </header>
+        <main className="mx-auto max-w-3xl px-4 py-8">
+          <div className="h-40 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
+        </main>
+      </div>
+    );
+  }
+  if (user) return <Navigate to="/capture" />;
   return <Landing user={user} isPending={isPending} />;
 }
 

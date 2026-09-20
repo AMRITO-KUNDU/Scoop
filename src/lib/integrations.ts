@@ -6,7 +6,7 @@
  *   "env": {
  *     "DATABASE_URL": "postgres://…neon.tech/…?sslmode=require",
  *     "GROQ_API_KEY": "gsk_…",
- *     "GROQ_MODEL": "llama-3.3-70b-versatile",
+ *     "GROQ_MODEL": "llama3-70b-8192",
  *     "XAI_API_KEY": ""
  *   }
  *
@@ -14,7 +14,15 @@
  * is already live.
  */
 
-export const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+export const DEFAULT_GROQ_MODEL = "llama3-70b-8192";
+
+// Fallback models for Groq - try these if the default fails
+export const GROQ_FALLBACK_MODELS = [
+  "llama3-70b-8192",
+  "llama-3.2-70b-versatile",
+  "llama-3.1-70b-versatile",
+  "mixtral-8x7b-32768",
+] as const;
 export const DEFAULT_GROK_MODEL = "grok-4.5";
 
 export type ServiceId = "google" | "googleCloud" | "clerk" | "neon" | "groq" | "grok";

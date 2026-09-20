@@ -4,6 +4,7 @@ import { parseExtractedItems } from "@/lib/extract-parse";
 import {
   DEFAULT_GROK_MODEL,
   DEFAULT_GROQ_MODEL,
+  GROQ_FALLBACK_MODELS,
   readTrimmedEnv,
 } from "@/lib/integrations";
 import { localExtract } from "@/lib/local-extract";
@@ -98,7 +99,7 @@ type ToolCallTarget = {
 
 type ToolCallResult =
   | { ok: true; items: ExtractedItem[] }
-  | { ok: false; error: string };
+  | { ok: false; error: string; isModelNotFound?: boolean };
 
 /**
  * Extract items using Groq tool calling (function calling) API.
@@ -150,9 +151,13 @@ async function extractWithToolCalling(
 
     if (!res.ok) {
       let detail = "";
+      let isModelNotFound = false;
       try {
-        const body = (await res.json()) as { error?: { message?: string } };
+        const body = (await res.json()) as { error?: { message?: string; type?: string } };
         if (body.error?.message) detail = `: ${body.error.message}`;
+        if (body.error?.type === "BadRequestError" || res.status === 404) {
+          isModelNotFound = true;
+        }
       } catch {
         /* ignore body parsing error */
       }
@@ -160,6 +165,7 @@ async function extractWithToolCalling(
       return {
         ok: false,
         error: `${engineName} tool calling API error (${res.status}${detail})`,
+        isModelNotFound,
       };
     }
 
@@ -206,12 +212,25 @@ function toolCallingTargets(): ToolCallTarget[] {
   const targets: ToolCallTarget[] = [];
   const groqKey = readTrimmedEnv(process.env, "GROQ_API_KEY");
   if (groqKey) {
-    targets.push({
-      engine: "groq",
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      apiKey: groqKey,
-      model: readTrimmedEnv(process.env, "GROQ_MODEL") ?? DEFAULT_GROQ_MODEL,
-    });
+    const groqModel = readTrimmedEnv(process.env, "GROQ_MODEL") ?? DEFAULT_GROQ_MODEL;
+    // Add all Groq fallback models as separate targets to try
+    for (const model of GROQ_FALLBACK_MODELS) {
+      targets.push({
+        engine: "groq",
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        apiKey: groqKey,
+        model,
+      });
+    }
+    // Also add the user-specified model if it's not in the fallback list
+    if (!GROQ_FALLBACK_MODELS.includes(groqModel as typeof GROQ_FALLBACK_MODELS[number])) {
+      targets.unshift({
+        engine: "groq",
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        apiKey: groqKey,
+        model: groqModel,
+      });
+    }
   }
   const xaiKey = readTrimmedEnv(process.env, "XAI_API_KEY");
   if (xaiKey) {
