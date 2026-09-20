@@ -76,6 +76,9 @@ function CaptureScreen() {
         toast.error(result.error);
         return;
       }
+      if (result.warning) {
+        toast.error(result.warning);
+      }
       if (!result.items.length) {
         toast.error("Nothing to pull from that message.");
         setDrafts([]);

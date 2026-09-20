@@ -41,10 +41,14 @@ type ChatTarget = {
   model: string;
 };
 
+type ChatResult =
+  | { ok: true; items: ExtractedItem[] }
+  | { ok: false; error: string };
+
 async function extractWithChat(
   text: string,
   target: ChatTarget,
-): Promise<ExtractedItem[] | null> {
+): Promise<ChatResult> {
   const today = new Date().toISOString().slice(0, 10);
   const weekday = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -77,13 +81,32 @@ async function extractWithChat(
         ],
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const body = (await res.json()) as { error?: { message?: string } };
+        if (body.error?.message) detail = `: ${body.error.message}`;
+      } catch {
+        /* ignore body parsing error */
+      }
+      const engineName = target.engine === "groq" ? "Groq" : "Grok";
+      return {
+        ok: false,
+        error: `${engineName} API error (${res.status}${detail})`,
+      };
+    }
     const body = (await res.json()) as {
       choices?: { message?: { content?: string } }[];
     };
-    return parseExtractedItems(body.choices?.[0]?.message?.content ?? "");
-  } catch {
-    return null;
+    const items = parseExtractedItems(body.choices?.[0]?.message?.content ?? "");
+    return { ok: true, items };
+  } catch (err: unknown) {
+    const engineName = target.engine === "groq" ? "Groq" : "Grok";
+    if (err instanceof Error && err.name === "AbortError") {
+      return { ok: false, error: `${engineName} request timed out (12s limit).` };
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `${engineName} extraction failed: ${message}` };
   } finally {
     clearTimeout(timer);
   }
@@ -121,15 +144,32 @@ export const extractItems = createServerFn({ method: "POST" })
     return { text: text.slice(0, 6000) };
   })
   .handler(async ({ data }) => {
-    for (const target of chatTargets()) {
-      const items = await extractWithChat(data.text, target);
-      if (items?.length) {
-        return { ok: true as const, items, engine: target.engine };
+    let lastError: string | null = null;
+    const targets = chatTargets();
+    for (const target of targets) {
+      const res = await extractWithChat(data.text, target);
+      if (res.ok) {
+        if (res.items.length) {
+          return { ok: true as const, items: res.items, engine: target.engine };
+        }
+      } else {
+        lastError = res.error;
       }
     }
     const local = localExtract(data.text);
     if (local.length) {
-      return { ok: true as const, items: local, engine: "local" as ExtractEngine };
+      return {
+        ok: true as const,
+        items: local,
+        engine: "local" as ExtractEngine,
+        warning: lastError ?? undefined,
+      };
+    }
+    if (lastError) {
+      return {
+        ok: false as const,
+        error: lastError,
+      };
     }
     return {
       ok: false as const,
