@@ -22,7 +22,7 @@ SCOOP transforms the chaos into clarity with three simple steps:
 Paste any message — school emails, WhatsApp threads, newsletters, flyers, permission slips, party invites — and let SCOOP do the heavy lifting.
 
 ### 2️⃣ **AI Makes Sense of It**
-Our intelligent parser automatically extracts:
+Our intelligent system uses **Groq tool calling** (not chat) to precisely extract structured data:
 - **Events** - School trips, parent-teacher meetings, parties, club sessions
 - **Deadlines** - Permission slip due dates, payment deadlines, supply lists
 - **Tasks** - Actions you need to take (pack lunch, buy uniform, schedule pickup)
@@ -43,11 +43,13 @@ Throw anything at SCOOP:
 - Type your own notes and reminders
 
 ### 🧠 **Smart Extraction**
-Powered by Groq AI, SCOOP understands:
+Powered by **Groq tool calling** (not chat-based AI), SCOOP intelligently extracts structured data with:
 - Date and time references ("next Tuesday", "2 weeks from today")
 - Multiple items in a single message
 - Context-specific details (location, what to bring, who's invited)
 - Priority levels and urgency
+
+The tool calling architecture ensures precise, structured output rather than free-form chat responses.
 
 ### 📅 **Family Plan**
 All your extracted items become:
@@ -125,7 +127,7 @@ Built for the device you always have with you:
 ## 📲 Roadmap
 
 ### What's Here Now
-- ✅ AI-powered extraction from text
+- ✅ **Groq tool calling** for intelligent extraction from text
 - ✅ Smart categorization (events, deadlines, tasks, RSVPs)
 - ✅ Family sharing and synchronization
 - ✅ Mobile-responsive design
@@ -205,7 +207,7 @@ You're still learning the ropes of school communications. SCOOP helps you unders
 A: Absolutely. We use bank-level encryption and never share your data with third parties.
 
 **Q: How does the AI understand school-specific terms?**
-A: SCOOP is trained on thousands of real school communications, so it understands the context and terminology that matters to parents.
+A: SCOOP uses **Groq tool calling** (not chat) with specialized extraction tools trained on thousands of real school communications, ensuring precise, structured understanding of context and terminology that matters to parents.
 
 **Q: Can I use SCOOP for non-school items?**
 A: Yes! While optimized for school chaos, SCOOP works great for any family organization — sports, social events, work schedules, and more.

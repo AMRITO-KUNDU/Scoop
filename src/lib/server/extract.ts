@@ -11,44 +11,103 @@ import type { ExtractedItem } from "@/lib/plan";
 
 export type ExtractEngine = "groq" | "grok" | "local";
 
-const SYSTEM = `You extract structured school-life items from messy parent/school messages (emails, WhatsApp, newsletters, flyers, permission slips, welcome letters, club notes, bus times, supply lists).
+// Tool definition for structured extraction using Groq tool calling
+const EXTRACTION_TOOL = {
+  type: "function",
+  name: "extract_school_items",
+  description: "Extract structured school-life items from parent/school messages. Use this tool to parse and categorize information into events, deadlines, tasks, and RSVPs.",
+  strict: true,
+  parameters: {
+    type: "object",
+    properties: {
+      items: {
+        type: "array",
+        description: "Array of extracted school items",
+        items: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+              enum: ["event", "deadline", "task", "rsvp"],
+              description: "Item type: event, deadline, task, or rsvp",
+            },
+            title: {
+              type: "string",
+              description: "Short human-readable title, no trailing period",
+              maxLength: 140,
+            },
+            date: {
+              type: ["string", "null"],
+              description: "Date in YYYY-MM-DD format or null",
+              pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+            },
+            time: {
+              type: ["string", "null"],
+              description: "Time in HH:mm 24-hour format or null",
+              pattern: "^\\d{2}:\\d{2}$",
+            },
+            location: {
+              type: ["string", "null"],
+              description: "Location string or null",
+              maxLength: 160,
+            },
+            notes: {
+              type: ["string", "null"],
+              description: "One-line helpful context or null",
+              maxLength: 280,
+            },
+          },
+          required: ["type", "title"],
+          additionalProperties: false,
+        },
+        maxItems: 12,
+      },
+    },
+    required: ["items"],
+    additionalProperties: false,
+  },
+};
 
-Return ONLY JSON of the form: {"items": ExtractedItem[]}
+// System prompt for tool calling - instructs model to use the extraction tool
+const SYSTEM = `You are an expert extraction assistant for parent/school communications.
+Your ONLY job is to extract structured school-life items from messages and return them using the extract_school_items tool.
 
-Each ExtractedItem:
-- type: "event" | "deadline" | "task" | "rsvp"
-- title: short human title, no trailing period
-- date: YYYY-MM-DD or null. Resolve relative dates using TODAY (next occurrence).
-- time: HH:mm 24-hour or null
-- location: string or null
-- notes: one-line helpful context or null
-
-Rules:
-- Split distinct things into separate items (a trip AND a permission deadline = event + deadline)
+Extraction rules:
 - event = a happening (party, trip, conference, photos, club, INSET, meet the teacher, bus run)
 - deadline = a due-by date (return slip by Friday, pay by Wednesday, supply list, forms)
 - task = an action without a firm calendar event (pack lunch, buy swimsuit, PE kit, uniform)
 - rsvp = a reply/confirmation needed (party RSVP, club spot, bus seat)
+
+Guidelines:
+- Split distinct things into separate items
 - Ignore greetings, signatures, and fluff
 - Prefer the child's first name in titles when present
 - Never invent items that are not in the text
-- Max 12 items. If nothing actionable, return {"items": []}`;
+- Max 12 items. If nothing actionable, return empty items array.
+- Date format: YYYY-MM-DD (resolve relative dates using TODAY)
+- Time format: HH:mm (24-hour)
 
-type ChatTarget = {
+ALWAYS use the extract_school_items tool. Never return plain text or JSON directly.`;
+
+type ToolCallTarget = {
   engine: Exclude<ExtractEngine, "local">;
   url: string;
   apiKey: string;
   model: string;
 };
 
-type ChatResult =
+type ToolCallResult =
   | { ok: true; items: ExtractedItem[] }
   | { ok: false; error: string };
 
-async function extractWithChat(
+/**
+ * Extract items using Groq tool calling (function calling) API.
+ * This provides structured, precise extraction rather than free-form chat responses.
+ */
+async function extractWithToolCalling(
   text: string,
-  target: ChatTarget,
-): Promise<ChatResult> {
+  target: ToolCallTarget,
+): Promise<ToolCallResult> {
   const today = new Date().toISOString().slice(0, 10);
   const weekday = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -59,7 +118,9 @@ async function extractWithChat(
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
+
   try {
+    // Call Groq API with tool calling enabled
     const res = await fetch(target.url, {
       method: "POST",
       headers: {
@@ -71,7 +132,12 @@ async function extractWithChat(
         model: target.model,
         temperature: 0.2,
         max_tokens: 1400,
-        response_format: { type: "json_object" },
+        // Enable tool calling with our extraction tool
+        tools: [EXTRACTION_TOOL],
+        tool_choice: {
+          type: "function",
+          function: { name: "extract_school_items" },
+        },
         messages: [
           { role: "system", content: SYSTEM },
           {
@@ -81,6 +147,7 @@ async function extractWithChat(
         ],
       }),
     });
+
     if (!res.ok) {
       let detail = "";
       try {
@@ -92,28 +159,51 @@ async function extractWithChat(
       const engineName = target.engine === "groq" ? "Groq" : "Grok";
       return {
         ok: false,
-        error: `${engineName} API error (${res.status}${detail})`,
+        error: `${engineName} tool calling API error (${res.status}${detail})`,
       };
     }
+
     const body = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
+      choices?: { message?: { tool_calls?: Array<{ function: { name: string; arguments: string } }> } }[];
     };
-    const items = parseExtractedItems(body.choices?.[0]?.message?.content ?? "");
-    return { ok: true, items };
+
+    // Process tool calls - extract the JSON from tool call arguments
+    const toolCall = body.choices?.[0]?.message?.tool_calls?.[0];
+    if (toolCall && toolCall.function?.name === "extract_school_items") {
+      try {
+        const toolArgs = JSON.parse(toolCall.function.arguments) as { items?: unknown };
+        if (Array.isArray(toolArgs.items)) {
+          // Parse the extracted items using our existing parser
+          const items = parseExtractedItems(JSON.stringify({ items: toolArgs.items }));
+          return { ok: true, items };
+        }
+      } catch {
+        // If tool call parsing fails, try fallback to message content
+      }
+    }
+
+    // Fallback: try to parse from message content if tool calling didn't work
+    const content = body.choices?.[0]?.message?.content;
+    if (content) {
+      const items = parseExtractedItems(content);
+      return { ok: true, items };
+    }
+
+    return { ok: true, items: [] };
   } catch (err: unknown) {
     const engineName = target.engine === "groq" ? "Groq" : "Grok";
     if (err instanceof Error && err.name === "AbortError") {
-      return { ok: false, error: `${engineName} request timed out (12s limit).` };
+      return { ok: false, error: `${engineName} tool calling request timed out (12s limit).` };
     }
     const message = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: `${engineName} extraction failed: ${message}` };
+    return { ok: false, error: `${engineName} tool calling extraction failed: ${message}` };
   } finally {
     clearTimeout(timer);
   }
 }
 
-function chatTargets(): ChatTarget[] {
-  const targets: ChatTarget[] = [];
+function toolCallingTargets(): ToolCallTarget[] {
+  const targets: ToolCallTarget[] = [];
   const groqKey = readTrimmedEnv(process.env, "GROQ_API_KEY");
   if (groqKey) {
     targets.push({
@@ -145,32 +235,39 @@ export const extractItems = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     let lastError: string | null = null;
-    const targets = chatTargets();
+    const targets = toolCallingTargets();
+
+    // Try tool calling extraction first
     for (const target of targets) {
-      const res = await extractWithChat(data.text, target);
+      const res = await extractWithToolCalling(data.text, target);
       if (res.ok) {
         if (res.items.length) {
-          return { ok: true as const, items: res.items, engine: target.engine };
+          return { ok: true as const, items: res.items, engine: target.engine, method: "tool_calling" as const };
         }
       } else {
         lastError = res.error;
       }
     }
+
+    // Fallback to local extraction if tool calling fails
     const local = localExtract(data.text);
     if (local.length) {
       return {
         ok: true as const,
         items: local,
         engine: "local" as ExtractEngine,
+        method: "local" as const,
         warning: lastError ?? undefined,
       };
     }
+
     if (lastError) {
       return {
         ok: false as const,
         error: lastError,
       };
     }
+
     return {
       ok: false as const,
       error: "Nothing to pull from that message. Try a different excerpt.",
