@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/tanstack-start/server";
+import { getAuth } from "@clerk/tanstack-react-start/server";
 import { getRequest } from "@tanstack/react-start/server";
 
 const clerkSecret = process.env.CLERK_SECRET_KEY?.trim();
