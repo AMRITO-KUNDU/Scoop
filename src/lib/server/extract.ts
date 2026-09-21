@@ -13,59 +13,62 @@ import type { ExtractedItem } from "@/lib/plan";
 export type ExtractEngine = "groq" | "grok" | "local";
 
 // Tool definition for structured extraction using Groq tool calling
+// Groq requires: tools[0].function.name (function properties nested under 'function' key)
 const EXTRACTION_TOOL = {
   type: "function",
-  name: "extract_school_items",
-  description: "Extract structured school-life items from parent/school messages. Use this tool to parse and categorize information into events, deadlines, tasks, and RSVPs.",
-  strict: true,
-  parameters: {
-    type: "object",
-    properties: {
-      items: {
-        type: "array",
-        description: "Array of extracted school items",
+  function: {
+    name: "extract_school_items",
+    description: "Extract structured school-life items from parent/school messages. Use this tool to parse and categorize information into events, deadlines, tasks, and RSVPs.",
+    strict: true,
+    parameters: {
+      type: "object",
+      properties: {
         items: {
-          type: "object",
-          properties: {
-            type: {
-              type: "string",
-              enum: ["event", "deadline", "task", "rsvp"],
-              description: "Item type: event, deadline, task, or rsvp",
+          type: "array",
+          description: "Array of extracted school items",
+          items: {
+            type: "object",
+            properties: {
+              type: {
+                type: "string",
+                enum: ["event", "deadline", "task", "rsvp"],
+                description: "Item type: event, deadline, task, or rsvp",
+              },
+              title: {
+                type: "string",
+                description: "Short human-readable title, no trailing period",
+                maxLength: 140,
+              },
+              date: {
+                type: ["string", "null"],
+                description: "Date in YYYY-MM-DD format or null",
+                pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+              },
+              time: {
+                type: ["string", "null"],
+                description: "Time in HH:mm 24-hour format or null",
+                pattern: "^\\d{2}:\\d{2}$",
+              },
+              location: {
+                type: ["string", "null"],
+                description: "Location string or null",
+                maxLength: 160,
+              },
+              notes: {
+                type: ["string", "null"],
+                description: "One-line helpful context or null",
+                maxLength: 280,
+              },
             },
-            title: {
-              type: "string",
-              description: "Short human-readable title, no trailing period",
-              maxLength: 140,
-            },
-            date: {
-              type: ["string", "null"],
-              description: "Date in YYYY-MM-DD format or null",
-              pattern: "^\\d{4}-\\d{2}-\\d{2}$",
-            },
-            time: {
-              type: ["string", "null"],
-              description: "Time in HH:mm 24-hour format or null",
-              pattern: "^\\d{2}:\\d{2}$",
-            },
-            location: {
-              type: ["string", "null"],
-              description: "Location string or null",
-              maxLength: 160,
-            },
-            notes: {
-              type: ["string", "null"],
-              description: "One-line helpful context or null",
-              maxLength: 280,
-            },
+            required: ["type", "title"],
+            additionalProperties: false,
           },
-          required: ["type", "title"],
-          additionalProperties: false,
+          maxItems: 12,
         },
-        maxItems: 12,
-      },
     },
     required: ["items"],
     additionalProperties: false,
+    },
   },
 };
 
