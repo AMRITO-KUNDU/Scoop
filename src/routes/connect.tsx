@@ -150,7 +150,7 @@ function ServiceCard({ service }: { service: ServiceStatus }) {
 function envHint(name: string) {
   if (name === "DATABASE_URL") return "postgres://…neon.tech/…?sslmode=require";
   if (name === "GROQ_API_KEY") return "gsk_… from console.groq.com";
-  if (name === "GROQ_MODEL") return "optional — defaults to llama-3.3-70b-versatile";
+  if (name === "GROQ_MODEL") return "optional — defaults to openai/gpt-oss-120b";
   if (name === "VITE_CLERK_PUBLISHABLE_KEY") return "pk_test_… from dashboard.clerk.com";
   if (name === "CLERK_SECRET_KEY") return "sk_test_… from dashboard.clerk.com";
   if (name === "GOOGLE_CLIENT_ID") return "…apps.googleusercontent.com";

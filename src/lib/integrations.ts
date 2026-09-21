@@ -6,7 +6,7 @@
  *   "env": {
  *     "DATABASE_URL": "postgres://…neon.tech/…?sslmode=require",
  *     "GROQ_API_KEY": "gsk_…",
- *     "GROQ_MODEL": "llama-3.3-70b-versatile",
+ *     "GROQ_MODEL": "openai/gpt-oss-120b",
  *     "XAI_API_KEY": ""
  *   }
  *
@@ -14,11 +14,14 @@
  * is already live.
  */
 
-export const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 
 // Fallback models for Groq - try these if the default fails
+// Using only currently active production models (developer-tier) as of Sept 2026
+// See: https://console.groq.com/docs/models and https://console.groq.com/docs/deprecations
 export const GROQ_FALLBACK_MODELS = [
-  "llama-3.3-70b-versatile",
+  "openai/gpt-oss-120b",
+  "openai/gpt-oss-20b",
 ] as const;
 export const DEFAULT_GROK_MODEL = "grok-4.5";
 
