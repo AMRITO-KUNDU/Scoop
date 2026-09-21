@@ -102,12 +102,18 @@ function CaptureScreen() {
     if (!drafts?.length) return;
     setSaving(true);
     try {
-      await addPlanItems({
+      const result = await addPlanItems({
         data: {
           items: drafts.map(({ key: _key, ...item }) => item),
         },
       });
-      toast.success("Added to your plan.");
+      if (result.added === 0) {
+        toast.error("These items are already in your plan.");
+      } else if (result.added < drafts.length) {
+        toast.success(`${result.added} new item(s) added to your plan. ${drafts.length - result.added} duplicate(s) skipped.`);
+      } else {
+        toast.success("Added to your plan.");
+      }
       await navigate({ to: "/plan" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not add items.";

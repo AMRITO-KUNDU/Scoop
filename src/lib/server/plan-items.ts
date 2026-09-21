@@ -48,6 +48,27 @@ function cleanItem(input: ExtractedItem): ExtractedItem | null {
   };
 }
 
+function normalizeText(text: string | null): string {
+  if (!text) return "";
+  return text.toLowerCase().replace(/[.,!?;:'"\(\)\[\]]/g, "").trim();
+}
+
+function stringsSimilar(a: string | null, b: string | null, threshold = 0.85): boolean {
+  if (!a || !b) return a === b;
+  const normA = normalizeText(a);
+  const normB = normalizeText(b);
+  
+  if (normA === normB) return true;
+  
+  const wordsA = normA.split(/\s+/);
+  const wordsB = normB.split(/\s+/);
+  
+  const common = new Set(wordsA.filter(w => wordsB.includes(w)));
+  const total = new Set([...wordsA, ...wordsB]);
+  
+  return common.size / total.size >= threshold;
+}
+
 export const listPlanItems = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
@@ -73,21 +94,50 @@ export const addPlanItems = createServerFn({ method: "POST" })
   })
   .handler(async ({ context, data }) => {
     const sql = await getSql();
+    const userId = context.userId;
+    
+    const existingItems = await sql<Row[]>`
+      select id, type, title, date, time, location, notes
+      from plan_items
+      where user_id = ${userId}
+    `;
+    
+    let addedCount = 0;
     for (const item of data.items) {
-      await sql`
-        insert into plan_items (user_id, type, title, date, time, location, notes)
-        values (
-          ${context.userId},
-          ${item.type},
-          ${item.title},
-          ${item.date},
-          ${item.time},
-          ${item.location},
-          ${item.notes}
-        )
-      `;
+      const isDuplicate = existingItems.some(existing => {
+        if (existing.type !== item.type) return false;
+        if (existing.date !== item.date) return false;
+        if (existing.time !== item.time) return false;
+        if (existing.location !== item.location) return false;
+        
+        if (stringsSimilar(existing.title, item.title)) {
+          return true;
+        }
+        
+        if (stringsSimilar(existing.notes, item.notes)) {
+          return true;
+        }
+        
+        return false;
+      });
+      
+      if (!isDuplicate) {
+        await sql`
+          insert into plan_items (user_id, type, title, date, time, location, notes)
+          values (
+            ${userId},
+            ${item.type},
+            ${item.title},
+            ${item.date},
+            ${item.time},
+            ${item.location},
+            ${item.notes}
+          )
+        `;
+        addedCount++;
+      }
     }
-    return { added: data.items.length };
+    return { added: addedCount };
   });
 
 export const setPlanItemDone = createServerFn({ method: "POST" })
