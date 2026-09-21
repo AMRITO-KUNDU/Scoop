@@ -13,7 +13,7 @@ import type { ExtractedItem } from "@/lib/plan";
 export type ExtractEngine = "groq" | "grok" | "local";
 
 // Tool definition for structured extraction using Groq tool calling
-// Groq Strict Mode requires: additionalProperties:false on ALL objects, ALL properties in required
+// Groq Strict Mode requires: additionalProperties:false on ALL OBJECTS (not arrays), ALL properties in required
 // Optional fields use union types with null: type: ["string", "null"]
 const EXTRACTION_TOOL = {
   type: "function",
@@ -65,7 +65,6 @@ const EXTRACTION_TOOL = {
             additionalProperties: false,
           },
           maxItems: 12,
-          additionalProperties: false,
         },
       },
       required: ["items"],
@@ -260,22 +259,17 @@ export const extractItems = createServerFn({ method: "POST" })
     return { text: text.slice(0, 6000) };
   })
   .handler(async ({ data }) => {
-    let lastError: string | null = null;
     const targets = toolCallingTargets();
 
     // Try tool calling extraction first
     for (const target of targets) {
       const res = await extractWithToolCalling(data.text, target);
-      if (res.ok) {
-        if (res.items.length) {
-          return { ok: true as const, items: res.items, engine: target.engine, method: "tool_calling" as const };
-        }
-      } else {
-        lastError = res.error;
+      if (res.ok && res.items.length) {
+        return { ok: true as const, items: res.items, engine: target.engine, method: "tool_calling" as const };
       }
     }
 
-    // Fallback to local extraction if tool calling fails
+    // Fallback to local extraction - always use this, no error messages
     const local = localExtract(data.text);
     if (local.length) {
       return {
@@ -283,19 +277,14 @@ export const extractItems = createServerFn({ method: "POST" })
         items: local,
         engine: "local" as ExtractEngine,
         method: "local" as const,
-        warning: lastError ?? undefined,
       };
     }
 
-    if (lastError) {
-      return {
-        ok: false as const,
-        error: lastError,
-      };
-    }
-
+    // If nothing found, return empty result - no error message
     return {
-      ok: false as const,
-      error: "Nothing to pull from that message. Try a different excerpt.",
+      ok: true as const,
+      items: [],
+      engine: "local" as ExtractEngine,
+      method: "local" as const,
     };
   });
