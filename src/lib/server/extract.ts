@@ -13,7 +13,8 @@ import type { ExtractedItem } from "@/lib/plan";
 export type ExtractEngine = "groq" | "grok" | "local";
 
 // Tool definition for structured extraction using Groq tool calling
-// Groq requires: tools[0].function.name (function properties nested under 'function' key)
+// Groq Strict Mode requires: additionalProperties:false on ALL objects, ALL properties in required
+// Optional fields use union types with null: type: ["string", "null"]
 const EXTRACTION_TOOL = {
   type: "function",
   function: {
@@ -61,14 +62,18 @@ const EXTRACTION_TOOL = {
               },
             },
             required: ["type", "title", "date", "time", "location", "notes"],
+            additionalProperties: false,
           },
           maxItems: 12,
+          additionalProperties: false,
         },
+      },
+      required: ["items"],
+      additionalProperties: false,
     },
-    required: ["items"],
     additionalProperties: false,
-    },
   },
+  additionalProperties: false,
 };
 
 // System prompt for tool calling - instructs model to use the extraction tool
