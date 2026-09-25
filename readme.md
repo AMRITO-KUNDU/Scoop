@@ -192,15 +192,6 @@ You're still learning the ropes of school communications. SCOOP helps you unders
 
 ---
 
-## 🔗 Connect With Us
-
-- **Website**: [scoop.app](https://scoop.app)
-- **Twitter**: [@scoopapp](https://twitter.com/scoopapp)
-- **Facebook Group**: [SCOOP Parents](https://facebook.com/groups/scoopapp)
-- **Support**: support@scoop.app
-
----
-
 ## 💭 FAQ
 
 **Q: Is my data secure?**
