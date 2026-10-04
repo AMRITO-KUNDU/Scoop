@@ -72,7 +72,13 @@ function Home() {
   return <Landing user={user} isPending={isPending} />;
 }
 
-function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserState>["user"]; isPending: boolean }) {
+function Landing({
+  user,
+  isPending,
+}: {
+  user: ReturnType<typeof useCurrentUserState>["user"];
+  isPending: boolean;
+}) {
   const destination = !isPending && user ? "/capture" : "/signup";
 
   return (
@@ -105,8 +111,8 @@ function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserSt
                 <span className="text-grape">school stuff.</span>
               </h1>
               <p className="mt-5 max-w-md text-lead font-medium">
-                SCOOP turns school letters, party invites and WhatsApp chaos into
-                a calm family plan — in seconds.
+                SCOOP turns school letters, party invites and WhatsApp chaos into a calm family plan
+                — in seconds.
               </p>
               <Button asChild size="lg" variant="yolk" className="mt-8 w-full sm:w-auto">
                 <Link to={destination}>
@@ -114,9 +120,7 @@ function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserSt
                   <ScanText className="size-5" strokeWidth={2.4} />
                 </Link>
               </Button>
-              <p className="mt-4 text-sm font-medium text-mute">
-                Paste the chaos. Get the plan.
-              </p>
+              <p className="mt-4 text-sm font-medium text-mute">Paste the chaos. Get the plan.</p>
             </div>
             <LandingPreview />
           </div>
@@ -129,19 +133,14 @@ function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserSt
             </p>
             <div className="grid gap-4 sm:grid-cols-3">
               {STEPS.map((step) => (
-                <div
-                  key={step.title}
-                  className={`panel ${step.tone} ${step.tilt} p-5`}
-                >
+                <div key={step.title} className={`panel ${step.tone} ${step.tilt} p-5`}>
                   <p className="font-display text-xs font-black tracking-widest uppercase opacity-80">
                     {step.num}
                   </p>
                   <h2 className="mt-3 font-display text-2xl font-black tracking-tight uppercase">
                     {step.title}
                   </h2>
-                  <p className="mt-2 text-sm font-medium leading-relaxed">
-                    {step.body}
-                  </p>
+                  <p className="mt-2 text-sm font-medium leading-relaxed">{step.body}</p>
                 </div>
               ))}
             </div>
@@ -166,9 +165,7 @@ function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserSt
                     >
                       <Icon className="size-5" strokeWidth={2.4} />
                     </span>
-                    <p className="font-display text-sm font-bold leading-snug">
-                      {feature.title}
-                    </p>
+                    <p className="font-display text-sm font-bold leading-snug">{feature.title}</p>
                   </div>
                 );
               })}
@@ -184,8 +181,7 @@ function Landing({ user, isPending }: { user: ReturnType<typeof useCurrentUserSt
               alone.
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm font-medium text-paper/85">
-              Sign up, paste the next school email, and keep the plan in one
-              place.
+              Sign up, paste the next school email, and keep the plan in one place.
             </p>
             <Button asChild size="lg" variant="yolk" className="mt-8">
               <Link to={destination}>

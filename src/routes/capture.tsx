@@ -110,7 +110,9 @@ function CaptureScreen() {
       if (result.added === 0) {
         toast.error("These items are already in your plan.");
       } else if (result.added < drafts.length) {
-        toast.success(`${result.added} new item(s) added to your plan. ${drafts.length - result.added} duplicate(s) skipped.`);
+        toast.success(
+          `${result.added} new item(s) added to your plan. ${drafts.length - result.added} duplicate(s) skipped.`,
+        );
       } else {
         toast.success("Added to your plan.");
       }
@@ -133,15 +135,12 @@ function CaptureScreen() {
   return (
     <div>
       <div className="mb-6">
-        <p className="sticker inline-flex rounded-full bg-cyan px-3 py-1 text-xs">
-          Capture
-        </p>
+        <p className="sticker inline-flex rounded-full bg-cyan px-3 py-1 text-xs">Capture</p>
         <h1 className="mt-3 font-display text-title font-black uppercase tracking-tight">
           Dump the chaos.
         </h1>
         <p className="mt-2 max-w-lg text-sm font-medium text-mute">
-          Paste a school email, WhatsApp, newsletter or flyer. We’ll make the
-          plan.
+          Paste a school email, WhatsApp, newsletter or flyer. We’ll make the plan.
         </p>
       </div>
 
@@ -236,8 +235,8 @@ function CaptureScreen() {
             </h2>
             {drafts.length ? (
               <p className="mt-1 text-sm font-medium text-mute">
-                {drafts.length} item{drafts.length === 1 ? "" : "s"} — tweak
-                anything before it goes in.
+                {drafts.length} item{drafts.length === 1 ? "" : "s"} — tweak anything before it goes
+                in.
               </p>
             ) : (
               <p className="mt-1 text-sm font-medium text-mute">
@@ -255,9 +254,7 @@ function CaptureScreen() {
                 )
               }
               onRemove={() =>
-                setDrafts((prev) =>
-                  prev ? prev.filter((d) => d.key !== item.key) : prev,
-                )
+                setDrafts((prev) => (prev ? prev.filter((d) => d.key !== item.key) : prev))
               }
             />
           ))}

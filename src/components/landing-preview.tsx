@@ -106,9 +106,7 @@ export function LandingPreview() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-mute">
-                  Nothing to pull from that one — try a chip.
-                </p>
+                <p className="text-sm text-mute">Nothing to pull from that one — try a chip.</p>
               )}
               {items.length ? (
                 <Button asChild variant="ink" className="w-full" size="lg">

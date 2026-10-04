@@ -19,7 +19,8 @@ const EXTRACTION_TOOL = {
   type: "function",
   function: {
     name: "extract_school_items",
-    description: "Extract structured school-life items from parent/school messages. Use this tool to parse and categorize information into events, deadlines, tasks, and RSVPs.",
+    description:
+      "Extract structured school-life items from parent/school messages. Use this tool to parse and categorize information into events, deadlines, tasks, and RSVPs.",
     strict: true,
     parameters: {
       type: "object",
@@ -104,8 +105,7 @@ type ToolCallTarget = {
 };
 
 type ToolCallResult =
-  | { ok: true; items: ExtractedItem[] }
-  | { ok: false; error: string; isModelNotFound?: boolean };
+  { ok: true; items: ExtractedItem[] } | { ok: false; error: string; isModelNotFound?: boolean };
 
 /**
  * Extract items using Groq tool calling (function calling) API.
@@ -176,7 +176,9 @@ async function extractWithToolCalling(
     }
 
     const body = (await res.json()) as {
-      choices?: { message?: { tool_calls?: Array<{ function: { name: string; arguments: string } }> } }[];
+      choices?: {
+        message?: { tool_calls?: Array<{ function: { name: string; arguments: string } }> };
+      }[];
     };
 
     // Process tool calls - extract the JSON from tool call arguments
@@ -229,7 +231,7 @@ function toolCallingTargets(): ToolCallTarget[] {
       });
     }
     // Also add the user-specified model if it's not in the fallback list
-    if (!GROQ_FALLBACK_MODELS.includes(groqModel as typeof GROQ_FALLBACK_MODELS[number])) {
+    if (!GROQ_FALLBACK_MODELS.includes(groqModel as (typeof GROQ_FALLBACK_MODELS)[number])) {
       targets.unshift({
         engine: "groq",
         url: "https://api.groq.com/openai/v1/chat/completions",
@@ -265,7 +267,12 @@ export const extractItems = createServerFn({ method: "POST" })
     for (const target of targets) {
       const res = await extractWithToolCalling(data.text, target);
       if (res.ok && res.items.length) {
-        return { ok: true as const, items: res.items, engine: target.engine, method: "tool_calling" as const };
+        return {
+          ok: true as const,
+          items: res.items,
+          engine: target.engine,
+          method: "tool_calling" as const,
+        };
       }
     }
 

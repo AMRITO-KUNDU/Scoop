@@ -18,11 +18,7 @@ function addDays(date: string, days: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function addMinutes(
-  date: string,
-  time: string,
-  minutes: number,
-): { date: string; time: string } {
+function addMinutes(date: string, time: string, minutes: number): { date: string; time: string } {
   const [hours, mins] = time.split(":").map(Number);
   const d = new Date(`${date}T${pad(hours)}:${pad(mins)}:00`);
   d.setMinutes(d.getMinutes() + minutes);
@@ -33,11 +29,13 @@ function addMinutes(
 }
 
 function slug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40) || "item";
+  return (
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40) || "item"
+  );
 }
 
 function escapeIcs(value: string): string {
@@ -48,7 +46,9 @@ function escapeIcs(value: string): string {
     .replaceAll(",", "\\,");
 }
 
-export function googleCalendarUrl(item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes" | "type">): string | null {
+export function googleCalendarUrl(
+  item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes" | "type">,
+): string | null {
   if (!item.date) return null;
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -61,15 +61,10 @@ export function googleCalendarUrl(item: Pick<ExtractedItem, "title" | "date" | "
       `${compactDateTime(item.date, item.time)}/${compactDateTime(end.date, end.time)}`,
     );
   } else {
-    params.set(
-      "dates",
-      `${compactDate(item.date)}/${compactDate(addDays(item.date, 1))}`,
-    );
+    params.set("dates", `${compactDate(item.date)}/${compactDate(addDays(item.date, 1))}`);
   }
   if (item.location) params.set("location", item.location);
-  const details = [item.notes, `From SCOOP · ${item.type}`]
-    .filter(Boolean)
-    .join("\n");
+  const details = [item.notes, `From SCOOP · ${item.type}`].filter(Boolean).join("\n");
   if (details) params.set("details", details);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }

@@ -1,23 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, CalendarPlus, Check, Download, MapPin, ScanText, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarPlus,
+  Check,
+  Download,
+  MapPin,
+  ScanText,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { TypeBadge } from "@/components/type-badge";
 import { Button } from "@/components/ui/button";
 import { downloadIcs, googleCalendarUrl } from "@/lib/calendar";
-import {
-  formatWhen,
-  matchesFilter,
-  type PlanFilter,
-  type PlanItem,
-} from "@/lib/plan";
-import {
-  deletePlanItem,
-  listPlanItems,
-  setPlanItemDone,
-} from "@/lib/server/plan-items";
+import { formatWhen, matchesFilter, type PlanFilter, type PlanItem } from "@/lib/plan";
+import { deletePlanItem, listPlanItems, setPlanItemDone } from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/plan")({ component: PlanPage });
@@ -64,9 +63,7 @@ function PlanScreen() {
 
   async function toggleDone(item: PlanItem) {
     const next = !item.done;
-    setItems((prev) =>
-      prev.map((row) => (row.id === item.id ? { ...row, done: next } : row)),
-    );
+    setItems((prev) => prev.map((row) => (row.id === item.id ? { ...row, done: next } : row)));
     try {
       await setPlanItemDone({ data: { id: item.id, done: next } });
     } catch {
@@ -171,9 +168,7 @@ function PlanScreen() {
                     </p>
                   ) : null}
                   {item.notes ? (
-                    <p className="mt-2 text-sm leading-relaxed text-ink">
-                      {item.notes}
-                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-ink">{item.notes}</p>
                   ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2 sm:w-40 sm:flex-col sm:flex-nowrap">

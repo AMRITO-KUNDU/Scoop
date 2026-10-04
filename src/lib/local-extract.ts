@@ -63,10 +63,7 @@ function resolveMonthDay(from: Date, day: number, month: number): string {
 
 function extractDate(text: string, from: Date): string | null {
   const range = text.match(
-    new RegExp(
-      `\\b(\\d{1,2})\\s*[–-]\\s*(\\d{1,2})\\s+(${MONTH_RE})\\b`,
-      "i",
-    ),
+    new RegExp(`\\b(\\d{1,2})\\s*[–-]\\s*(\\d{1,2})\\s+(${MONTH_RE})\\b`, "i"),
   );
   if (range) {
     const day = Number(range[1]);
@@ -75,10 +72,7 @@ function extractDate(text: string, from: Date): string | null {
   }
 
   const monthDay = text.match(
-    new RegExp(
-      `\\b(?:(?:${WEEKDAY_RE})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_RE})\\b`,
-      "i",
-    ),
+    new RegExp(`\\b(?:(?:${WEEKDAY_RE})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_RE})\\b`, "i"),
   );
   if (monthDay) {
     const day = Number(monthDay[1]);
@@ -86,14 +80,10 @@ function extractDate(text: string, from: Date): string | null {
     if (month) return resolveMonthDay(from, day, month);
   }
 
-  const thisDay = text.match(
-    new RegExp(`\\b(?:this|next)\\s+(${WEEKDAY_RE})\\b`, "i"),
-  );
+  const thisDay = text.match(new RegExp(`\\b(?:this|next)\\s+(${WEEKDAY_RE})\\b`, "i"));
   if (thisDay) return nextNamedDay(from, WEEKDAYS[thisDay[1].toLowerCase()]);
 
-  const byDay = text.match(
-    new RegExp(`\\b(?:by|on)\\s+(${WEEKDAY_RE})\\b`, "i"),
-  );
+  const byDay = text.match(new RegExp(`\\b(?:by|on)\\s+(${WEEKDAY_RE})\\b`, "i"));
   if (byDay) return nextNamedDay(from, WEEKDAYS[byDay[1].toLowerCase()]);
 
   const onDay = text.match(new RegExp(`\\b(${WEEKDAY_RE})\\b`, "i"));
@@ -110,9 +100,7 @@ function extractDate(text: string, from: Date): string | null {
 }
 
 function extractTime(text: string): string | null {
-  const range = text.match(
-    /\b(\d{1,2})(?::(\d{2}))?\s*[–-]\s*\d{1,2}(?::\d{2})?\s*(am|pm)\b/i,
-  );
+  const range = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*[–-]\s*\d{1,2}(?::\d{2})?\s*(am|pm)\b/i);
   const m = range ?? text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
   if (!m) return null;
   let hours = Number(m[1]);
@@ -158,9 +146,7 @@ function classify(text: string): ItemType {
     /\b(sign and return|return the|return this|due by|book your slot|pay by|pay £|have these by|data collection form|supply list)\b/i.test(
       text,
     ) ||
-    (/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i.test(
-      text,
-    ) &&
+    (/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i.test(text) &&
       !EVENT_RE.test(text))
   ) {
     return "deadline";
@@ -192,7 +178,9 @@ function tidyLead(text: string): string {
 }
 
 function shortenTitle(raw: string, type: ItemType): string {
-  let t = tidyLead(raw).replace(/[.!?]+$/, "").trim();
+  let t = tidyLead(raw)
+    .replace(/[.!?]+$/, "")
+    .trim();
 
   const party = t.match(/^(.{3,48}?\b(?:birthday )?party)\b/i);
   if (party) return cap(party[1]);
@@ -241,9 +229,7 @@ function shortenTitle(raw: string, type: ItemType): string {
   if (type === "deadline") {
     if (/permission slip/i.test(t) && /£|\$|pay|£\d/i.test(t)) {
       const money = t.match(/£[\d.]+|\$[\d.]+/);
-      return money
-        ? `Return permission slip + ${money[0]}`
-        : "Return the permission slip";
+      return money ? `Return permission slip + ${money[0]}` : "Return the permission slip";
     }
     if (/permission slip|sign and return/i.test(t)) {
       return "Sign and return permission slip";
@@ -263,19 +249,10 @@ function shortenTitle(raw: string, type: ItemType): string {
   }
   if (/\b5 minutes early\b/i.test(t)) return "Be 5 minutes early for the bus";
 
-  t = t.replace(
-    new RegExp(
-      `\\s+(?:this|next|on|by)\\s+(?:${WEEKDAY_RE})\\b.*$`,
-      "i",
-    ),
-    "",
-  );
+  t = t.replace(new RegExp(`\\s+(?:this|next|on|by)\\s+(?:${WEEKDAY_RE})\\b.*$`, "i"), "");
   t = t.replace(new RegExp(`\\s+(?:${WEEKDAY_RE})\\b.*$`, "i"), "");
   t = t.replace(
-    new RegExp(
-      `\\s*:?\\s*\\d{1,2}\\s*[–-]\\s*\\d{1,2}\\s+(?:${MONTH_RE})\\b.*$`,
-      "i",
-    ),
+    new RegExp(`\\s*:?\\s*\\d{1,2}\\s*[–-]\\s*\\d{1,2}\\s+(?:${MONTH_RE})\\b.*$`, "i"),
     "",
   );
   t = t.replace(/:\s*\d.*$/, "");
@@ -288,11 +265,18 @@ function shortenTitle(raw: string, type: ItemType): string {
   );
   t = t.replace(/\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b.*$/i, "");
   t = t.replace(/\s+at\s+[A-Z].*$/, "");
-  t = t.replace(/\s*[—–:-]+\s*$/, "").replace(/:$/, "").trim();
+  t = t
+    .replace(/\s*[—–:-]+\s*$/, "")
+    .replace(/:$/, "")
+    .trim();
   t = t.replace(/[.!?]+$/, "").trim();
 
   if (!t) t = tidyLead(raw).slice(0, 64);
-  if (t.length > 64) t = `${t.slice(0, 61).replace(/\s+\S*$/, "").trim()}…`;
+  if (t.length > 64)
+    t = `${t
+      .slice(0, 61)
+      .replace(/\s+\S*$/, "")
+      .trim()}…`;
   return cap(t);
 }
 
@@ -317,9 +301,7 @@ function isNoise(text: string): boolean {
 }
 
 function isEnrichment(text: string): boolean {
-  return /^(coach leaves|sessions?\b|return approx|arrive \d|drop-?off)/i.test(
-    text.trim(),
-  );
+  return /^(coach leaves|sessions?\b|return approx|arrive \d|drop-?off)/i.test(text.trim());
 }
 
 function splitCombined(chunk: string): string[] {
@@ -337,14 +319,10 @@ function splitChunks(text: string): string[] {
     .split(/\n+/)
     .flatMap((line) => line.split(/\s*[•]\s+/))
     .flatMap((line) => {
-      const parts = line.split(
-        /(?<=(?<!\b(?:Dr|Mr|Ms|Mrs|St|Prof))\.)\s+(?=[A-Z])/,
-      );
+      const parts = line.split(/(?<=(?<!\b(?:Dr|Mr|Ms|Mrs|St|Prof))\.)\s+(?=[A-Z])/);
       if (parts.length === 1) return [line];
       if (
-        /[.!?]\s+(?:please\s+)?(?:bring|pack|need|return|sign|rsvp|reply|book)/i.test(
-          line,
-        ) ||
+        /[.!?]\s+(?:please\s+)?(?:bring|pack|need|return|sign|rsvp|reply|book)/i.test(line) ||
         line.length > 120
       ) {
         return parts;

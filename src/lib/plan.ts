@@ -22,10 +22,7 @@ export type PlanItem = ExtractedItem & {
 
 export type TypeTone = "cyan" | "hot" | "yolk" | "grape";
 
-export const TYPE_META: Record<
-  ItemType,
-  { label: string; tone: TypeTone }
-> = {
+export const TYPE_META: Record<ItemType, { label: string; tone: TypeTone }> = {
   event: { label: "Event", tone: "grape" },
   deadline: { label: "Deadline", tone: "hot" },
   task: { label: "Task", tone: "yolk" },

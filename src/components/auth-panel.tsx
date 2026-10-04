@@ -12,19 +12,9 @@ export function AuthPanel({ mode }: { mode: "signin" | "signup" }) {
       </Link>
       <div className="w-full flex justify-center">
         {isSignup ? (
-          <SignUp
-            routing="path"
-            path="/signup"
-            signInUrl="/login"
-            fallbackRedirectUrl="/capture"
-          />
+          <SignUp routing="path" path="/signup" signInUrl="/login" fallbackRedirectUrl="/capture" />
         ) : (
-          <SignIn
-            routing="path"
-            path="/login"
-            signUpUrl="/signup"
-            fallbackRedirectUrl="/capture"
-          />
+          <SignIn routing="path" path="/login" signUpUrl="/signup" fallbackRedirectUrl="/capture" />
         )}
       </div>
     </div>

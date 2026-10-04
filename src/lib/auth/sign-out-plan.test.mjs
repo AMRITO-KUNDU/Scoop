@@ -161,7 +161,11 @@ test("settleWithin waits its full window, then gives up rather than hanging", as
 // Same per-environment bound as sign-out, but best effort: it also runs when
 // there is no prior session, so a failure must never block sign-in.
 
-/** A pre-sign-in clear whose request never settles. */
+/**
+ * A pre-sign-in clear whose request never settles.
+ * @param {boolean} livePreview
+ * @param {Record<string, unknown>} [overrides]
+ */
 function preSignIn(livePreview, overrides = {}) {
   let cleared = 0;
   const done = runPreSignInSignOut({

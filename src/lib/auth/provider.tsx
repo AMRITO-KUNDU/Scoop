@@ -13,11 +13,7 @@ const clerkPublishableKey =
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   if (clerkPublishableKey) {
-    return (
-      <ClerkProvider publishableKey={clerkPublishableKey}>
-        {children}
-      </ClerkProvider>
-    );
+    return <ClerkProvider publishableKey={clerkPublishableKey}>{children}</ClerkProvider>;
   }
   return <ClerkProvider>{children}</ClerkProvider>;
 }

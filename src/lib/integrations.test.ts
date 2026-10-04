@@ -1,10 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import {
-  DEFAULT_GROK_MODEL,
-  DEFAULT_GROQ_MODEL,
-  resolveIntegrations,
-} from "./integrations.ts";
+import { DEFAULT_GROK_MODEL, DEFAULT_GROQ_MODEL, resolveIntegrations } from "./integrations.ts";
 
 describe("resolveIntegrations", () => {
   it("treats empty env as local preview with Google live", () => {

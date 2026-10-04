@@ -2,8 +2,7 @@ import { auth } from "@clerk/tanstack-react-start/server";
 
 const clerkSecret = process.env.CLERK_SECRET_KEY?.trim();
 const clerkPub =
-  process.env.VITE_CLERK_PUBLISHABLE_KEY?.trim() ||
-  process.env.CLERK_PUBLISHABLE_KEY?.trim();
+  process.env.VITE_CLERK_PUBLISHABLE_KEY?.trim() || process.env.CLERK_PUBLISHABLE_KEY?.trim();
 
 export const authConfigured = Boolean(clerkSecret || clerkPub);
 const databaseConfigured = Boolean(process.env.DATABASE_URL?.trim());

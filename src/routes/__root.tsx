@@ -1,7 +1,6 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth/provider";
-import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "SCOOP";
@@ -23,7 +22,8 @@ export const Route = createRootRoute({
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
-        rel: "preconnect", href: "https://fonts.gstatic.com",
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
         crossOrigin: "anonymous",
       },
       {
@@ -39,7 +39,6 @@ export const Route = createRootRoute({
         <HeadContent />
       </head>
       <body className="min-h-dvh bg-paper">
-        <PreviewHostBridge />
         <AuthProvider>
           <Outlet />
           <Toaster position="bottom-center" toastOptions={{ className: "brutal-toast" }} />

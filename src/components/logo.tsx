@@ -5,9 +5,7 @@ export function Logo({ className }: { className?: string }) {
     <span className={cn("relative grid size-9 shrink-0", className)} aria-hidden>
       <span className="sq-shape absolute inset-0 translate-x-1 translate-y-1 rounded-md bg-cyan" />
       <span className="relative grid size-9 place-items-center rounded-md border-thick border-ink bg-yolk">
-        <span className="font-display text-lg font-black leading-none text-ink">
-          S
-        </span>
+        <span className="font-display text-lg font-black leading-none text-ink">S</span>
       </span>
     </span>
   );

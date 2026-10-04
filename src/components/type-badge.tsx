@@ -8,13 +8,7 @@ const TONE: Record<TypeTone, string> = {
   grape: "bg-grape text-paper",
 };
 
-export function TypeBadge({
-  type,
-  className,
-}: {
-  type: ItemType;
-  className?: string;
-}) {
+export function TypeBadge({ type, className }: { type: ItemType; className?: string }) {
   const meta = TYPE_META[type];
   return (
     <span

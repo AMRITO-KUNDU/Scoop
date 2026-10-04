@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Database, KeyRound, Lock, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Database, KeyRound, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { getIntegrationsStatus } from "@/lib/server/integrations";
 import type { ServiceStatus } from "@/lib/integrations";
@@ -52,7 +52,9 @@ function ConnectScreen() {
         The real product stack.
       </h1>
       <p className="mt-2 max-w-lg text-sm font-medium text-mute">
-        Drop keys into a <code className="font-bold">.env</code> file in the project root, or into host environment variables. Restart after saving your <code className="font-bold">.env</code> file.
+        Drop keys into a <code className="font-bold">.env</code> file in the project root, or into
+        host environment variables. Restart after saving your{" "}
+        <code className="font-bold">.env</code> file.
       </p>
 
       {error ? (
@@ -63,9 +65,7 @@ function ConnectScreen() {
 
       <div className="mt-8 grid gap-4">
         {services
-          ? services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
-            ))
+          ? services.map((service) => <ServiceCard key={service.id} service={service} />)
           : [0, 1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
@@ -132,10 +132,7 @@ function ServiceCard({ service }: { service: ServiceStatus }) {
         <div className="mt-4 space-y-2">
           <EnvRow name={service.envVar} hint={envHint(service.envVar)} />
           {service.extraEnvVar ? (
-            <EnvRow
-              name={service.extraEnvVar}
-              hint={envHint(service.extraEnvVar)}
-            />
+            <EnvRow name={service.extraEnvVar} hint={envHint(service.extraEnvVar)} />
           ) : null}
         </div>
       ) : (
@@ -162,12 +159,8 @@ function envHint(name: string) {
 function EnvRow({ name, hint }: { name: string; hint: string }) {
   return (
     <div className="flex items-center gap-2 rounded-xl border-thick border-ink bg-paper-2 px-3 py-2">
-      <code className="min-w-0 flex-1 truncate font-display text-sm font-bold">
-        {name}
-      </code>
-      {hint ? (
-        <span className="hidden text-xs font-medium text-mute sm:inline">{hint}</span>
-      ) : null}
+      <code className="min-w-0 flex-1 truncate font-display text-sm font-bold">{name}</code>
+      {hint ? <span className="hidden text-xs font-medium text-mute sm:inline">{hint}</span> : null}
     </div>
   );
 }
