@@ -25,14 +25,7 @@ function ConnectScreen() {
     void getIntegrationsStatus()
       .then((status) => {
         if (!alive) return;
-        setServices([
-          status.neon,
-          status.groq,
-          status.clerk,
-          status.googleCloud,
-          status.google,
-          status.grok,
-        ]);
+        setServices([status.neon, status.groq, status.clerk, status.googleCloud, status.google]);
       })
       .catch((err: unknown) => {
         if (!alive) return;
@@ -152,7 +145,6 @@ function envHint(name: string) {
   if (name === "CLERK_SECRET_KEY") return "sk_test_… from dashboard.clerk.com";
   if (name === "GOOGLE_CLIENT_ID") return "…apps.googleusercontent.com";
   if (name === "GOOGLE_CLIENT_SECRET") return "GOCSPX-… from Google Cloud Console";
-  if (name === "XAI_API_KEY") return "injected automatically when available";
   return "";
 }
 

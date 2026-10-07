@@ -22,7 +22,6 @@ function newKey() {
 
 function engineLabel(engine: ExtractEngine | null): string {
   if (engine === "groq") return "Extracted with Groq";
-  if (engine === "grok") return "Extracted with Grok";
   if (engine === "local") return "Extracted on-device";
   return "Review";
 }
@@ -43,7 +42,7 @@ function CaptureScreen() {
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [engine, setEngine] = useState<ExtractEngine | null>(null);
-  const [liveEngine, setLiveEngine] = useState<"groq" | "grok" | "local">("local");
+  const [liveEngine, setLiveEngine] = useState<"groq" | "local">("local");
 
   const canExtract = text.trim().length >= 8 && !extracting;
   const showEmpty = !extracting && drafts === null && text.trim().length === 0;
@@ -54,7 +53,6 @@ function CaptureScreen() {
       .then((status) => {
         if (!alive) return;
         if (status.groq.wired) setLiveEngine("groq");
-        else if (status.grok.wired) setLiveEngine("grok");
         else setLiveEngine("local");
       })
       .catch(() => {
@@ -125,12 +123,7 @@ function CaptureScreen() {
     }
   }
 
-  const readingCopy =
-    liveEngine === "groq"
-      ? "Groq is reading this."
-      : liveEngine === "grok"
-        ? "Grok is reading this."
-        : "Pulling out the dates.";
+  const readingCopy = liveEngine === "groq" ? "Groq is reading this." : "Pulling out the dates.";
 
   return (
     <div>

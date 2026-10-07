@@ -1,17 +1,11 @@
 /**
  * Production wiring — paste values and restart. No code changes.
  *
- * In `.grok/app-env.json`:
+ *   DATABASE_URL="postgres://…neon.tech/…?sslmode=require"
+ *   GROQ_API_KEY="gsk_…"
+ *   GROQ_MODEL="openai/gpt-oss-120b"
  *
- *   "env": {
- *     "DATABASE_URL": "postgres://…neon.tech/…?sslmode=require",
- *     "GROQ_API_KEY": "gsk_…",
- *     "GROQ_MODEL": "openai/gpt-oss-120b",
- *     "XAI_API_KEY": ""
- *   }
- *
- * Blank strings are ignored. Host/process env always wins. Google sign-in
- * is already live.
+ * Blank strings are ignored. Host/process env always wins.
  */
 
 export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
@@ -20,9 +14,8 @@ export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 // Using only currently active production models (developer-tier) as of Sept 2026
 // See: https://console.groq.com/docs/models and https://console.groq.com/docs/deprecations
 export const GROQ_FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"] as const;
-export const DEFAULT_GROK_MODEL = "grok-4.5";
 
-export type ServiceId = "google" | "googleCloud" | "clerk" | "neon" | "groq" | "grok";
+export type ServiceId = "google" | "googleCloud" | "clerk" | "neon" | "groq";
 
 export type ServiceStatus = {
   id: ServiceId;
@@ -40,7 +33,6 @@ export type IntegrationsStatus = {
   clerk: ServiceStatus;
   neon: ServiceStatus;
   groq: ServiceStatus;
-  grok: ServiceStatus;
 };
 
 export function readTrimmedEnv(
@@ -57,7 +49,6 @@ export function resolveIntegrations(
   const databaseUrl = readTrimmedEnv(source, "DATABASE_URL");
   const groqKey = readTrimmedEnv(source, "GROQ_API_KEY");
   const groqModel = readTrimmedEnv(source, "GROQ_MODEL") ?? DEFAULT_GROQ_MODEL;
-  const xaiKey = readTrimmedEnv(source, "XAI_API_KEY");
 
   const googleClientId = readTrimmedEnv(source, "GOOGLE_CLIENT_ID");
   const googleClientSecret = readTrimmedEnv(source, "GOOGLE_CLIENT_SECRET");
@@ -73,7 +64,7 @@ export function resolveIntegrations(
   return {
     google: {
       id: "google",
-      label: "Google sign-in (Broker)",
+      label: "Google sign-in",
       envVar: null,
       wired: true,
       detail: googleCloudWired
@@ -119,16 +110,6 @@ export function resolveIntegrations(
       detail: groqKey
         ? `Live on ${groqModel}.`
         : "Waiting for GROQ_API_KEY. On-device parser until then.",
-    },
-    grok: {
-      id: "grok",
-      label: "Grok backup",
-      envVar: "XAI_API_KEY",
-      wired: Boolean(xaiKey),
-      model: DEFAULT_GROK_MODEL,
-      detail: xaiKey
-        ? `Live on ${DEFAULT_GROK_MODEL} if Groq is down.`
-        : "Optional backup. Used automatically when the key is present.",
     },
   };
 }

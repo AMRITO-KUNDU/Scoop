@@ -1,50 +1,6 @@
-<svg
-  width="512"
-  height="512"
-  viewBox="0 0 512 512"
-  xmlns="http://www.w3.org/2000/svg"
->
-  <!-- Cyan back layer -->
-  <path
-    d="
-      M112 382
-      V152
-      C112 116 140 88 176 88
-      H382
-      C430 88 464 122 464 170
-      V382
-      C464 430 434 462 386 462
-      H176
-      C148 462 126 450 112 432
-      C103 419 112 400 112 382
-      Z
-    "
-    fill="#18C8F2"
-    stroke="#111111"
-    stroke-width="28"
-    stroke-linejoin="round"
-  />
-
-  <!-- Front yellow card -->
-  <rect
-    x="54"
-    y="48"
-    width="368"
-    height="368"
-    rx="76"
-    fill="#FFD21C"
-    stroke="#111111"
-    stroke-width="28"
-  />
-
-  <!-- S -->
-  <text
-    x="238"
-    y="304"
-    text-anchor="middle"
-    font-family="Arial, Helvetica, sans-serif"
-    font-size="210"
-    font-weight="700"
-    fill="#111111"
-  >S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect x="1" y="1" width="32" height="32" rx="4" fill="#00d4ff"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" fill="#ffd700" stroke="#111111" stroke-width="3"/>
+  <text x="16" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="900" fill="#111111" text-anchor="middle" dominant-baseline="middle">S</text>
 </svg>
+

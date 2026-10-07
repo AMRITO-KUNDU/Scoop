@@ -1,16 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { parseExtractedItems } from "@/lib/extract-parse";
-import {
-  DEFAULT_GROK_MODEL,
-  DEFAULT_GROQ_MODEL,
-  GROQ_FALLBACK_MODELS,
-  readTrimmedEnv,
-} from "@/lib/integrations";
+import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODELS, readTrimmedEnv } from "@/lib/integrations";
 import { localExtract } from "@/lib/local-extract";
 import type { ExtractedItem } from "@/lib/plan";
 
-export type ExtractEngine = "groq" | "grok" | "local";
+export type ExtractEngine = "groq" | "local";
 
 // Tool definition for structured extraction using Groq tool calling
 // Groq Strict Mode requires: additionalProperties:false on ALL OBJECTS (not arrays), ALL properties in required
@@ -98,7 +93,7 @@ Guidelines:
 ALWAYS use the extract_school_items tool. Never return plain text or JSON directly.`;
 
 type ToolCallTarget = {
-  engine: Exclude<ExtractEngine, "local">;
+  engine: "groq";
   url: string;
   apiKey: string;
   model: string;
@@ -167,10 +162,9 @@ async function extractWithToolCalling(
       } catch {
         /* ignore body parsing error */
       }
-      const engineName = target.engine === "groq" ? "Groq" : "Grok";
       return {
         ok: false,
-        error: `${engineName} tool calling API error (${res.status}${detail})`,
+        error: `Groq tool calling API error (${res.status}${detail})`,
         isModelNotFound,
       };
     }
@@ -205,12 +199,11 @@ async function extractWithToolCalling(
 
     return { ok: true, items: [] };
   } catch (err: unknown) {
-    const engineName = target.engine === "groq" ? "Groq" : "Grok";
     if (err instanceof Error && err.name === "AbortError") {
-      return { ok: false, error: `${engineName} tool calling request timed out (12s limit).` };
+      return { ok: false, error: "Groq tool calling request timed out (12s limit)." };
     }
     const message = err instanceof Error ? err.message : String(err);
-    return { ok: false, error: `${engineName} tool calling extraction failed: ${message}` };
+    return { ok: false, error: `Groq tool calling extraction failed: ${message}` };
   } finally {
     clearTimeout(timer);
   }
@@ -239,15 +232,6 @@ function toolCallingTargets(): ToolCallTarget[] {
         model: groqModel,
       });
     }
-  }
-  const xaiKey = readTrimmedEnv(process.env, "XAI_API_KEY");
-  if (xaiKey) {
-    targets.push({
-      engine: "grok",
-      url: "https://api.x.ai/v1/chat/completions",
-      apiKey: xaiKey,
-      model: DEFAULT_GROK_MODEL,
-    });
   }
   return targets;
 }

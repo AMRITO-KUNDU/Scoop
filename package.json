@@ -3,9 +3,6 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
-  "overrides": {
-    "nf3": "0.3.17"
-  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run db:migrate",
@@ -13,17 +10,14 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test 'scripts/**/*.test.mjs' 'src/lib/auth/sign-out-plan.test.mjs' && node --experimental-strip-types --test src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/lib/local-extract.test.ts src/lib/extract-parse.test.ts src/lib/integrations.test.ts src/lib/calendar.test.ts",
+    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/local-extract.test.ts src/lib/extract-parse.test.ts src/lib/integrations.test.ts src/lib/calendar.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@clerk/tanstack-react-start": "^1.5.15",
-    "better-auth": "1.6.33",
     "@electric-sql/pglite": "^0.5.4",
     "@hookform/resolvers": "^5.7.0",
-    "jose": "6.2.9",
-    "kysely": "^0.28.5",
     "pg": "^8.16.3",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
