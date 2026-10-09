@@ -4,4 +4,4 @@ Disallow: /capture
 Disallow: /plan
 Disallow: /connect
 
-Sitemap: https://scoop-topaz.vercel.app/sitemap.xmlxample.com/sitemap.xml
+Sitemap: https://scoop-topaz.vercel.app/sitemap.xml
