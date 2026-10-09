@@ -4,5 +4,4 @@ Disallow: /capture
 Disallow: /plan
 Disallow: /connect
 
-# Replace with your real domain:
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://scoop-topaz.vercel.app/sitemap.xmlxample.com/sitemap.xml
