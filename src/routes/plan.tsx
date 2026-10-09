@@ -19,7 +19,12 @@ import { formatWhen, matchesFilter, type PlanFilter, type PlanItem } from "@/lib
 import { deletePlanItem, listPlanItems, setPlanItemDone } from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/plan")({ component: PlanPage });
+export const Route = createFileRoute("/plan")({
+  head: () => ({
+    meta: [{ title: "Your plan | SCOOP" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: PlanPage,
+});
 
 const FILTERS: { id: PlanFilter; label: string }[] = [
   { id: "today", label: "Today" },

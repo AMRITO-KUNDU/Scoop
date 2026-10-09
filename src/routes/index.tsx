@@ -13,8 +13,44 @@ import { LandingPreview } from "@/components/landing-preview";
 import { Wordmark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { SITE_URL } from "@/lib/site";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "SCOOP — Turn school emails & WhatsApp chaos into a family plan" },
+      {
+        name: "description",
+        content:
+          "SCOOP is the family admin app that turns school letters, party invites and WhatsApp messages into a calm family plan with events, deadlines, tasks and RSVPs.",
+      },
+      { property: "og:title", content: "SCOOP — Paste the chaos. Get the plan." },
+      {
+        property: "og:description",
+        content:
+          "Turn school emails, party invites and WhatsApp chaos into a calm family plan in seconds.",
+      },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "SCOOP",
+          url: `${SITE_URL}/`,
+          applicationCategory: "LifestyleApplication",
+          operatingSystem: "Any (web, mobile-first)",
+          description:
+            "Family admin app that extracts events, deadlines, tasks and RSVPs from school emails, WhatsApp messages and flyers.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        }),
+      },
+    ],
+  }),
+  component: Home,
+});
 
 const STEPS = [
   {
@@ -51,23 +87,10 @@ const FEATURES = [
 
 function Home() {
   const { user, isPending } = useCurrentUserState();
-  // Show loading state while auth is resolving to prevent flicker
-  if (isPending) {
-    return (
-      <div className="min-h-dvh bg-paper">
-        <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper/95 backdrop-blur-sm">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <Link to="/" aria-label="SCOOP">
-              <Wordmark />
-            </Link>
-          </div>
-        </header>
-        <main className="mx-auto max-w-3xl px-4 py-8">
-          <div className="h-40 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
-        </main>
-      </div>
-    );
-  }
+  // IMPORTANT: never block the landing page on auth. Clerk resolves on the client
+  // only, so during SSR `isPending` is always true. Rendering a skeleton here
+  // meant crawlers, link previews and scrapers received an empty page.
+  // Signed-in users are redirected once the session is known.
   if (user) return <Navigate to="/capture" />;
   return <Landing user={user} isPending={isPending} />;
 }

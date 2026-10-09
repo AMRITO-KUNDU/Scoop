@@ -2,7 +2,12 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { AuthPanel } from "@/components/auth-panel";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-export const Route = createFileRoute("/signup")({ component: Signup });
+export const Route = createFileRoute("/signup")({
+  head: () => ({
+    meta: [{ title: "Sign up | SCOOP" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: Signup,
+});
 
 function Signup() {
   const { user } = useCurrentUserState();

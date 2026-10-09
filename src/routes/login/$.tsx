@@ -2,7 +2,12 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { AuthPanel } from "@/components/auth-panel";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-export const Route = createFileRoute("/login/$")({ component: LoginSplat });
+export const Route = createFileRoute("/login/$")({
+  head: () => ({
+    meta: [{ title: "Sign in | SCOOP" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: LoginSplat,
+});
 
 function LoginSplat() {
   const { user } = useCurrentUserState();

@@ -6,7 +6,12 @@ import { getIntegrationsStatus } from "@/lib/server/integrations";
 import type { ServiceStatus } from "@/lib/integrations";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/connect")({ component: ConnectPage });
+export const Route = createFileRoute("/connect")({
+  head: () => ({
+    meta: [{ title: "Connect | SCOOP" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: ConnectPage,
+});
 
 function ConnectPage() {
   return (

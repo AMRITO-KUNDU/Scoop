@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /capture
+Disallow: /plan
+Disallow: /connect
+
+# Replace with your real domain:
+Sitemap: https://example.com/sitemap.xml

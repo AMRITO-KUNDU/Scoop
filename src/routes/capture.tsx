@@ -14,7 +14,12 @@ import { getIntegrationsStatus } from "@/lib/server/integrations";
 import { addPlanItems } from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/capture")({ component: CapturePage });
+export const Route = createFileRoute("/capture")({
+  head: () => ({
+    meta: [{ title: "Capture | SCOOP" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
+  component: CapturePage,
+});
 
 function newKey() {
   return crypto.randomUUID();
