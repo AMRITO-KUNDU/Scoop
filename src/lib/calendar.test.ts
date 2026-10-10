@@ -48,4 +48,24 @@ describe("toIcs", () => {
     assert.match(ics, /SUMMARY:Science Museum trip/);
     assert.match(ics, /LOCATION:Science Museum\\, London/);
   });
+
+  it("uses stable item ID for UID when provided", () => {
+    const ics = toIcs({ ...trip, id: 42 }, new Date("2026-09-18T12:00:00.000Z"));
+    assert.ok(ics);
+    assert.match(ics, /UID:scoop-item-42@scoop.app/);
+  });
+
+  it("escapes special ICS characters properly", () => {
+    const ics = toIcs(
+      {
+        ...trip,
+        title: "Trip; Special, Event \\ Details",
+        notes: "Line 1\nLine 2",
+      },
+      new Date("2026-09-18T12:00:00.000Z"),
+    );
+    assert.ok(ics);
+    assert.match(ics, /SUMMARY:Trip\\; Special\\, Event \\\\ Details/);
+    assert.match(ics, /DESCRIPTION:Line 1\\nLine 2/);
+  });
 });

@@ -15,9 +15,15 @@ import { dirname, join } from "node:path";
 import pg from "pg";
 import { pendingMigrations } from "./migration-plan.mjs";
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL?.trim();
+const isProduction = process.env.NODE_ENV === "production";
+
 if (!databaseUrl) {
-  console.log("[migrate] DATABASE_URL not set — skipping (the PGLite fallback migrates itself).");
+  if (isProduction) {
+    console.error("[migrate] ERROR: DATABASE_URL is required in production! Refusing to continue build without a persistent database.");
+    process.exit(1);
+  }
+  console.log("[migrate] DATABASE_URL not set — skipping in development (the PGLite fallback migrates itself).");
   process.exit(0);
 }
 

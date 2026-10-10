@@ -3,9 +3,9 @@ import { describe, it } from "node:test";
 import { DEFAULT_GROQ_MODEL, resolveIntegrations } from "./integrations.ts";
 
 describe("resolveIntegrations", () => {
-  it("treats empty env as local preview with Google live", () => {
+  it("treats empty env as unconfigured preview", () => {
     const status = resolveIntegrations({});
-    assert.equal(status.google.wired, true);
+    assert.equal(status.google.wired, false);
     assert.equal(status.googleCloud.wired, false);
     assert.equal(status.clerk.wired, false);
     assert.equal(status.neon.wired, false);

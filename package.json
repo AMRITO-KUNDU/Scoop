@@ -10,7 +10,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/local-extract.test.ts src/lib/extract-parse.test.ts src/lib/integrations.test.ts src/lib/calendar.test.ts",
+    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/local-extract.test.ts src/lib/extract-parse.test.ts src/lib/integrations.test.ts src/lib/calendar.test.ts src/lib/server/plan-items.test.ts src/lib/server/auth-isolation.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

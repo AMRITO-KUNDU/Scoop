@@ -1,5 +1,5 @@
 import { format, nextDay, type Day } from "date-fns";
-import type { ExtractedItem, ItemType } from "@/lib/plan";
+import type { ExtractedItem, ItemType } from "./plan.ts";
 
 const WEEKDAYS: Record<string, Day> = {
   sunday: 0,
@@ -53,15 +53,58 @@ function nextNamedDay(from: Date, weekday: Day): string {
   return format(nextDay(from, weekday), "yyyy-MM-dd");
 }
 
-function resolveMonthDay(from: Date, day: number, month: number): string {
+function resolveMonthDay(from: Date, day: number, month: number): string | null {
   const year = from.getFullYear();
+  const checkValid = (y: number, m: number, d: number) => {
+    const obj = new Date(y, m - 1, d);
+    return obj.getFullYear() === y && obj.getMonth() === m - 1 && obj.getDate() === d;
+  };
+
+  if (!checkValid(year, month, day)) {
+    if (checkValid(year + 1, month, day)) return iso(year + 1, month, day);
+    return null;
+  }
+
   const candidate = new Date(year, month - 1, day);
   const today = new Date(from.getFullYear(), from.getMonth(), from.getDate());
-  if (candidate < today) return iso(year + 1, month, day);
+  if (candidate < today) {
+    if (checkValid(year + 1, month, day)) return iso(year + 1, month, day);
+    return null;
+  }
   return iso(year, month, day);
 }
 
+function resolveRelativeWeekday(from: Date, weekdayName: string, prefix?: string): string {
+  const targetDay = WEEKDAYS[weekdayName.toLowerCase()];
+  if (targetDay === undefined) return format(from, "yyyy-MM-dd");
+
+  const currentDay = from.getDay();
+  const normalizedPrefix = (prefix || "").toLowerCase();
+
+  if (normalizedPrefix === "next") {
+    if (currentDay === targetDay) {
+      const d = new Date(from);
+      d.setDate(d.getDate() + 7);
+      return format(d, "yyyy-MM-dd");
+    }
+    return format(nextDay(from, targetDay), "yyyy-MM-dd");
+  }
+
+  if (currentDay === targetDay) {
+    return format(from, "yyyy-MM-dd");
+  }
+
+  return format(nextDay(from, targetDay), "yyyy-MM-dd");
+}
+
 function extractDate(text: string, from: Date): string | null {
+  if (/\btoday\b/i.test(text)) return format(from, "yyyy-MM-dd");
+  if (/\btomorrow\b/i.test(text)) {
+    const tmr = new Date(from);
+    tmr.setDate(tmr.getDate() + 1);
+    return format(tmr, "yyyy-MM-dd");
+  }
+
   const range = text.match(
     new RegExp(`\\b(\\d{1,2})\\s*[–-]\\s*(\\d{1,2})\\s+(${MONTH_RE})\\b`, "i"),
   );
@@ -80,20 +123,18 @@ function extractDate(text: string, from: Date): string | null {
     if (month) return resolveMonthDay(from, day, month);
   }
 
-  const thisDay = text.match(new RegExp(`\\b(?:this|next)\\s+(${WEEKDAY_RE})\\b`, "i"));
-  if (thisDay) return nextNamedDay(from, WEEKDAYS[thisDay[1].toLowerCase()]);
-
-  const byDay = text.match(new RegExp(`\\b(?:by|on)\\s+(${WEEKDAY_RE})\\b`, "i"));
-  if (byDay) return nextNamedDay(from, WEEKDAYS[byDay[1].toLowerCase()]);
-
-  const onDay = text.match(new RegExp(`\\b(${WEEKDAY_RE})\\b`, "i"));
-  if (
-    onDay &&
-    /\b(party|trip|appointment|photos?|bake|fair|swimming|after school|conferences?|dentist|club|inset|bus|welcome evening|forest)\b/i.test(
-      text,
-    )
-  ) {
-    return nextNamedDay(from, WEEKDAYS[onDay[1].toLowerCase()]);
+  const namedDay = text.match(new RegExp(`\\b(this|next|on|by)?\\s*(${WEEKDAY_RE})\\b`, "i"));
+  if (namedDay && namedDay[2]) {
+    const prefix = namedDay[1];
+    const dayName = namedDay[2];
+    if (
+      prefix ||
+      /\b(party|trip|appointment|photos?|bake|fair|swimming|after school|conferences?|dentist|club|inset|bus|welcome evening|forest)\b/i.test(
+        text,
+      )
+    ) {
+      return resolveRelativeWeekday(from, dayName, prefix);
+    }
   }
 
   return null;

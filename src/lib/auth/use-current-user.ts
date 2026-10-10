@@ -11,9 +11,9 @@ export type AppUser = {
 };
 
 /**
- * Stable fallback user, used ONLY when auth is disabled
- * (`VITE_AUTH_ENABLED=false`).
- */
+  * Stable fallback user, used ONLY in local development when auth is disabled
+  * (`VITE_AUTH_ENABLED=false`).
+  */
 export const DEV_USER: AppUser = {
   id: "dev-user",
   displayName: "Dev User",
@@ -34,6 +34,11 @@ export type CurrentUserState = {
  * Current user + loading state powered by Clerk Authentication.
  */
 export function useCurrentUserState(): CurrentUserState {
+  const isProduction =
+    (typeof process !== "undefined" && process.env.NODE_ENV === "production") ||
+    (typeof import.meta !== "undefined" &&
+      (import.meta as { env?: Record<string, string> }).env?.MODE === "production");
+
   let isLoaded = false;
   let isSignedIn = false;
   let user: ReturnType<typeof useUser>["user"] = null;
@@ -45,6 +50,9 @@ export function useCurrentUserState(): CurrentUserState {
     user = clerk.user;
   } catch {
     // If rendered outside ClerkProvider or in non-browser context
+    if (isProduction) {
+      return { user: null, isPending: false };
+    }
     return { user: DEV_USER, isPending: false };
   }
 
@@ -54,9 +62,10 @@ export function useCurrentUserState(): CurrentUserState {
 
   if (!user || !isSignedIn) {
     if (
-      (typeof process !== "undefined" && process.env.VITE_AUTH_ENABLED === "false") ||
-      (typeof import.meta !== "undefined" &&
-        (import.meta as { env?: Record<string, string> }).env?.VITE_AUTH_ENABLED === "false")
+      !isProduction &&
+      ((typeof process !== "undefined" && process.env.VITE_AUTH_ENABLED === "false") ||
+        (typeof import.meta !== "undefined" &&
+          (import.meta as { env?: Record<string, string> }).env?.VITE_AUTH_ENABLED === "false"))
     ) {
       return { user: DEV_USER, isPending: false };
     }
@@ -78,3 +87,4 @@ export function useCurrentUserState(): CurrentUserState {
 export function useCurrentUser(): AppUser | null {
   return useCurrentUserState().user;
 }
+

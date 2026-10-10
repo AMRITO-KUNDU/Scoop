@@ -59,17 +59,20 @@ export function resolveIntegrations(
     readTrimmedEnv(source, "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") ??
     readTrimmedEnv(source, "CLERK_PUBLISHABLE_KEY");
   const clerkSecretKey = readTrimmedEnv(source, "CLERK_SECRET_KEY");
-  const clerkWired = Boolean(clerkPublishableKey || clerkSecretKey);
+  const clerkWired = Boolean(clerkPublishableKey && clerkSecretKey);
+  const googleWired = Boolean(clerkWired || googleCloudWired);
 
   return {
     google: {
       id: "google",
       label: "Google sign-in",
       envVar: null,
-      wired: true,
-      detail: googleCloudWired
-        ? "Bypassed — Direct Google Cloud OAuth is active."
-        : "Real Google and email sign-in via Clerk / Google OAuth.",
+      wired: googleWired,
+      detail: googleWired
+        ? googleCloudWired
+          ? "Connected via custom Google Cloud Console OAuth app."
+          : "Active via Clerk Google OAuth integration."
+        : "Not configured. Set up Clerk keys or Google Cloud OAuth client credentials.",
     },
     googleCloud: {
       id: "googleCloud",
@@ -89,7 +92,7 @@ export function resolveIntegrations(
       wired: clerkWired,
       detail: clerkWired
         ? "Clerk keys configured. Custom auth enabled."
-        : "Optional Clerk auth integration. Provide publishable and secret keys.",
+        : "Provide publishable key (pk_live_/pk_test_) and secret key (sk_live_/sk_test_).",
     },
     neon: {
       id: "neon",

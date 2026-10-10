@@ -12,8 +12,15 @@ const clerkPublishableKey =
   (import.meta as { env?: Record<string, string> }).env?.CLERK_PUBLISHABLE_KEY;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  if (clerkPublishableKey) {
+  const isKeyValid =
+    Boolean(clerkPublishableKey) &&
+    (clerkPublishableKey.startsWith("pk_live_") || clerkPublishableKey.startsWith("pk_test_"));
+
+  if (isKeyValid) {
     return <ClerkProvider publishableKey={clerkPublishableKey}>{children}</ClerkProvider>;
   }
-  return <ClerkProvider>{children}</ClerkProvider>;
+
+  // If publishable key is not set or invalid, render children directly without ClerkProvider
+  return <>{children}</>;
 }
+

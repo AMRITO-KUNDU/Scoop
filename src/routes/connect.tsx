@@ -146,8 +146,8 @@ function envHint(name: string) {
   if (name === "DATABASE_URL") return "postgres://…neon.tech/…?sslmode=require";
   if (name === "GROQ_API_KEY") return "gsk_… from console.groq.com";
   if (name === "GROQ_MODEL") return "optional — defaults to openai/gpt-oss-120b";
-  if (name === "VITE_CLERK_PUBLISHABLE_KEY") return "pk_test_… from dashboard.clerk.com";
-  if (name === "CLERK_SECRET_KEY") return "sk_test_… from dashboard.clerk.com";
+  if (name === "VITE_CLERK_PUBLISHABLE_KEY") return "pk_live_… (or pk_test_ for dev) from dashboard.clerk.com";
+  if (name === "CLERK_SECRET_KEY") return "sk_live_… (or sk_test_ for dev) from dashboard.clerk.com";
   if (name === "GOOGLE_CLIENT_ID") return "…apps.googleusercontent.com";
   if (name === "GOOGLE_CLIENT_SECRET") return "GOCSPX-… from Google Cloud Console";
   return "";

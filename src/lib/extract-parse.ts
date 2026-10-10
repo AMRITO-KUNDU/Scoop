@@ -1,4 +1,4 @@
-import { isItemType, type ExtractedItem, type ItemType } from "./plan";
+import { isItemType, type ExtractedItem, type ItemType } from "./plan.ts";
 
 function asString(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -9,7 +9,16 @@ function asString(value: unknown): string | null {
 function normalizeDate(value: unknown): string | null {
   const s = asString(value);
   if (!s) return null;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const d = new Date(year, month - 1, day);
+  if (d.getFullYear() === year && d.getMonth() === month - 1 && d.getDate() === day) {
+    return s;
+  }
   return null;
 }
 

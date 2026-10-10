@@ -43,14 +43,18 @@ function PlanPage() {
 function PlanScreen() {
   const [items, setItems] = useState<PlanItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<PlanFilter>("all");
 
   async function reload() {
+    setLoading(true);
+    setLoadError(null);
     try {
       const rows = await listPlanItems();
       setItems(rows);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not load plan.";
+      setLoadError(message);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -80,12 +84,13 @@ function PlanScreen() {
   }
 
   async function remove(item: PlanItem) {
-    const snapshot = items;
     setItems((prev) => prev.filter((row) => row.id !== item.id));
     try {
       await deletePlanItem({ data: { id: item.id } });
+      toast.success("Item deleted.");
     } catch {
-      setItems(snapshot);
+      // Re-insert only this specific item if it failed to delete
+      setItems((prev) => (prev.some((row) => row.id === item.id) ? prev : [...prev, item]));
       toast.error("Couldn’t delete that item.");
     }
   }
@@ -127,6 +132,14 @@ function PlanScreen() {
         <div className="space-y-3">
           <div className="h-24 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
           <div className="h-24 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
+        </div>
+      ) : loadError ? (
+        <div className="panel bg-hot/10 p-6 text-center">
+          <h2 className="font-display text-xl font-bold">Could not load your plan</h2>
+          <p className="mt-2 text-sm text-mute">{loadError}</p>
+          <Button variant="yolk" className="mt-4" onClick={() => void reload()}>
+            Retry
+          </Button>
         </div>
       ) : visible.length === 0 ? (
         <div className="panel">

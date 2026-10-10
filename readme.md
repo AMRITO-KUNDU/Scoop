@@ -39,25 +39,24 @@ One tap to review, edit, and add everything to your family plan. Track progress,
 
 ## 🌟 Key Features
 
-### 📧 **Universal Inbox**
+### 📧 **Universal Input & Capture**
 
-Throw anything at SCOOP:
+Capture family logistics quickly:
 
-- Forward school emails directly
-- Paste WhatsApp message screenshots or text
-- Snap photos of paper flyers and newsletters
-- Type your own notes and reminders
+- **Text Pasting** - Paste school emails, WhatsApp text, newsletters, and notes directly.
+- **Email Forwarding** - [Planned] Direct email inbox forwarding integration.
+- **Photo & Flyer OCR** - [Planned] Camera scan and image text extraction.
+- **WhatsApp Bot** - [Planned] Automated WhatsApp chat forwarding.
 
 ### 🧠 **Smart Extraction**
 
-Powered by **Groq tool calling** (not chat-based AI), SCOOP intelligently extracts structured data with:
+Powered by **Groq tool calling** (with local on-device fallback), SCOOP intelligently extracts structured data with:
 
 - Date and time references ("next Tuesday", "2 weeks from today")
 - Multiple items in a single message
 - Context-specific details (location, what to bring, who's invited)
-- Priority levels and urgency
+- Priority levels and item categories (event, deadline, task, rsvp)
 
-The tool calling architecture ensures precise, structured output rather than free-form chat responses.
 
 ### 📅 **Family Plan**
 
@@ -222,17 +221,18 @@ You're still learning the ropes of school communications. SCOOP helps you unders
 
 ## 💭 FAQ
 
-**Q: Is my data secure?**
-A: Absolutely. We use bank-level encryption and never share your data with third parties.
+**Q: Is my data secure and private?**
+A: User authentication is handled securely via Clerk, database storage uses Neon Postgres with TLS connection encryption, and text extraction is processed via Groq's API. We never sell your personal data or use it for advertising.
 
-**Q: How does the AI understand school-specific terms?**
-A: SCOOP uses **Groq tool calling** (not chat) with specialized extraction tools trained on thousands of real school communications, ensuring precise, structured understanding of context and terminology that matters to parents.
+**Q: How does the AI extract school information?**
+A: SCOOP uses **Groq tool calling** with structured schema parameters to parse school communications into events, deadlines, tasks, and RSVPs. When offline or unconfigured, an on-device rule parser handles extraction locally.
 
 **Q: Can I use SCOOP for non-school items?**
 A: Yes! While optimized for school chaos, SCOOP works great for any family organization — sports, social events, work schedules, and more.
 
 **Q: What if the AI makes a mistake?**
-A: You can always edit the extracted items. The AI gets smarter over time, and you're always in control of the final result.
+A: You can review and edit all extracted items before saving them to your plan. You are always in control of the final result.
+
 
 **Q: Do I need to forward every single email?**
 A: Only the ones that contain actionable information. Feel free to skip the informational newsletters and just paste the important stuff.

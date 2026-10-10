@@ -164,6 +164,12 @@ async function createSql(): Promise<Sql> {
         "or a server route loader, never from client code.",
     );
   }
+  if (typeof process !== "undefined" && process.env.NODE_ENV === "production" && !databaseUrl) {
+    throw new Error(
+      "DATABASE_URL is required in production environments. " +
+        "PGLite in-memory fallback is disabled in production to prevent data loss.",
+    );
+  }
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();
 }
 

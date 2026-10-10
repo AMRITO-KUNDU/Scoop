@@ -248,34 +248,32 @@ export const extractItems = createServerFn({ method: "POST" })
     const targets = toolCallingTargets();
 
     // Try tool calling extraction first
+    let lastError: string | null = null;
     for (const target of targets) {
       const res = await extractWithToolCalling(data.text, target);
-      if (res.ok && res.items.length) {
+      if (res.ok) {
         return {
           ok: true as const,
           items: res.items,
           engine: target.engine,
           method: "tool_calling" as const,
+          model: target.model,
         };
       }
+      lastError = res.error;
     }
 
-    // Fallback to local extraction - always use this, no error messages
+    // Fallback to local extraction when Groq is unconfigured or failed
     const local = localExtract(data.text);
-    if (local.length) {
-      return {
-        ok: true as const,
-        items: local,
-        engine: "local" as ExtractEngine,
-        method: "local" as const,
-      };
-    }
+    const fallbackReason = targets.length
+      ? lastError || "Groq extraction failed"
+      : "GROQ_API_KEY not configured — using on-device parser";
 
-    // If nothing found, return empty result - no error message
     return {
       ok: true as const,
-      items: [],
+      items: local,
       engine: "local" as ExtractEngine,
       method: "local" as const,
+      reason: fallbackReason,
     };
   });

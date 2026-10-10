@@ -41,6 +41,7 @@ function slug(title: string): string {
 function escapeIcs(value: string): string {
   return value
     .replaceAll("\\", "\\\\")
+    .replaceAll("\r\n", "\\n")
     .replaceAll("\n", "\\n")
     .replaceAll(";", "\\;")
     .replaceAll(",", "\\,");
@@ -70,7 +71,7 @@ export function googleCalendarUrl(
 }
 
 export function toIcs(
-  item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes">,
+  item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes"> & { id?: number },
   now = new Date(),
 ): string | null {
   if (!item.date) return null;
@@ -78,13 +79,18 @@ export function toIcs(
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
+
+  const uid = item.id
+    ? `scoop-item-${item.id}@scoop.app`
+    : `scoop-draft-${compactDate(item.date)}-${slug(item.title)}@scoop.app`;
+
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//SCOOP//School Life//EN",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
-    `UID:scoop-${compactDate(item.date)}-${slug(item.title)}@scoop.app`,
+    `UID:${uid}`,
     `DTSTAMP:${stamp}`,
   ];
   if (item.time) {
@@ -103,7 +109,7 @@ export function toIcs(
 }
 
 export function downloadIcs(
-  item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes">,
+  item: Pick<ExtractedItem, "title" | "date" | "time" | "location" | "notes"> & { id?: number },
 ): boolean {
   const ics = toIcs(item);
   if (!ics || typeof document === "undefined") return false;
@@ -115,6 +121,6 @@ export function downloadIcs(
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   return true;
 }
