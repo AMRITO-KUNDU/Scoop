@@ -287,20 +287,35 @@ interface SignupRouteChildren {
   SignupSplatRoute: typeof SignupSplatRoute
 }
 
-const SignupRouteChildren = SignupSplatRoute
+const SignupRouteChildren: SignupRouteChildren = {
+  SignupSplatRoute: SignupSplatRoute,
 }
 
-const SignupRouteChildren = SignupSplatRoute
-}
+const SignupRouteWithChildren =
+  SignupRoute._addFileChildren(SignupRouteChildren)
 
-const SignupRouteChildren = SignupSplatRoute
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  CaptureRoute: CaptureRoute,
+  ConnectRoute: ConnectRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  LoginRoute: LoginRouteWithChildren,
+  PlanRoute: PlanRoute,
+  PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRouteWithChildren,
+  TermsRoute: TermsRoute,
 }
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
-const SignupRouteChildren = SignupSplatRoute
-}
-
-const SignupRouteChildren = SignupSplatRoute
-}
-
-const SignupRouteChildren = SignupSplatRoute
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
 }
