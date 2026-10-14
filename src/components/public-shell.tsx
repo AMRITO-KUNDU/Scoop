@@ -6,11 +6,6 @@ import { Wordmark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-const NAV = [
-  { to: "/how-it-works" as const, label: "How it works" },
-  { to: "/about" as const, label: "About" },
-];
-
 const FOOTER_LINKS = [
   { to: "/how-it-works" as const, label: "How it works" },
   { to: "/about" as const, label: "About" },
@@ -25,18 +20,6 @@ function SiteHeader() {
         <Link to="/" aria-label="SCOOP home" className="shrink-0">
           <Wordmark />
         </Link>
-        <nav className="hidden items-center gap-1 sm:flex" aria-label="Primary">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="inline-flex h-10 items-center rounded-full px-3 font-display text-sm font-bold hover:bg-paper-2"
-              activeProps={{ className: "bg-yolk hover:bg-yolk" }}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
         <AccountMenu showSignup={false} />
       </div>
     </header>
@@ -67,7 +50,7 @@ function SiteFooter() {
 }
 
 /**
- * Public (marketing / legal) page shell: sticky header with primary nav and
+ * Public (marketing / legal) page shell: a sticky header with the wordmark and
  * account controls, and a footer linking the public pages. Used by every route
  * that is meant to be crawled — unlike `AppShell`, it never gates on sign-in.
  */
