@@ -64,6 +64,16 @@ export function PublicShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Panel section used by the legal pages (privacy, terms). */
+export function Section({ heading, children }: { heading: string; children: ReactNode }) {
+  return (
+    <section className="panel p-6">
+      <h2 className="font-display text-xl font-black uppercase tracking-tight">{heading}</h2>
+      <div className="mt-3 space-y-3 text-sm leading-relaxed text-mute">{children}</div>
+    </section>
+  );
+}
+
 export function PageHero({
   eyebrow,
   title,

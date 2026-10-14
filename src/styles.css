@@ -36,10 +36,7 @@
   --color-hot: #ff3ea5;
   --color-cyan: #00d4ff;
   --color-grape: #7b2fff;
-  --color-volt: #00d4ff;
   --color-mute: #4a4654;
-  --color-cream: #ffe9a8;
-  --color-danger: #e11d48;
 
   --font-sans: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
@@ -98,6 +95,12 @@
     cursor: pointer;
   }
 
+  /* Keyboard focus must be visible; mouse clicks are unaffected. */
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
   ::selection {
     background: var(--color-yolk);
     color: var(--color-ink);
@@ -111,10 +114,6 @@
 }
 
 @layer components {
-  .page-grid {
-    background-color: var(--color-paper);
-  }
-
   .chunky {
     border: 3px solid var(--color-ink);
     border-radius: 12px;
@@ -195,9 +194,10 @@
     transform: none;
   }
 
-  .tilt-l,
-  .tilt-r {
-    transform: none !important;
+  /* The decorative tilts on cards are Tailwind's rotate-1 / -rotate-1. */
+  .-rotate-1,
+  .rotate-1 {
+    rotate: none !important;
   }
 }
 

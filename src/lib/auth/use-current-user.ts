@@ -84,7 +84,4 @@ export function useCurrentUserState(): CurrentUserState {
   };
 }
 
-export function useCurrentUser(): AppUser | null {
-  return useCurrentUserState().user;
-}
 

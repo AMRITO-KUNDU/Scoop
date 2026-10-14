@@ -3,9 +3,9 @@ import {
   Bell,
   CalendarCheck,
   ClipboardPaste,
+  ListChecks,
   Mail,
   ScanText,
-  Share2,
   Smartphone,
 } from "lucide-react";
 import { LandingPreview } from "@/components/landing-preview";
@@ -88,7 +88,7 @@ const FEATURES = [
   { icon: Bell, title: "RSVPs & slips", tone: "bg-yolk" },
   { icon: ClipboardPaste, title: "WhatsApp chaos", tone: "bg-grape text-paper" },
   { icon: Smartphone, title: "Phone-first", tone: "bg-cyan" },
-  { icon: Share2, title: "Share the load", tone: "bg-hot text-paper" },
+  { icon: ListChecks, title: "One calm plan", tone: "bg-hot text-paper" },
 ];
 
 function Home() {
@@ -114,9 +114,18 @@ function Landing({
     <PublicShell>
       <main>
         <section className="relative border-b-thick border-ink">
-          <span className="dot-shape absolute top-10 right-8 hidden size-8 bg-hot sm:block" />
-          <span className="sq-shape absolute bottom-16 left-6 hidden size-7 rotate-12 bg-cyan md:block" />
-          <span className="dot-shape absolute top-1/2 right-1/4 hidden size-4 bg-yolk lg:block" />
+          <span
+            aria-hidden="true"
+            className="dot-shape absolute top-10 right-8 hidden size-8 bg-hot sm:block"
+          />
+          <span
+            aria-hidden="true"
+            className="sq-shape absolute bottom-16 left-6 hidden size-7 rotate-12 bg-cyan md:block"
+          />
+          <span
+            aria-hidden="true"
+            className="dot-shape absolute top-1/2 right-1/4 hidden size-4 bg-yolk lg:block"
+          />
 
           <div className="mx-auto grid max-w-6xl items-start gap-12 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-16">
             <div>

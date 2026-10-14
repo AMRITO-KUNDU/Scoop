@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHero, PublicShell } from "@/components/public-shell";
+import { PageHero, PublicShell, Section } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/privacy`;
@@ -50,15 +49,6 @@ export const Route = createFileRoute("/privacy")({
   }),
   component: Privacy,
 });
-
-function Section({ heading, children }: { heading: string; children: ReactNode }) {
-  return (
-    <section className="panel p-6">
-      <h2 className="font-display text-xl font-black uppercase tracking-tight">{heading}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-relaxed text-mute">{children}</div>
-    </section>
-  );
-}
 
 function Privacy() {
   return (
@@ -110,8 +100,9 @@ function Privacy() {
                 It's processed to return the structured result and is not used for advertising.
               </p>
               <p>
-                When no AI key is configured — or if the AI call fails — the text is processed by
-                the built-in parser on your device and is not sent anywhere for that step.
+                When no AI key is configured — or if the AI call fails — a built-in rule-based
+                parser does the same extraction instead, and the text is not sent to an AI provider
+                for that step.
               </p>
             </Section>
 

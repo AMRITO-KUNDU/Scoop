@@ -84,13 +84,19 @@ function PlanScreen() {
   }
 
   async function remove(item: PlanItem) {
+    const removedAt = items.findIndex((row) => row.id === item.id);
     setItems((prev) => prev.filter((row) => row.id !== item.id));
     try {
       await deletePlanItem({ data: { id: item.id } });
       toast.success("Item deleted.");
     } catch {
-      // Re-insert only this specific item if it failed to delete
-      setItems((prev) => (prev.some((row) => row.id === item.id) ? prev : [...prev, item]));
+      // Put it back where it was, not at the end of the list.
+      setItems((prev) => {
+        if (prev.some((row) => row.id === item.id)) return prev;
+        const next = [...prev];
+        next.splice(removedAt < 0 ? next.length : Math.min(removedAt, next.length), 0, item);
+        return next;
+      });
       toast.error("Couldn’t delete that item.");
     }
   }
@@ -116,6 +122,7 @@ function PlanScreen() {
             <button
               key={f.id}
               type="button"
+              aria-pressed={on}
               onClick={() => setFilter(f.id)}
               className={cn(
                 "h-10 rounded-full px-4 font-display text-sm font-black",
@@ -206,7 +213,7 @@ function PlanScreen() {
                       <a
                         href={googleCalendarUrl(item) ?? undefined}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-thick border-ink bg-cyan px-3 font-display text-sm font-bold hover:bg-yolk sm:flex-none"
                       >
                         <CalendarPlus className="size-4" strokeWidth={2.4} />

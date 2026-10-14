@@ -49,10 +49,6 @@ function iso(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function nextNamedDay(from: Date, weekday: Day): string {
-  return format(nextDay(from, weekday), "yyyy-MM-dd");
-}
-
 function resolveMonthDay(
   from: Date,
   day: number,

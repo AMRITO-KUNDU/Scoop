@@ -49,6 +49,7 @@ export function LandingPreview() {
 
         <div className="space-y-3 p-4">
           <Textarea
+            aria-label="Paste a school message to preview SCOOP"
             value={text}
             onChange={(e) => {
               setText(e.target.value);

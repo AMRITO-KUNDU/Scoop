@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Database, KeyRound, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { Database, KeyRound, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { getIntegrationsStatus } from "@/lib/server/integrations";
-import type { ServiceStatus } from "@/lib/integrations";
+import type { ServiceId, ServiceStatus } from "@/lib/integrations";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/connect")({
@@ -75,27 +75,16 @@ function ConnectScreen() {
   );
 }
 
+const SERVICE_STYLE: Record<ServiceId, { icon: LucideIcon; tone: string }> = {
+  google: { icon: KeyRound, tone: "bg-cyan" },
+  googleCloud: { icon: KeyRound, tone: "bg-cyan" },
+  clerk: { icon: ShieldCheck, tone: "bg-paper-2" },
+  neon: { icon: Database, tone: "bg-yolk" },
+  groq: { icon: Zap, tone: "bg-hot text-paper" },
+};
+
 function ServiceCard({ service }: { service: ServiceStatus }) {
-  const Icon =
-    service.id === "google" || service.id === "googleCloud"
-      ? KeyRound
-      : service.id === "clerk"
-        ? ShieldCheck
-        : service.id === "neon"
-          ? Database
-          : service.id === "groq"
-            ? Zap
-            : Sparkles;
-  const tone =
-    service.id === "google" || service.id === "googleCloud"
-      ? "bg-cyan"
-      : service.id === "clerk"
-        ? "bg-paper-2"
-        : service.id === "neon"
-          ? "bg-yolk"
-          : service.id === "groq"
-            ? "bg-hot text-paper"
-            : "bg-grape text-paper";
+  const { icon: Icon, tone } = SERVICE_STYLE[service.id];
 
   return (
     <section className="panel p-5 sm:p-6">

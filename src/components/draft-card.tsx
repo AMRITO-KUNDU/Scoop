@@ -46,6 +46,7 @@ export function DraftCard({
             <button
               key={type}
               type="button"
+              aria-pressed={active}
               onClick={() => set("type", type)}
               className={cn(
                 "h-10 rounded-full border-thick border-ink px-3 font-display text-xs font-black uppercase tracking-wide",

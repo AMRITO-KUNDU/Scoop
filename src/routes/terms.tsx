@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHero, PublicShell } from "@/components/public-shell";
+import { PageHero, PublicShell, Section } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/terms`;
@@ -52,15 +51,6 @@ export const Route = createFileRoute("/terms")({
   }),
   component: Terms,
 });
-
-function Section({ heading, children }: { heading: string; children: ReactNode }) {
-  return (
-    <section className="panel p-6">
-      <h2 className="font-display text-xl font-black uppercase tracking-tight">{heading}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-relaxed text-mute">{children}</div>
-    </section>
-  );
-}
 
 function Terms() {
   return (
