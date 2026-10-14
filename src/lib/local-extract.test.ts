@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { EXAMPLE_CHIPS, LANDING_CHIPS } from "./examples.ts";
 import { localExtract } from "./local-extract.ts";
 
-const FROM = new Date("2026-09-16T12:00:00");
+const FROM = new Date("2025-09-01T12:00:00");
 
 function byLabel(id: string) {
   const chip = EXAMPLE_CHIPS.find((c) => c.id === id);
@@ -33,11 +33,11 @@ describe("localExtract examples", () => {
     assert.ok(types.includes("task"));
     const trip = items.find((i) => i.type === "event");
     assert.match(trip?.title ?? "", /science museum/i);
-    assert.equal(trip?.date, "2026-10-03");
+    assert.equal(trip?.date, "2025-10-03");
     assert.equal(trip?.time, "08:45");
     const slip = items.find((i) => i.type === "deadline");
     assert.match(slip?.title ?? "", /permission slip/i);
-    assert.equal(slip?.date, "2026-09-24");
+    assert.equal(slip?.date, "2025-09-24");
   });
 
   it("newsletter: conferences stay an event, plus fair/bake/photos", () => {
@@ -45,7 +45,7 @@ describe("localExtract examples", () => {
     assert.ok(items.length >= 3);
     const conf = items.find((i) => /parent-teacher|conference/i.test(i.title));
     assert.equal(conf?.type, "event");
-    assert.equal(conf?.date, "2026-09-22");
+    assert.equal(conf?.date, "2025-09-22");
     assert.ok(items.some((i) => /book fair/i.test(i.title)));
     assert.ok(items.some((i) => /bake sale/i.test(i.title)));
     assert.ok(items.some((i) => /photo/i.test(i.title)));
@@ -55,7 +55,7 @@ describe("localExtract examples", () => {
     const items = byLabel("permission");
     const swim = items.find((i) => i.type === "event");
     assert.match(swim?.title ?? "", /swim/i);
-    assert.equal(swim?.date, "2026-09-21");
+    assert.equal(swim?.date, "2025-09-22");
     assert.equal(swim?.time, "13:15");
     assert.match(swim?.location ?? "", /riverside/i);
     assert.ok(items.some((i) => i.type === "deadline"));
@@ -68,7 +68,7 @@ describe("localExtract examples", () => {
     assert.match(appt?.title ?? "", /leo/i);
     assert.match(appt?.title ?? "", /dentist/i);
     assert.ok(!/^hi/i.test(appt?.title ?? ""));
-    assert.equal(appt?.date, "2026-09-23");
+    assert.equal(appt?.date, "2025-09-23");
     assert.equal(appt?.time, "16:20");
     assert.match(appt?.location ?? "", /smile kids/i);
     assert.ok(items.some((i) => i.type === "rsvp"));
@@ -79,12 +79,12 @@ describe("localExtract examples", () => {
     assert.ok(items.length >= 3);
     const meet = items.find((i) => /meet the teacher/i.test(i.title));
     assert.equal(meet?.type, "event");
-    assert.equal(meet?.date, "2026-09-24");
+    assert.equal(meet?.date, "2025-09-24");
     assert.equal(meet?.time, "15:30");
     assert.match(meet?.location ?? "", /year 3 classroom/i);
     const inset = items.find((i) => /inset/i.test(i.title));
     assert.equal(inset?.type, "event");
-    assert.equal(inset?.date, "2026-09-26");
+    assert.equal(inset?.date, "2025-09-26");
     assert.ok(items.some((i) => i.type === "deadline" && /data collection/i.test(i.title)));
     assert.ok(items.some((i) => /uniform/i.test(i.title)));
   });
@@ -93,7 +93,7 @@ describe("localExtract examples", () => {
     const items = byLabel("club");
     const club = items.find((i) => i.type === "event");
     assert.match(club?.title ?? "", /coding club/i);
-    assert.equal(club?.date, "2026-09-25");
+    assert.equal(club?.date, "2025-09-25");
     assert.equal(club?.time, "15:20");
     assert.match(club?.location ?? "", /ict suite/i);
     assert.ok(items.some((i) => i.type === "rsvp"));
@@ -105,7 +105,7 @@ describe("localExtract examples", () => {
     const items = byLabel("bus");
     const bus = items.find((i) => i.type === "event");
     assert.match(bus?.title ?? "", /bus|route 7/i);
-    assert.equal(bus?.date, "2026-09-22");
+    assert.equal(bus?.date, "2025-09-22");
     assert.equal(bus?.time, "08:10");
     assert.match(bus?.location ?? "", /oak street/i);
     assert.ok(items.some((i) => i.type === "rsvp" && /seat|bus/i.test(i.title)));
@@ -118,7 +118,7 @@ describe("localExtract examples", () => {
     assert.ok(items.some((i) => /wellies/i.test(i.title)));
     const evening = items.find((i) => /welcome evening/i.test(i.title));
     assert.equal(evening?.type, "event");
-    assert.equal(evening?.date, "2026-09-23");
+    assert.equal(evening?.date, "2025-09-23");
     assert.equal(evening?.time, "17:00");
     assert.match(evening?.location ?? "", /hall/i);
   });

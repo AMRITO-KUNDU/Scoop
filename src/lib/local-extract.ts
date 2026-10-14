@@ -53,25 +53,48 @@ function nextNamedDay(from: Date, weekday: Day): string {
   return format(nextDay(from, weekday), "yyyy-MM-dd");
 }
 
-function resolveMonthDay(from: Date, day: number, month: number): string | null {
-  const year = from.getFullYear();
+function resolveMonthDay(
+  from: Date,
+  day: number,
+  month: number,
+  weekdayName?: string,
+): string | null {
+  const startYear = from.getFullYear();
   const checkValid = (y: number, m: number, d: number) => {
     const obj = new Date(y, m - 1, d);
     return obj.getFullYear() === y && obj.getMonth() === m - 1 && obj.getDate() === d;
   };
 
-  if (!checkValid(year, month, day)) {
-    if (checkValid(year + 1, month, day)) return iso(year + 1, month, day);
+  // When the text names a weekday ("Wednesday 24 September"), trust it: return
+  // the nearest year whose date actually falls on that weekday, so the date we
+  // emit agrees with the source instead of being recomputed for a year the text
+  // never implied (which is what produced mismatched weekdays).
+  const target = weekdayName ? WEEKDAYS[weekdayName.toLowerCase()] : undefined;
+  if (target !== undefined) {
+    for (let delta = 0; delta <= 6; delta += 1) {
+      const years = delta === 0 ? [startYear] : [startYear + delta, startYear - delta];
+      for (const y of years) {
+        if (checkValid(y, month, day) && new Date(y, month - 1, day).getDay() === target) {
+          return iso(y, month, day);
+        }
+      }
+    }
     return null;
   }
 
-  const candidate = new Date(year, month - 1, day);
-  const today = new Date(from.getFullYear(), from.getMonth(), from.getDate());
-  if (candidate < today) {
-    if (checkValid(year + 1, month, day)) return iso(year + 1, month, day);
+  // No weekday stated: keep the original "next occurrence" behaviour.
+  if (!checkValid(startYear, month, day)) {
+    if (checkValid(startYear + 1, month, day)) return iso(startYear + 1, month, day);
     return null;
   }
-  return iso(year, month, day);
+
+  const candidate = new Date(startYear, month - 1, day);
+  const today = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  if (candidate < today) {
+    if (checkValid(startYear + 1, month, day)) return iso(startYear + 1, month, day);
+    return null;
+  }
+  return iso(startYear, month, day);
 }
 
 function resolveRelativeWeekday(from: Date, weekdayName: string, prefix?: string): string {
@@ -115,12 +138,13 @@ function extractDate(text: string, from: Date): string | null {
   }
 
   const monthDay = text.match(
-    new RegExp(`\\b(?:(?:${WEEKDAY_RE})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_RE})\\b`, "i"),
+    new RegExp(`\\b(?:(${WEEKDAY_RE})\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH_RE})\\b`, "i"),
   );
   if (monthDay) {
-    const day = Number(monthDay[1]);
-    const month = MONTHS[monthDay[2].toLowerCase()];
-    if (month) return resolveMonthDay(from, day, month);
+    const weekdayName = monthDay[1];
+    const day = Number(monthDay[2]);
+    const month = MONTHS[monthDay[3].toLowerCase()];
+    if (month) return resolveMonthDay(from, day, month, weekdayName);
   }
 
   const namedDay = text.match(new RegExp(`\\b(this|next|on|by)?\\s*(${WEEKDAY_RE})\\b`, "i"));

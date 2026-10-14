@@ -45,7 +45,7 @@ Mr. Ellis, Headteacher`,
     label: "Permission slip",
     text: `PERMISSION SLIP — Swimming Term
 
-Term swimming starts Monday 21 September at Riverside Leisure Centre.
+Term swimming starts Monday 22 September at Riverside Leisure Centre.
 Sessions 1:15–2:30pm. Please sign and return by Friday 19 September.
 
 Your child will need a swimsuit, towel, and goggles. Hair tied back.

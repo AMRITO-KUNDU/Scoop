@@ -11,7 +11,16 @@ import { cn } from "@/lib/utils";
 
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-const DEMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
+const QMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
+
+/**
+ * The example letters are written for September 2025 — their weekdays only line
+ * up with that year. Pin the demo's reference date so the preview always
+ * resolves to those dates instead of drifting to whatever "today" is when a
+ * visitor loads the page (which rolled the dates forward a year and printed
+ * weekdays that disagreed with the source text).
+ */
+const DEMO_TODAY = new Date(2025, 8, 15); // 15 September 2025, local time
 
 export function LandingPreview() {
   const { user, isPending } = useCurrentUserState();
@@ -20,7 +29,7 @@ export function LandingPreview() {
   const [active, setActive] = useState<string | null>(DEMO_CHIPS[0]?.id ?? null);
   const [sorted, setSorted] = useState(false);
 
-  const items = useMemo(() => localExtract(text).slice(0, 4), [text]);
+  const items = useMemo(() => localExtract(text, DEMO_TODAY).slice(0, 4), [text]);
 
   return (
     <div className="relative mx-auto w-full max-w-md px-2 pt-3 lg:max-w-none">
