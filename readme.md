@@ -33,7 +33,7 @@ Our intelligent system uses **Groq tool calling** (not chat) to precisely extrac
 
 ### 3️⃣ **Your Family Gets the Plan**
 
-One tap to review, edit, and add everything to your family plan. Track progress, mark items complete, and share the load with your partner.
+One tap to review, edit, and add everything to your plan. Track progress and mark items complete as you go.
 
 ---
 
@@ -55,33 +55,34 @@ Powered by **Groq tool calling** (with local on-device fallback), SCOOP intellig
 - Date and time references ("next Tuesday", "2 weeks from today")
 - Multiple items in a single message
 - Context-specific details (location, what to bring, who's invited)
-- Priority levels and item categories (event, deadline, task, rsvp)
+- Item categories (event, deadline, task, rsvp)
 
 
-### 📅 **Family Plan**
+### 📅 **Your Plan**
 
 All your extracted items become:
 
-- **Shareable calendar** - Sync with your family members
-- **Task manager** - Assign and track completion
-- **Reminder system** - Never miss a deadline again
-- **Archive** - Keep a searchable history of past events
+- **One list** - Events, deadlines, tasks and RSVPs in a single plan
+- **Filters** - Narrow the plan to Today, This Week or All
+- **Done and delete** - Tick items off or remove them; the plan stays current
+- **Calendar export** - Push a dated item to Google Calendar, or download it as an `.ics` file
+- **Duplicate protection** - Re-pasting the same message won't add the same item twice
 
-### 👨‍👩‍👧‍👦 **Designed for Families**
+### 👨‍👩‍👧‍👦 **Built for School Life**
 
-- **Multi-user** - Everyone in the household stays in sync
-- **Child-centric** - Organize by child, activity type, or date
-- **Quick actions** - One-tap confirm, reschedule, or mark complete
-- **Visual clarity** - Color-coded, easy-to-scan interface
+- **School-shaped** - Item types and wording that match how schools actually communicate
+- **Editable before saving** - Nothing enters your plan until you have reviewed it
+- **Visual clarity** - Colour-coded, easy-to-scan interface
 
 ### 📱 **Mobile-First**
 
 Built for the device you always have with you:
 
-- Responsive design that works perfectly on phones
-- Offline-capable for those school pickup moments
-- Instant notifications for new items
-- Quick capture from anywhere
+- Responsive layout that works on phones
+- Phone-first design with large, tappable controls
+
+> **Not built yet:** notifications/reminders, offline mode, plan sharing between accounts,
+> email forwarding, photo/OCR capture and a WhatsApp integration. See the roadmap below.
 
 ---
 
@@ -101,24 +102,21 @@ Built for the device you always have with you:
 
 ### vs. Regular Calendar Apps
 
-✅ **Understands context** - Knows that "Ms. Johnson's class" means your child's teacher, not a random contact
-✅ **Extracts action items** - Automatically creates tasks from messages, not just events
-✅ **Handles ambiguity** - Figures out that "the trip" refers to the class field trip mentioned last week
-✅ **Family-focused** - Designed around family workflows, not business meetings
+✅ **Extracts action items** - Creates tasks, deadlines and RSVPs from messages, not just events
+✅ **Date intelligence** - Converts "next Friday" to an actual date automatically
+✅ **Review-first** - Every item is editable before it is saved
 
 ### vs. Note-Taking Apps
 
-✅ **Structured output** - Creates organized items, not just text blobs
-✅ **Automatic categorization** - Sorts items by type without manual tagging
-✅ **Date intelligence** - Converts "next Friday" to actual dates automatically
+✅ **Structured output** - Creates organised items, not just text blobs
+✅ **Automatic categorisation** - Sorts items by type without manual tagging
 ✅ **Actionable** - Built to help you take action, not just store information
 
 ### vs. Email Clients
 
-✅ **All in one place** - Aggregates information from multiple sources
+✅ **All in one place** - Pulls the information out of whichever app it arrived in
 ✅ **No clutter** - Shows only what's important and actionable
 ✅ **Persistent** - Doesn't get buried under new messages
-✅ **Shareable** - Easy to share with partners and family members
 
 ---
 
@@ -133,11 +131,10 @@ Built for the device you always have with you:
 
 ### Pro Tips
 
-- **Forward emails directly** to your SCOOP inbox for automatic processing
-- **Use the mobile app** for quick capture on the go
-- **Set up family sharing** so everyone stays in the loop
-- **Create recurring templates** for common events (weekly sports practice, monthly parent meetings)
-- **Use the search** to find past events and deadlines instantly
+- **Tap a chip** on the capture screen for a worked example
+- **Edit before saving** - fix a date or title and it only affects your plan
+- **Export to your calendar** - use the Google or `.ics` button on any dated item
+- **Re-paste freely** - duplicate items are skipped automatically
 
 ---
 

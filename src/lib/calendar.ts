@@ -38,6 +38,19 @@ function slug(title: string): string {
   );
 }
 
+/** RFC 5545: content lines fold at 75 octets, continuations start with a space. */
+function foldLine(line: string): string {
+  if (line.length <= 75) return line;
+  const parts = [line.slice(0, 75)];
+  let rest = line.slice(75);
+  while (rest.length > 74) {
+    parts.push(` ${rest.slice(0, 74)}`);
+    rest = rest.slice(74);
+  }
+  if (rest) parts.push(` ${rest}`);
+  return parts.join("\r\n");
+}
+
 function escapeIcs(value: string): string {
   return value
     .replaceAll("\\", "\\\\")
@@ -105,7 +118,7 @@ export function toIcs(
   if (item.location) lines.push(`LOCATION:${escapeIcs(item.location)}`);
   if (item.notes) lines.push(`DESCRIPTION:${escapeIcs(item.notes)}`);
   lines.push("END:VEVENT", "END:VCALENDAR");
-  return `${lines.join("\r\n")}\r\n`;
+  return `${lines.map(foldLine).join("\r\n")}\r\n`;
 }
 
 export function downloadIcs(
