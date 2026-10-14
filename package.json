@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && npm run db:migrate",
+    "build": "npm run seo:generate && vite build && npm run db:migrate",
     "db:migrate": "node scripts/migrate.mjs",
+    "seo:generate": "node scripts/generate-seo.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
