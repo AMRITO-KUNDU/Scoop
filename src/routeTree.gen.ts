@@ -10,17 +10,26 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as LoginSplatRouteImport } from './routes/login/$'
 import { Route as SignupSplatRouteImport } from './routes/signup/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CaptureRoute = CaptureRouteImport.update({
@@ -33,6 +42,11 @@ const ConnectRoute = ConnectRouteImport.update({
   path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -43,9 +57,19 @@ const PlanRoute = PlanRouteImport.update({
   path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginSplatRoute = LoginSplatRouteImport.update({
@@ -61,32 +85,44 @@ const SignupSplatRoute = SignupSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/capture': typeof CaptureRoute
   '/connect': typeof ConnectRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRouteWithChildren
   '/plan': typeof PlanRoute
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
+  '/terms': typeof TermsRoute
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/capture': typeof CaptureRoute
   '/connect': typeof ConnectRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRouteWithChildren
   '/plan': typeof PlanRoute
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
+  '/terms': typeof TermsRoute
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/capture': typeof CaptureRoute
   '/connect': typeof ConnectRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRouteWithChildren
   '/plan': typeof PlanRoute
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
+  '/terms': typeof TermsRoute
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
 }
@@ -94,42 +130,58 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/capture'
     | '/connect'
+    | '/how-it-works'
     | '/login'
     | '/plan'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/login/$'
     | '/signup/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/capture'
     | '/connect'
+    | '/how-it-works'
     | '/login'
     | '/plan'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/login/$'
     | '/signup/$'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/capture'
     | '/connect'
+    | '/how-it-works'
     | '/login'
     | '/plan'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/login/$'
     | '/signup/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   CaptureRoute: typeof CaptureRoute
   ConnectRoute: typeof ConnectRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRouteWithChildren
   PlanRoute: typeof PlanRoute
+  PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRouteWithChildren
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/capture': {
@@ -155,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -169,11 +235,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/$': {
@@ -207,31 +287,20 @@ interface SignupRouteChildren {
   SignupSplatRoute: typeof SignupSplatRoute
 }
 
-const SignupRouteChildren: SignupRouteChildren = {
-  SignupSplatRoute: SignupSplatRoute,
+const SignupRouteChildren = SignupSplatRoute
 }
 
-const SignupRouteWithChildren =
-  SignupRoute._addFileChildren(SignupRouteChildren)
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CaptureRoute: CaptureRoute,
-  ConnectRoute: ConnectRoute,
-  LoginRoute: LoginRouteWithChildren,
-  PlanRoute: PlanRoute,
-  SignupRoute: SignupRouteWithChildren,
+const SignupRouteChildren = SignupSplatRoute
 }
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
+const SignupRouteChildren = SignupSplatRoute
+}
+
+const SignupRouteChildren = SignupSplatRoute
+}
+
+const SignupRouteChildren = SignupSplatRoute
+}
+
+const SignupRouteChildren = SignupSplatRoute
 }

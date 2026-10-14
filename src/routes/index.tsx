@@ -8,9 +8,8 @@ import {
   Share2,
   Smartphone,
 } from "lucide-react";
-import { AccountMenu } from "@/components/account-menu";
 import { LandingPreview } from "@/components/landing-preview";
-import { Wordmark } from "@/components/logo";
+import { CtaBand, PublicShell } from "@/components/public-shell";
 import { Button } from "@/components/ui/button";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { SITE_URL } from "@/lib/site";
@@ -105,16 +104,7 @@ function Landing({
   const destination = !isPending && user ? "/capture" : "/signup";
 
   return (
-    <div className="min-h-dvh bg-paper">
-      <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link to="/" aria-label="SCOOP">
-            <Wordmark />
-          </Link>
-          <AccountMenu showSignup={false} />
-        </div>
-      </header>
-
+    <PublicShell>
       <main>
         <section className="relative border-b-thick border-ink">
           <span className="dot-shape absolute top-10 right-8 hidden size-8 bg-hot sm:block" />
@@ -196,37 +186,8 @@ function Landing({
           </div>
         </section>
 
-        <section className="border-b-thick border-ink bg-grape px-4 py-14 text-paper">
-          <div className="mx-auto max-w-xl text-center">
-            <h2 className="font-display text-title font-black uppercase tracking-tight">
-              Stop carrying it
-              <br />
-              alone.
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm font-medium text-paper/85">
-              Sign up, paste the next school email, and keep the plan in one place.
-            </p>
-            <Button asChild size="lg" variant="yolk" className="mt-8">
-              <Link to={destination}>
-                Start with SCOOP
-                <ScanText className="size-5" strokeWidth={2.4} />
-              </Link>
-            </Button>
-            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-paper/70">
-              No credit card. Works on your phone.
-            </p>
-          </div>
-        </section>
-
-        <footer className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-8 sm:flex-row sm:items-center">
-          <p className="font-display text-sm font-black uppercase tracking-tight">
-            Paste the chaos. Get the plan.
-          </p>
-          <p className="text-xs font-bold uppercase tracking-wider text-mute">
-            Welcome letters · clubs · bus times · supplies · trips
-          </p>
-        </footer>
+        <CtaBand />
       </main>
-    </div>
+    </PublicShell>
   );
 }
