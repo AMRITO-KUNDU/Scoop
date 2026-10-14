@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-const QMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
+const DEMO_CHIPS = LANDING_CHIPS.length ? LANDING_CHIPS : EXAMPLE_CHIPS.slice(0, 4);
 
 /**
  * The example letters are written for September 2025 — their weekdays only line
