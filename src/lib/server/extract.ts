@@ -171,7 +171,10 @@ async function extractWithToolCalling(
 
     const body = (await res.json()) as {
       choices?: {
-        message?: { tool_calls?: Array<{ function: { name: string; arguments: string } }> };
+        message?: {
+          content?: string | null;
+          tool_calls?: Array<{ function: { name: string; arguments: string } }>;
+        };
       }[];
     };
 
@@ -261,6 +264,10 @@ export const extractItems = createServerFn({ method: "POST" })
         };
       }
       lastError = res.error;
+      // Fall through to the next model only when the current one is unavailable.
+      // Any other failure will repeat identically on the next model, so stop and
+      // hand over to the on-device parser instead of spending the request budget.
+      if (!res.isModelNotFound) break;
     }
 
     // Fallback to local extraction when Groq is unconfigured or failed

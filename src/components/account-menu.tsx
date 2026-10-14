@@ -40,7 +40,6 @@ export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
         <Cable className="size-4" strokeWidth={2.4} />
       </Link>
       <UserButton
-        afterSignOutUrl="/"
         fallback={
           <span className="grid size-9 place-items-center rounded-full border-thick border-ink bg-grape font-display text-sm font-black text-paper">
             {label.charAt(0).toUpperCase()}

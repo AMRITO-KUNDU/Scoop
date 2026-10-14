@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { DraftCard } from "@/components/draft-card";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { EXAMPLE_CHIPS } from "@/lib/examples";
 import type { DraftItem } from "@/lib/plan";
@@ -75,13 +76,6 @@ function CaptureScreen() {
     setEngine(null);
     try {
       const result = await extractItems({ data: { text } });
-      if (!result.ok) {
-        toast.error(result.error);
-        return;
-      }
-      if (result.warning) {
-        toast.error(result.warning);
-      }
       if (!result.items.length) {
         toast.error("Nothing to pull from that message.");
         setDrafts([]);
@@ -143,7 +137,11 @@ function CaptureScreen() {
       </div>
 
       <div className="panel overflow-hidden">
+        <Label htmlFor="capture-text" className="sr-only">
+          Paste a school message
+        </Label>
         <Textarea
+          id="capture-text"
           value={text}
           onChange={(e) => {
             setText(e.target.value);

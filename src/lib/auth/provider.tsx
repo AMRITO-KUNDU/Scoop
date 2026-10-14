@@ -12,11 +12,10 @@ const clerkPublishableKey =
   (import.meta as { env?: Record<string, string> }).env?.CLERK_PUBLISHABLE_KEY;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const isKeyValid =
-    Boolean(clerkPublishableKey) &&
-    (clerkPublishableKey.startsWith("pk_live_") || clerkPublishableKey.startsWith("pk_test_"));
-
-  if (isKeyValid) {
+  if (
+    typeof clerkPublishableKey === "string" &&
+    (clerkPublishableKey.startsWith("pk_live_") || clerkPublishableKey.startsWith("pk_test_"))
+  ) {
     return <ClerkProvider publishableKey={clerkPublishableKey}>{children}</ClerkProvider>;
   }
 
