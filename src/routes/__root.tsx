@@ -33,7 +33,7 @@ export const Route = createRootRoute({
         rel: "preload",
         as: "font",
         type: "font/woff2",
-        href: "/fonts/space-grotesk-latin.woff2",
+        href: "/fonts/space-grotesk-400.woff2",
         crossOrigin: "anonymous",
       },
       { rel: "stylesheet", href: appCss },
