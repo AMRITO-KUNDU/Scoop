@@ -80,7 +80,7 @@ const PLAN_FEATURES = [
 const FAQ = [
   {
     q: "How does SCOOP extract school information?",
-    a: "When an AI key is configured, SCOOP uses Groq tool calling — a structured extraction model — to pull events, deadlines, tasks and RSVPs out of the text you paste. With no key configured, or if the AI call fails, a built-in on-device parser does the same job without sending your text anywhere.",
+    a: "When an AI key is configured, SCOOP uses Groq tool calling — a structured extraction model — to pull events, deadlines, tasks and RSVPs out of the text you paste. With no key configured, or if the AI call fails, a built-in rule-based parser does the same extraction instead, without sending your text to an AI provider.",
   },
   {
     q: "What if the AI gets something wrong?",
@@ -244,12 +244,12 @@ function HowItWorks() {
                   Always available
                 </p>
                 <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight">
-                  On-device parser
+                  Built-in parser
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-mute">
                   With no AI key configured — or if the AI call fails — a built-in rule-based parser
-                  handles extraction right on your device. It reads dates, times and locations, and
-                  still sorts everything into the four types.
+                  does the same extraction instead, without sending your text to an AI provider. It
+                  reads dates, times and locations, and still sorts everything into the four types.
                 </p>
               </div>
             </div>
