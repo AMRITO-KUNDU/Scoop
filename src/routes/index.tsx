@@ -29,6 +29,13 @@ export const Route = createFileRoute("/")({
         content:
           "Turn school emails, party invites and WhatsApp chaos into a calm family plan in seconds.",
       },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { name: "twitter:title", content: "SCOOP — Paste the chaos. Get the plan." },
+      {
+        name: "twitter:description",
+        content:
+          "Turn school emails, party invites and WhatsApp chaos into a calm family plan in seconds.",
+      },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/` }],
     scripts: [

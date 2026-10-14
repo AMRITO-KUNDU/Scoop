@@ -1,0 +1,30 @@
+# SCOOP
+
+> SCOOP is a web app that turns school emails, WhatsApp messages, newsletters and flyer text into one calm family plan. You paste the message; it pulls out the events, deadlines, tasks and RSVPs; you review and edit them; they go into a plan you can tick off.
+
+SCOOP is built for parents and carers who are the default keeper of the family calendar. It is phone-first and runs in any modern browser.
+
+## What it does
+- Paste any school message: an email, a WhatsApp thread, a newsletter or flyer text.
+- Extract items using AI (Groq tool calling). A built-in on-device parser is the fallback when no AI key is configured or the AI call fails, and it does not send your text anywhere.
+- Show every extracted item for review: edit the title, date, time, location and notes, or remove it, before anything is saved.
+- Sort items into four types: events, deadlines, tasks and RSVPs.
+- Filter a plan to Today, This Week or All, and mark items done or delete them.
+- Push a dated item to Google Calendar, or download it as an .ics file.
+
+## What it does not do yet
+- Forwarding emails straight into SCOOP
+- Scanning paper flyers from a photo
+- A WhatsApp integration
+- Reminders or notifications
+
+## Pages
+- [Home](https://scoop-topaz.vercel.app/): what SCOOP is and how it works
+- [How it works](https://scoop-topaz.vercel.app/how-it-works): the three steps, the four item types, the two extraction paths, and FAQs
+- [About](https://scoop-topaz.vercel.app/about): the problem it solves, who it is for, and how it is built
+- [Privacy](https://scoop-topaz.vercel.app/privacy)
+- [Terms](https://scoop-topaz.vercel.app/terms)
+
+## Notes
+- A free account is required to use the app. The pages listed above are public and need no sign-in.
+- Contact: amritokundu719@gmail.com
