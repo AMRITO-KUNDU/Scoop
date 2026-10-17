@@ -1,13 +1,22 @@
-import { ClerkProvider } from '@clerk/expo';
+import { ClerkProvider, useAuth } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Palette, Spacing } from '@/constants/theme';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+// Hold the native splash until Clerk has restored the session, so the app opens
+// straight into content instead of flashing splash → spinner → content.
+// Called at module scope, before the first render, as Expo requires.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* already hidden, or no splash configured */
+});
 
 /**
  * Root layout.
@@ -27,6 +36,7 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <StatusBar style="dark" />
+      <SplashGate />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -42,8 +52,24 @@ export default function RootLayout() {
   );
 }
 
+/** Dismisses the splash once Clerk is ready. Renders nothing. */
+function SplashGate() {
+  const { isLoaded } = useAuth();
+
+  useEffect(() => {
+    if (isLoaded) void SplashScreen.hideAsync().catch(() => {});
+  }, [isLoaded]);
+
+  return null;
+}
+
 /** Better than a crash: says exactly what to set. */
 function MissingKey() {
+  useEffect(() => {
+    // Nothing is going to load, so don't leave the user staring at the splash.
+    void SplashScreen.hideAsync().catch(() => {});
+  }, []);
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.inner}>
