@@ -19,8 +19,12 @@ import { Route as PlanRouteImport } from './routes/plan'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ApiCaptureRouteImport } from './routes/api/capture'
+import { Route as ApiConnectorsRouteImport } from './routes/api/connectors'
+import { Route as ApiPlanRouteImport } from './routes/api/plan'
 import { Route as LoginSplatRouteImport } from './routes/login/$'
 import { Route as SignupSplatRouteImport } from './routes/signup/$'
+import { Route as ApiPlanIdRouteImport } from './routes/api/plan.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -72,6 +76,21 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCaptureRoute = ApiCaptureRouteImport.update({
+  id: '/api/capture',
+  path: '/api/capture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiConnectorsRoute = ApiConnectorsRouteImport.update({
+  id: '/api/connectors',
+  path: '/api/connectors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlanRoute = ApiPlanRouteImport.update({
+  id: '/api/plan',
+  path: '/api/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginSplatRoute = LoginSplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -81,6 +100,11 @@ const SignupSplatRoute = SignupSplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => SignupRoute,
+} as any)
+const ApiPlanIdRoute = ApiPlanIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiPlanRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -94,8 +118,12 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
   '/terms': typeof TermsRoute
+  '/api/capture': typeof ApiCaptureRoute
+  '/api/connectors': typeof ApiConnectorsRoute
+  '/api/plan': typeof ApiPlanRouteWithChildren
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
+  '/api/plan/$id': typeof ApiPlanIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,8 +136,12 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
   '/terms': typeof TermsRoute
+  '/api/capture': typeof ApiCaptureRoute
+  '/api/connectors': typeof ApiConnectorsRoute
+  '/api/plan': typeof ApiPlanRouteWithChildren
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
+  '/api/plan/$id': typeof ApiPlanIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,8 +155,12 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRouteWithChildren
   '/terms': typeof TermsRoute
+  '/api/capture': typeof ApiCaptureRoute
+  '/api/connectors': typeof ApiConnectorsRoute
+  '/api/plan': typeof ApiPlanRouteWithChildren
   '/login/$': typeof LoginSplatRoute
   '/signup/$': typeof SignupSplatRoute
+  '/api/plan/$id': typeof ApiPlanIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,8 +175,12 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/api/capture'
+    | '/api/connectors'
+    | '/api/plan'
     | '/login/$'
     | '/signup/$'
+    | '/api/plan/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,8 +193,12 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/api/capture'
+    | '/api/connectors'
+    | '/api/plan'
     | '/login/$'
     | '/signup/$'
+    | '/api/plan/$id'
   id:
     | '__root__'
     | '/'
@@ -167,8 +211,12 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/api/capture'
+    | '/api/connectors'
+    | '/api/plan'
     | '/login/$'
     | '/signup/$'
+    | '/api/plan/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -182,6 +230,9 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRouteWithChildren
   TermsRoute: typeof TermsRoute
+  ApiCaptureRoute: typeof ApiCaptureRoute
+  ApiConnectorsRoute: typeof ApiConnectorsRoute
+  ApiPlanRoute: typeof ApiPlanRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -256,6 +307,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/capture': {
+      id: '/api/capture'
+      path: '/api/capture'
+      fullPath: '/api/capture'
+      preLoaderRoute: typeof ApiCaptureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/connectors': {
+      id: '/api/connectors'
+      path: '/api/connectors'
+      fullPath: '/api/connectors'
+      preLoaderRoute: typeof ApiConnectorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plan': {
+      id: '/api/plan'
+      path: '/api/plan'
+      fullPath: '/api/plan'
+      preLoaderRoute: typeof ApiPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login/$': {
       id: '/login/$'
       path: '/$'
@@ -269,6 +341,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/signup/$'
       preLoaderRoute: typeof SignupSplatRouteImport
       parentRoute: typeof SignupRoute
+    }
+    '/api/plan/$id': {
+      id: '/api/plan/$id'
+      path: '/$id'
+      fullPath: '/api/plan/$id'
+      preLoaderRoute: typeof ApiPlanIdRouteImport
+      parentRoute: typeof ApiPlanRoute
     }
   }
 }
@@ -294,6 +373,17 @@ const SignupRouteChildren: SignupRouteChildren = {
 const SignupRouteWithChildren =
   SignupRoute._addFileChildren(SignupRouteChildren)
 
+interface ApiPlanRouteChildren {
+  ApiPlanIdRoute: typeof ApiPlanIdRoute
+}
+
+const ApiPlanRouteChildren: ApiPlanRouteChildren = {
+  ApiPlanIdRoute: ApiPlanIdRoute,
+}
+
+const ApiPlanRouteWithChildren =
+  ApiPlanRoute._addFileChildren(ApiPlanRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -305,17 +395,10 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRouteWithChildren,
   TermsRoute: TermsRoute,
+  ApiCaptureRoute: ApiCaptureRoute,
+  ApiConnectorsRoute: ApiConnectorsRoute,
+  ApiPlanRoute: ApiPlanRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
