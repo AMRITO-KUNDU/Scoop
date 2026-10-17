@@ -12,6 +12,7 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Border, Palette, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
+import { markContentReady } from '@/lib/boot';
 import { googleCalendarUrl, icsFileName, toIcs } from '@/lib/calendar';
 import { matchesFilter, type PlanFilter, type PlanItem } from '@/lib/plan';
 
@@ -44,6 +45,10 @@ function Plan() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load your plan.');
+    } finally {
+      // Tells the splash overlay there is real content behind it. Fires on a
+      // failed load too — an error screen is still something to hand over to.
+      markContentReady();
     }
   }, [api]);
 

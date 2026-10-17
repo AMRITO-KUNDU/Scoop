@@ -3,20 +3,28 @@ import { tokenCache } from '@clerk/expo/token-cache';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SplashOverlay } from '@/components/splash-overlay';
 import { Palette, Spacing } from '@/constants/theme';
+import { isContentReady, subscribeContentReady } from '@/lib/boot';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-// Hold the native splash until Clerk has restored the session, so the app opens
-// straight into content instead of flashing splash → spinner → content.
-// Called at module scope, before the first render, as Expo requires.
+/** How long the mark is shown at minimum, so a fast start doesn't blink. */
+const MIN_SPLASH_MS = 450;
+/** Hard ceiling: a deep link, a signed-out start, or a stalled load must still hand over. */
+const MAX_SPLASH_MS = 2500;
+
+// Hold the native splash until JS is ready, and ask iOS to cross-dissolve it
+// rather than cut. Android cross-fades by default. Both are called at module
+// scope, before any render, as Expo requires.
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* already hidden, or no splash configured */
 });
+SplashScreen.setOptions({ fade: true, duration: 400 });
 
 /**
  * Root layout.
@@ -36,7 +44,17 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <StatusBar style="dark" />
-      <SplashGate />
+      <Shell />
+    </ClerkProvider>
+  );
+}
+
+function Shell() {
+  const { isLoaded } = useAuth();
+  const ready = useSplashReady(isLoaded);
+
+  return (
+    <>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -48,19 +66,37 @@ export default function RootLayout() {
         {/* A real sub-page, so it gets the normal push animation. */}
         <Stack.Screen name="connect" options={{ animation: 'slide_from_right' }} />
       </Stack>
-    </ClerkProvider>
+      <SplashOverlay ready={ready} />
+    </>
   );
 }
 
-/** Dismisses the splash once Clerk is ready. Renders nothing. */
-function SplashGate() {
-  const { isLoaded } = useAuth();
+/**
+ * When to hand over from the splash.
+ *
+ * Waits for Clerk, for the first screen's data to settle, and for a brief
+ * minimum — so the app is never revealed mid-load. Capped, because a splash that
+ * never leaves is far worse than one that leaves early.
+ */
+function useSplashReady(clerkLoaded: boolean): boolean {
+  const [content, setContent] = useState(isContentReady());
+  const [minElapsed, setMinElapsed] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => subscribeContentReady(() => setContent(true)), []);
 
   useEffect(() => {
-    if (isLoaded) void SplashScreen.hideAsync().catch(() => {});
-  }, [isLoaded]);
+    const t = setTimeout(() => setMinElapsed(true), MIN_SPLASH_MS);
+    return () => clearTimeout(t);
+  }, []);
 
-  return null;
+  useEffect(() => {
+    if (content) return;
+    const t = setTimeout(() => setTimedOut(true), MAX_SPLASH_MS);
+    return () => clearTimeout(t);
+  }, [content]);
+
+  return clerkLoaded && minElapsed && (content || timedOut);
 }
 
 /** Better than a crash: says exactly what to set. */
