@@ -2,6 +2,7 @@ import { useAuth } from '@clerk/expo';
 import { useHostedAuth } from '@clerk/expo/hosted-auth';
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Wordmark } from '@/components/logo';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <View style={styles.centre}>
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color={Palette.ink} />
       </View>
     );
@@ -31,8 +32,11 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 /**
- * The logo, then the two ways in — the same shape as the web app's auth panel,
- * which is a wordmark above Clerk's form and nothing else. No marketing copy.
+ * The mark centred, the two ways in at the bottom, and nothing else — the web's
+ * auth panel is a wordmark above Clerk's form with no marketing copy, and this
+ * keeps that restraint.
+ *
+ * The bottom actions sit in a SafeAreaView so they clear the home indicator.
  */
 function SignInPrompt() {
   const { startHostedAuth } = useHostedAuth();
@@ -52,41 +56,44 @@ function SignInPrompt() {
   }
 
   return (
-    <View style={styles.centre}>
-      <Wordmark size={44} />
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <View style={styles.centre}>
+        <Wordmark size={44} />
+      </View>
 
       <View style={styles.actions}>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button
           label="Sign in"
           variant="yolk"
           size="lg"
           loading={busy}
           onPress={() => void signIn('sign-in')}
-          style={styles.button}
         />
         <Button
           label="Create an account"
           variant="paper"
           disabled={busy}
           onPress={() => void signIn('sign-up')}
-          style={styles.button}
         />
       </View>
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  centre: {
+  loading: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: Spacing.four,
     backgroundColor: Palette.paper,
   },
-  actions: { marginTop: Spacing.five, gap: Spacing.two, alignSelf: 'stretch', maxWidth: 380, width: '100%' },
-  button: { alignSelf: 'stretch' },
-  error: { marginTop: Spacing.three, fontSize: 13, color: Palette.hot, fontWeight: '600' },
+  safe: { flex: 1, backgroundColor: Palette.paper },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  actions: {
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+    gap: Spacing.two,
+  },
+  error: { fontSize: 13, color: Palette.hot, fontWeight: '600', marginBottom: Spacing.one },
 });

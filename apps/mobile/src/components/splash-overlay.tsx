@@ -38,7 +38,7 @@ export function SplashOverlay({ ready }: { ready: boolean }) {
     if (!ready || !handedOver) return;
     Animated.timing(opacity, {
       toValue: 0,
-      duration: 350,
+      duration: 300,
       useNativeDriver: true,
     }).start(({ finished }) => {
       if (finished) setVisible(false);
@@ -72,5 +72,5 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   // Must match `imageWidth` in the expo-splash-screen plugin config.
-  mark: { width: 220, height: 220 },
+  mark: { width: 160, height: 160 },
 });
