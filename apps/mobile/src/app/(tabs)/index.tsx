@@ -1,5 +1,3 @@
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import { CalendarDays } from 'lucide-react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -101,12 +99,26 @@ function Plan() {
     if (url) await Linking.openURL(url).catch(() => setError('Couldn’t open Google Calendar.'));
   }
 
-  /** Write the event to a file and hand it to the share sheet. */
+  /**
+   * Write the event to a file and hand it to the share sheet.
+   *
+   * Both native modules are imported here rather than at the top of the file on
+   * purpose. A module-scope import of a native module that isn't in the build
+   * throws while the route is being evaluated — which stops the route exporting
+   * anything and takes the whole navigator down with it. Deferred like this, a
+   * missing module costs the .ics button and nothing else.
+   */
   async function exportIcs(item: PlanItem) {
     setBusyId(item.id);
     try {
       const ics = toIcs(item);
       if (!ics) return;
+
+      const [{ File, Paths }, Sharing] = await Promise.all([
+        import('expo-file-system'),
+        import('expo-sharing'),
+      ]);
+
       const file = new File(Paths.cache, icsFileName(item));
       try {
         file.create();
@@ -125,7 +137,12 @@ function Plan() {
         dialogTitle: 'Add to your calendar',
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Couldn’t export that item.');
+      const message = err instanceof Error ? err.message : '';
+      setError(
+        /native module/i.test(message)
+          ? 'Saving .ics needs a full build — it isn’t available in this one.'
+          : message || 'Couldn’t export that item.',
+      );
     } finally {
       setBusyId(null);
     }

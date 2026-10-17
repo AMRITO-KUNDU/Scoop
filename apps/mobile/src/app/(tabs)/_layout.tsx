@@ -1,7 +1,5 @@
 import { Tabs } from 'expo-router';
 
-import { Palette } from '@/constants/theme';
-
 /**
  * Plan and Capture are the app's two main destinations, so they live in a tab
  * navigator rather than on a stack.
@@ -21,7 +19,6 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: { display: 'none' },
-        sceneStyle: { backgroundColor: Palette.paper },
       }}
     >
       <Tabs.Screen name="index" />
