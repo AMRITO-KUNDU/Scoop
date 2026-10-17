@@ -1,4 +1,5 @@
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, Sparkles } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -23,6 +24,7 @@ export default function CaptureScreen() {
 
 function Capture() {
   const api = useApi();
+  const router = useRouter();
 
   const [text, setText] = useState('');
   const [extracting, setExtracting] = useState(false);
@@ -68,6 +70,8 @@ function Capture() {
       setDrafts(null);
       setText('');
       setEngine(null);
+      // Show the result: the plan is where the items now live.
+      router.navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add items.');
     } finally {
@@ -76,7 +80,11 @@ function Capture() {
   }
 
   return (
-    <Screen sticker="Capture" title="Dump the chaos.">
+    <Screen
+      sticker="Capture"
+      title="Dump the chaos."
+      subtitle="Paste a school email, WhatsApp newsletter or flyer. We’ll make the plan."
+    >
       <Panel style={styles.panel}>
         <TextInput
           value={text}
@@ -122,7 +130,13 @@ function Capture() {
 
       {error ? <EmptyState title="Something went wrong" body={error} /> : null}
 
-      {showEmpty ? <EmptyState title="Nothing pasted yet" body="Paste a message above to get started." /> : null}
+      {showEmpty ? (
+        <EmptyState
+          icon={Sparkles}
+          title="Nothing pasted yet"
+          body="Drop in a messy school email or tap a chip above. We’ll pull out events, deadlines, tasks and RSVPs."
+        />
+      ) : null}
 
       {notice ? (
         <Panel style={styles.panel} tone={Palette.paper2}>

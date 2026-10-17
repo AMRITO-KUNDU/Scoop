@@ -1,4 +1,4 @@
-import { Check, Trash2 } from 'lucide-react-native';
+import { CalendarPlus, Check, Download, Trash2 } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -13,16 +13,24 @@ const SYNCED_LABEL: Record<ConnectorId, string> = {
   googletasks: 'Tasks',
 };
 
-/** One item in the plan, with its actions and where it has been synced. */
+/**
+ * One item in the plan, laid out as the web app lays it out: a row of actions —
+ * mark done, and for anything with a date, open in Google Calendar or export an
+ * .ics — with delete on its own line below.
+ */
 export function ItemCard({
   item,
   busy,
   onToggleDone,
+  onOpenGoogle,
+  onExportIcs,
   onRemove,
 }: {
   item: PlanItem;
   busy: boolean;
   onToggleDone: () => void;
+  onOpenGoogle: () => void;
+  onExportIcs: () => void;
   onRemove: () => void;
 }) {
   return (
@@ -56,16 +64,39 @@ export function ItemCard({
             onPress={onToggleDone}
             style={styles.action}
           />
-          <Button
-            label="Delete"
-            icon={Trash2}
-            variant="paper"
-            size="sm"
-            disabled={busy}
-            onPress={onRemove}
-            style={styles.action}
-          />
+          {item.date ? (
+            <>
+              <Button
+                label="Google"
+                icon={CalendarPlus}
+                variant="cyan"
+                size="sm"
+                disabled={busy}
+                onPress={onOpenGoogle}
+                style={styles.action}
+              />
+              <Button
+                label=".ics"
+                icon={Download}
+                variant="paper"
+                size="sm"
+                disabled={busy}
+                onPress={onExportIcs}
+                style={styles.action}
+              />
+            </>
+          ) : null}
         </View>
+
+        <Button
+          label="Delete"
+          icon={Trash2}
+          variant="paper"
+          size="sm"
+          disabled={busy}
+          onPress={onRemove}
+          style={styles.deleteRow}
+        />
       </View>
     </Panel>
   );
@@ -97,4 +128,5 @@ const styles = StyleSheet.create({
   },
   actions: { marginTop: Spacing.three, flexDirection: 'row', gap: Spacing.two },
   action: { flex: 1 },
+  deleteRow: { marginTop: Spacing.two },
 });

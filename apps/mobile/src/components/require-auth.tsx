@@ -3,8 +3,8 @@ import { useHostedAuth } from '@clerk/expo/hosted-auth';
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { Wordmark } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Panel } from '@/components/ui/panel';
 import { Palette, Spacing } from '@/constants/theme';
 
 /**
@@ -30,6 +30,10 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * The logo, then the two ways in — the same shape as the web app's auth panel,
+ * which is a wordmark above Clerk's form and nothing else. No marketing copy.
+ */
 function SignInPrompt() {
   const { startHostedAuth } = useHostedAuth();
   const [busy, setBusy] = useState(false);
@@ -49,43 +53,40 @@ function SignInPrompt() {
 
   return (
     <View style={styles.centre}>
-      <Panel style={styles.card}>
-        <View style={styles.inner}>
-          <Text style={styles.title}>Sign in to SCOOP</Text>
-          <Text style={styles.body}>
-            Your plan is tied to your account, so it's there when you come back — on this phone or
-            on the web.
-          </Text>
+      <Wordmark size={44} />
 
-          <View style={styles.actions}>
-            <Button
-              label="Sign in"
-              variant="yolk"
-              size="lg"
-              loading={busy}
-              onPress={() => void signIn('sign-in')}
-            />
-            <Button
-              label="Create an account"
-              variant="paper"
-              disabled={busy}
-              onPress={() => void signIn('sign-up')}
-            />
-          </View>
+      <View style={styles.actions}>
+        <Button
+          label="Sign in"
+          variant="yolk"
+          size="lg"
+          loading={busy}
+          onPress={() => void signIn('sign-in')}
+          style={styles.button}
+        />
+        <Button
+          label="Create an account"
+          variant="paper"
+          disabled={busy}
+          onPress={() => void signIn('sign-up')}
+          style={styles.button}
+        />
+      </View>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-        </View>
-      </Panel>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  centre: { flex: 1, justifyContent: 'center', padding: Spacing.four, backgroundColor: Palette.paper },
-  card: { alignSelf: 'stretch', maxWidth: 460, width: '100%', marginHorizontal: 'auto' },
-  inner: { padding: Spacing.four },
-  title: { fontSize: 24, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
-  body: { marginTop: Spacing.two, fontSize: 14, lineHeight: 20, color: Palette.mute },
-  actions: { marginTop: Spacing.four, gap: Spacing.two },
+  centre: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.four,
+    backgroundColor: Palette.paper,
+  },
+  actions: { marginTop: Spacing.five, gap: Spacing.two, alignSelf: 'stretch', maxWidth: 380, width: '100%' },
+  button: { alignSelf: 'stretch' },
   error: { marginTop: Spacing.three, fontSize: 13, color: Palette.hot, fontWeight: '600' },
 });

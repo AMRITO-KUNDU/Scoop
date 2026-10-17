@@ -1,7 +1,9 @@
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { CalendarDays } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
 import { ItemCard } from '@/components/item-card';
@@ -10,6 +12,7 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Border, Palette, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
+import { googleCalendarUrl, icsFileName, toIcs } from '@/lib/calendar';
 import { matchesFilter, type PlanFilter, type PlanItem } from '@/lib/plan';
 
 const FILTERS: { id: PlanFilter; label: string }[] = [
@@ -44,9 +47,18 @@ function Plan() {
     }
   }, [api]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  /**
+   * Refetch whenever the tab is focused, not just on mount.
+   *
+   * Tabs stay mounted, so a screen that only loaded once would keep showing a
+   * stale list after items were added on the Capture tab — the list looked
+   * wrong until you pulled to refresh.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   const visible = useMemo(
     () => (items ?? []).filter((item) => matchesFilter(item, filter)),
@@ -74,6 +86,41 @@ function Plan() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn’t delete that item.');
       await load();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function openGoogle(item: PlanItem) {
+    const url = googleCalendarUrl(item);
+    if (url) await Linking.openURL(url).catch(() => setError('Couldn’t open Google Calendar.'));
+  }
+
+  /** Write the event to a file and hand it to the share sheet. */
+  async function exportIcs(item: PlanItem) {
+    setBusyId(item.id);
+    try {
+      const ics = toIcs(item);
+      if (!ics) return;
+      const file = new File(Paths.cache, icsFileName(item));
+      try {
+        file.create();
+      } catch {
+        // Already there from a previous export; write() overwrites it.
+      }
+      await file.write(ics);
+
+      if (!(await Sharing.isAvailableAsync())) {
+        setError('Sharing isn’t available on this device.');
+        return;
+      }
+      await Sharing.shareAsync(file.uri, {
+        mimeType: 'text/calendar',
+        UTI: 'public.calendar-event',
+        dialogTitle: 'Add to your calendar',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Couldn’t export that item.');
     } finally {
       setBusyId(null);
     }
@@ -143,6 +190,8 @@ function Plan() {
           item={item}
           busy={busyId === item.id}
           onToggleDone={() => void toggleDone(item)}
+          onOpenGoogle={() => void openGoogle(item)}
+          onExportIcs={() => void exportIcs(item)}
           onRemove={() => void remove(item)}
         />
       ))}

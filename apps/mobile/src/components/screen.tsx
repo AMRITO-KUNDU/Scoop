@@ -3,7 +3,9 @@ import { ScrollView, StyleSheet, Text, View, type RefreshControlProps } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConnectorsButton } from '@/components/connectors-button';
+import { Logo } from '@/components/logo';
 import { NavBar } from '@/components/nav-bar';
+import { SignOutButton } from '@/components/sign-out-button';
 import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
 
 /** The sticker pill used for the small uppercase label above a screen title. */
@@ -22,9 +24,9 @@ export function Sticker({ label, tone = Palette.grape }: { label: string; tone?:
  * Common screen chrome: safe area, scrolling content, a centred max-width column
  * and consistent padding. Every screen uses it so they line up.
  *
- * The header row carries the two main destinations on the left and Connectors on
- * the right — Connectors is a secondary screen, reached by a button rather than
- * sitting alongside Plan and Capture.
+ * The header mirrors the web app's: the SCOOP mark on the left, the two main
+ * destinations in the middle, and the secondary actions on the right. As on the
+ * web, the wordmark itself is dropped at this size — the mark carries it.
  */
 export function Screen({
   sticker,
@@ -47,9 +49,16 @@ export function Screen({
         refreshControl={refreshControl}
       >
         <View style={styles.header}>
-          <NavBar />
-          <ConnectorsButton />
+          <Logo size={34} />
+          <View style={styles.headerNav}>
+            <NavBar />
+          </View>
+          <View style={styles.headerRight}>
+            <ConnectorsButton />
+            <SignOutButton />
+          </View>
         </View>
+
         {sticker ? <Sticker label={sticker} /> : null}
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -72,10 +81,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: Spacing.two,
-    marginBottom: Spacing.three,
+    marginBottom: Spacing.four,
   },
+  headerNav: { flex: 1, flexShrink: 1 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   sticker: {
     alignSelf: 'flex-start',
     borderRadius: Radius.pill,
