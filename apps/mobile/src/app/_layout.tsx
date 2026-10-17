@@ -12,6 +12,10 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 /**
  * Root layout.
  *
+ * Two layers: the `(tabs)` group holds the main destinations (Plan, Capture) so
+ * they stay mounted and switch instantly, and `connect` is a single screen
+ * pushed on top of them from the header button.
+ *
  * `publishableKey` must be passed explicitly — environment variables inside
  * node_modules are not inlined in production React Native builds — and
  * `tokenCache` persists the session to expo-secure-store, without which the user
@@ -29,9 +33,10 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: Palette.paper },
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="capture" />
-        <Stack.Screen name="connect" />
+        {/* No transition between tabs — they're peers, not a drill-down. */}
+        <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+        {/* A real sub-page, so it gets the normal push animation. */}
+        <Stack.Screen name="connect" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </ClerkProvider>
   );

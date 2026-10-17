@@ -35,7 +35,8 @@ development but fails in a production build.
 ## How it fits together
 
 ```
-src/app/          screens (expo-router): plan, capture, connectors
+src/app/(tabs)/   the two main screens, as tabs: plan and capture
+src/app/connect.tsx  connectors, pushed from the header button
 src/lib/api.ts    the only door to the backend — Clerk token in a Bearer header
 src/lib/plan.ts   item types, formatting and filters, mirroring apps/web
 src/constants/    design tokens, lifted from the web app's styles.css
@@ -52,6 +53,11 @@ business rules stay in one place.
 **Auth.** A native app has no session cookie, so every request carries the Clerk
 session token as `Authorization: Bearer …`, which the web app's
 `clerkMiddleware()` accepts.
+
+**Why tabs.** Plan and Capture are a tab navigator, so both stay mounted:
+switching is instant, there's no push animation per tap, and a half-typed message
+on Capture survives a look at the plan. Connectors is a pushed screen reached
+from the header button, so back returns to the tab you came from.
 
 ## Not done yet
 

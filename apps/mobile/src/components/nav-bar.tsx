@@ -3,20 +3,23 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 
+/** The app's two main destinations. Connectors is a button, not a tab. */
 const ITEMS = [
   { href: '/', label: 'Plan' },
   { href: '/capture', label: 'Capture' },
-  { href: '/connect', label: 'Connectors' },
 ] as const;
 
 /**
- * Three-way nav shown at the top of every screen.
+ * Switches between the two tab screens.
  *
- * Navigates with `useRouter().push` rather than `<Link asChild>`. Link's asChild
- * renders the child through expo-router's Slot, which clones the element and
- * needs a flattened style object — it raises a render error when the child's
- * `style` is an array, which is the idiomatic React Native form. Using the
- * router directly keeps the child a plain Pressable and sidesteps the clone.
+ * `router.navigate` is the tab-switch call — it resolves to a jump, so it never
+ * pushes a screen or replays a transition. (Note `navigate` no longer pops back
+ * to an existing route in current Expo Router; it behaves like `push` on a
+ * stack. That is why the main destinations are tabs, not stacked screens.)
+ *
+ * Navigation goes through the router rather than `<Link asChild>` because
+ * Link's asChild renders its child through expo-router's Slot, which clones the
+ * element and needs a flattened style object.
  */
 export function NavBar() {
   const pathname = usePathname();
@@ -29,8 +32,8 @@ export function NavBar() {
         return (
           <Pressable
             key={item.href}
-            onPress={() => router.push(item.href)}
-            accessibilityRole="link"
+            onPress={() => router.navigate(item.href)}
+            accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             style={StyleSheet.flatten([styles.item, active && styles.itemActive])}
           >
@@ -45,7 +48,7 @@ export function NavBar() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: Spacing.two, marginBottom: Spacing.three },
+  row: { flexDirection: 'row', gap: Spacing.two },
   item: {
     borderWidth: Border.thick,
     borderColor: Palette.ink,

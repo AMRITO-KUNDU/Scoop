@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View, type RefreshControlProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ConnectorsButton } from '@/components/connectors-button';
 import { NavBar } from '@/components/nav-bar';
 import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
 
@@ -20,6 +21,10 @@ export function Sticker({ label, tone = Palette.grape }: { label: string; tone?:
 /**
  * Common screen chrome: safe area, scrolling content, a centred max-width column
  * and consistent padding. Every screen uses it so they line up.
+ *
+ * The header row carries the two main destinations on the left and Connectors on
+ * the right — Connectors is a secondary screen, reached by a button rather than
+ * sitting alongside Plan and Capture.
  */
 export function Screen({
   sticker,
@@ -41,7 +46,10 @@ export function Screen({
         keyboardShouldPersistTaps="handled"
         refreshControl={refreshControl}
       >
-        <NavBar />
+        <View style={styles.header}>
+          <NavBar />
+          <ConnectorsButton />
+        </View>
         {sticker ? <Sticker label={sticker} /> : null}
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -60,6 +68,13 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+    marginBottom: Spacing.three,
   },
   sticker: {
     alignSelf: 'flex-start',
