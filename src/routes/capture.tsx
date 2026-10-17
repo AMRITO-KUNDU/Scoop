@@ -87,7 +87,7 @@ function CaptureScreen() {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       });
-      const synced = result.synced ? ` ${result.synced} sent to your calendar.` : "";
+      const synced = result.synced ? ` ${result.synced} synced.` : "";
       if (result.added === 0) {
         toast.error("These items are already in your plan.");
       } else if (result.added < drafts.length) {

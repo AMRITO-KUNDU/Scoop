@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  CalendarCheck,
   CalendarDays,
   CalendarPlus,
   Check,
   Download,
+  ListChecks,
   MapPin,
   ScanText,
   Trash2,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -18,6 +21,23 @@ import { downloadIcs, googleCalendarUrl } from "@/lib/calendar";
 import { formatWhen, matchesFilter, type PlanFilter, type PlanItem } from "@/lib/plan";
 import { deletePlanItem, listPlanItems, setPlanItemDone } from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
+import type { ConnectorId } from "@/lib/connectors";
+
+const SYNCED_META: Record<ConnectorId, { label: string; icon: LucideIcon }> = {
+  googlecalendar: { label: "Calendar", icon: CalendarCheck },
+  googletasks: { label: "Tasks", icon: ListChecks },
+};
+
+/** Footer chip showing where an item has already been sent. */
+function SyncedChip({ id }: { id: ConnectorId }) {
+  const { label, icon: Icon } = SYNCED_META[id];
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border-thick border-ink bg-cyan px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+      <Icon className="size-3" strokeWidth={2.6} />
+      {label}
+    </span>
+  );
+}
 
 export const Route = createFileRoute("/plan")({
   head: () => ({
@@ -194,6 +214,13 @@ function PlanScreen() {
                   ) : null}
                   {item.notes ? (
                     <p className="mt-2 text-sm leading-relaxed text-ink">{item.notes}</p>
+                  ) : null}
+                  {item.syncedTo.length ? (
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                      {item.syncedTo.map((id) => (
+                        <SyncedChip key={id} id={id} />
+                      ))}
+                    </div>
                   ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2 sm:w-40 sm:flex-col sm:flex-nowrap">

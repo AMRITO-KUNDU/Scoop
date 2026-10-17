@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { isItemType, type ExtractedItem, type ItemType, type PlanItem } from "@/lib/plan";
-import { normaliseTimezone, pushItemsToCalendar } from "@/lib/server/connectors";
+import type { ConnectorId } from "@/lib/connectors";
+import { normaliseTimezone, pushItemsToConnectors } from "@/lib/server/connectors";
 
 type Row = {
   id: number;
@@ -14,7 +15,17 @@ type Row = {
   notes: string | null;
   done: boolean | number | string;
   created_at: string;
+  calendar_event_id?: string | null;
+  tasks_task_id?: string | null;
 };
+
+/** Which connectors this row has already been pushed to. */
+function syncedToFrom(row: Row): ConnectorId[] {
+  const out: ConnectorId[] = [];
+  if (row.calendar_event_id) out.push("googlecalendar");
+  if (row.tasks_task_id) out.push("googletasks");
+  return out;
+}
 
 export function isValidCalendarDate(dateStr: string | null | undefined): boolean {
   if (!dateStr || typeof dateStr !== "string") return false;
@@ -52,6 +63,7 @@ function toItem(row: Row): PlanItem {
     notes: row.notes,
     done: row.done === true || row.done === "t" || row.done === 1 || row.done === "true",
     createdAt: row.created_at,
+    syncedTo: syncedToFrom(row),
   };
 }
 
@@ -113,7 +125,8 @@ export const listPlanItems = createServerFn({ method: "GET" })
     if (!context.userId) throw new Error("Unauthorized");
     const sql = await getSql();
     const rows = await sql<Row>`
-      select id, type, title, date, time, location, notes, done, created_at
+      select id, type, title, date, time, location, notes, done, created_at,
+             calendar_event_id, tasks_task_id
       from plan_items
       where user_id = ${context.userId}
       order by date asc, time asc, id desc
@@ -185,9 +198,9 @@ export const addPlanItems = createServerFn({ method: "POST" })
       }
     }
 
-    // Best-effort: if a calendar is connected, push the new dated items now so
-    // they sync "automatically". Never allowed to fail the add.
-    const sync = await pushItemsToCalendar(userId, inserted, data.timezone).catch(() => ({
+    // Best-effort: if a service is connected, push the new items now so they sync
+    // "automatically". Never allowed to fail the add.
+    const sync = await pushItemsToConnectors(userId, inserted, data.timezone).catch(() => ({
       synced: 0,
       failed: 0,
     }));

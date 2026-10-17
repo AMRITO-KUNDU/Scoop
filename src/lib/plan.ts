@@ -1,4 +1,5 @@
 import { format, isToday, isThisWeek, parseISO, isValid } from "date-fns";
+import type { ConnectorId } from "@/lib/connectors";
 
 export const ITEM_TYPES = ["event", "deadline", "task", "rsvp"] as const;
 export type ItemType = (typeof ITEM_TYPES)[number];
@@ -18,6 +19,8 @@ export type PlanItem = ExtractedItem & {
   id: number;
   done: boolean;
   createdAt: string;
+  /** Connectors this item has already been pushed to. */
+  syncedTo: ConnectorId[];
 };
 
 export type TypeTone = "cyan" | "hot" | "yolk" | "grape";

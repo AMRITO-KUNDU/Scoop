@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarPlus, Check, Loader2, RefreshCw, type LucideIcon } from "lucide-react";
+import { CalendarPlus, Check, ListChecks, Loader2, RefreshCw, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import type { ConnectorId, ConnectorState, ConnectorStatus } from "@/lib/connectors";
-import { connectGoogleCalendar, getConnectors, syncPlanToCalendar } from "@/lib/server/connectors";
+import { connectConnector, getConnectors, syncConnectors } from "@/lib/server/connectors";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/connect")({
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/connect")({
 
 const CONNECTOR_ICON: Record<ConnectorId, LucideIcon> = {
   googlecalendar: CalendarPlus,
+  googletasks: ListChecks,
 };
 
 const STATE_LABEL: Record<ConnectorState, string> = {
@@ -58,18 +59,18 @@ function ConnectorsScreen() {
         // Returning from Google? Say so, then quietly bring the plan across.
         if (new URLSearchParams(window.location.search).has("connectedAccountId")) {
           window.history.replaceState({}, "", window.location.pathname);
-          toast.success("Google Calendar connected.");
+          toast.success("Connected.");
         }
 
-        const google = rows.find((row) => row.id === "googlecalendar");
-        if (google?.state !== "connected" || google.pendingCount === 0) return;
-
         // Connected, and something is waiting — push it without being asked.
+        const waiting = rows.some((row) => row.state === "connected" && row.pendingCount > 0);
+        if (!waiting) return;
+
         try {
-          const result = await syncPlanToCalendar({ data: { timezone: timezone() } });
+          const result = await syncConnectors({ data: { timezone: timezone() } });
           if (!alive || result.synced === 0) return;
           toast.success(
-            `Synced ${result.synced} item${result.synced === 1 ? "" : "s"} to your calendar.`,
+            `Synced ${result.synced} item${result.synced === 1 ? "" : "s"} to your connected services.`,
           );
           setConnectors(await getConnectors());
         } catch {
@@ -88,7 +89,7 @@ function ConnectorsScreen() {
   async function onConnect(id: ConnectorId) {
     setBusy(id);
     try {
-      const { url } = await connectGoogleCalendar();
+      const { url } = await connectConnector({ data: { id } });
       window.location.assign(url);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not start the connection.");
@@ -99,7 +100,7 @@ function ConnectorsScreen() {
   async function onSync(id: ConnectorId) {
     setBusy(id);
     try {
-      const result = await syncPlanToCalendar({ data: { timezone: timezone() } });
+      const result = await syncConnectors({ data: { timezone: timezone(), id } });
       if (result.synced === 0 && result.failed === 0) {
         toast.success("Everything is already in your calendar.");
       } else if (result.failed > 0) {
@@ -237,12 +238,12 @@ function ConnectorCard({
             {busy ? (
               <>
                 <Loader2 className="size-5 animate-spin" strokeWidth={2.4} />
-                Taking you to Google…
+                Connecting…
               </>
             ) : (
               <>
                 <Icon className="size-5" strokeWidth={2.4} />
-                Connect Google Calendar
+                Connect {connector.name}
               </>
             )}
           </Button>
