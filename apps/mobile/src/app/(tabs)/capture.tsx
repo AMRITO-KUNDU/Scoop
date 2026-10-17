@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -32,6 +33,7 @@ function Capture() {
   const [error, setError] = useState<string | null>(null);
 
   const canExtract = text.trim().length >= 8 && !extracting;
+  const showEmpty = !extracting && drafts === null && text.trim().length === 0;
 
   async function extract() {
     setExtracting(true);
@@ -42,7 +44,7 @@ function Capture() {
       setDrafts(result.items.map((item, index) => ({ ...item, key: String(index) })));
       setEngine(result.engine);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not read that message.');
+      setError(err instanceof Error ? err.message : 'Extract failed.');
     } finally {
       setExtracting(false);
     }
@@ -60,25 +62,21 @@ function Capture() {
       const synced = result.synced ? ` ${result.synced} synced.` : '';
       setNotice(
         result.added === 0
-          ? 'Those items are already in your plan.'
+          ? 'These items are already in your plan.'
           : `Added ${result.added} item${result.added === 1 ? '' : 's'} to your plan.${synced}`,
       );
       setDrafts(null);
       setText('');
       setEngine(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not add those items.');
+      setError(err instanceof Error ? err.message : 'Could not add items.');
     } finally {
       setAdding(false);
     }
   }
 
   return (
-    <Screen
-      sticker="Capture"
-      title="Dump the chaos."
-      subtitle="Paste a WhatsApp message, a school email, or just type what's in your head."
-    >
+    <Screen sticker="Capture" title="Dump the chaos.">
       <Panel style={styles.panel}>
         <TextInput
           value={text}
@@ -88,7 +86,7 @@ function Capture() {
           }}
           multiline
           textAlignVertical="top"
-          placeholder="Dear families, welcome back to Year 3…"
+          placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
           placeholderTextColor={Palette.mute}
           accessibilityLabel="Paste a school message"
           style={styles.input}
@@ -112,7 +110,8 @@ function Capture() {
       </View>
 
       <Button
-        label={extracting ? 'Reading…' : 'Make sense of it'}
+        label={extracting ? 'Making a plan…' : 'Extract'}
+        icon={extracting ? undefined : ArrowRight}
         variant="yolk"
         size="lg"
         loading={extracting}
@@ -122,6 +121,8 @@ function Capture() {
       />
 
       {error ? <EmptyState title="Something went wrong" body={error} /> : null}
+
+      {showEmpty ? <EmptyState title="Nothing pasted yet" body="Paste a message above to get started." /> : null}
 
       {notice ? (
         <Panel style={styles.panel} tone={Palette.paper2}>
@@ -133,16 +134,21 @@ function Capture() {
 
       {drafts ? (
         <>
+          {engine ? (
+            <View style={styles.engineSticker}>
+              <Text style={styles.engineText}>
+                {engine === 'groq' ? 'Extracted with Groq' : 'Extracted on-device'}
+              </Text>
+            </View>
+          ) : null}
           <Text style={styles.sectionTitle}>
+            {drafts.length ? 'We made a plan!' : 'No items found'}
+          </Text>
+          <Text style={styles.sectionBody}>
             {drafts.length
               ? `${drafts.length} item${drafts.length === 1 ? '' : 's'} — tweak anything before it goes in`
-              : 'No items found'}
+              : 'Nothing to pull from that message.'}
           </Text>
-          {engine ? (
-            <Text style={styles.engine}>
-              {engine === 'groq' ? 'Extracted with Groq' : 'Extracted by the built-in parser'}
-            </Text>
-          ) : null}
 
           {drafts.map((draft) => (
             <DraftCard
@@ -157,7 +163,7 @@ function Capture() {
 
           {drafts.length ? (
             <Button
-              label="Add to my plan"
+              label={adding ? 'Adding…' : 'Looks Good – Add to Plan'}
               variant="ink"
               size="lg"
               loading={adding}
@@ -193,11 +199,27 @@ const styles = StyleSheet.create({
   primary: { marginTop: Spacing.four },
   noticeInner: { padding: Spacing.three },
   notice: { fontSize: 14, fontWeight: '600', color: Palette.ink },
-  sectionTitle: {
+  engineSticker: {
+    alignSelf: 'flex-start',
     marginTop: Spacing.five,
-    fontSize: 18,
-    fontWeight: '800',
-    color: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.grape,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  engine: { marginTop: Spacing.one, fontSize: 12, fontWeight: '600', color: Palette.mute },
+  engineText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: Palette.paper,
+  },
+  sectionTitle: {
+    marginTop: Spacing.three,
+    fontSize: 22,
+    fontWeight: '900',
+    color: Palette.ink,
+    textTransform: 'uppercase',
+  },
+  sectionBody: { marginTop: Spacing.one, fontSize: 13, fontWeight: '600', color: Palette.mute },
 });

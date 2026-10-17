@@ -1,13 +1,15 @@
+import { Cable } from 'lucide-react-native';
 import { usePathname, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { Border, Palette, Radius, Spacing } from '@/constants/theme';
+import { Border, Palette, Radius, Shadow } from '@/constants/theme';
 
 /**
- * Connectors is a secondary screen, not one of the main destinations — the same
- * way the web app reaches it from a small button rather than the main nav. It
- * sits at the right of the header and pushes onto the stack, so back returns
- * you to whichever tab you came from.
+ * Connectors is a secondary screen, not one of the main destinations — the web
+ * app reaches it from a compact icon-only button in the header, and this matches
+ * that: a circular cable glyph beside the nav pills.
+ *
+ * It pushes onto the stack, so back returns you to whichever tab you came from.
  */
 export function ConnectorsButton() {
   const pathname = usePathname();
@@ -22,23 +24,26 @@ export function ConnectorsButton() {
       accessibilityState={{ selected: active }}
       style={StyleSheet.flatten([styles.button, active && styles.buttonActive])}
     >
-      <Text style={StyleSheet.flatten([styles.label, active && styles.labelActive])}>
-        Connectors
-      </Text>
+      <Cable size={18} strokeWidth={2.4} color={Palette.ink} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: Border.thick,
     borderColor: Palette.ink,
     borderRadius: Radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: Palette.grape,
+    backgroundColor: Palette.paper,
+    shadowColor: Palette.ink,
+    shadowOffset: { width: Shadow.sm, height: Shadow.sm },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: Shadow.sm,
   },
-  buttonActive: { backgroundColor: Palette.ink },
-  label: { fontSize: 12, fontWeight: '800', letterSpacing: 0.4, color: Palette.paper },
-  labelActive: { color: Palette.paper },
+  buttonActive: { backgroundColor: Palette.yolk },
 });

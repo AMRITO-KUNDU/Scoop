@@ -40,7 +40,8 @@ src/app/connect.tsx  connectors, pushed from the header button
 src/lib/api.ts    the only door to the backend — Clerk token in a Bearer header
 src/lib/plan.ts   item types, formatting and filters, mirroring apps/web
 src/constants/    design tokens, lifted from the web app's styles.css
-src/components/   the shared UI kit (Panel, Button, TypeBadge, …)
+src/components/   the shared UI kit (Panel, Button, TypeBadge, …), using the
+                  same Lucide icons as the web app via lucide-react-native
 ```
 
 **Why a separate API rather than the web app's server functions.** TanStack
@@ -67,5 +68,4 @@ from the header button, so back returns to the tab you came from.
 - **Space Grotesk.** The web app self-hosts it as `.woff2`, which React Native
   can't load; the app uses the system font for now. Bundling the `.ttf` files via
   `expo-font` would close the gap.
-- **Icons.** The web app uses lucide; the mobile UI is text and colour only.
 - **Push notifications.** Not built anywhere yet.

@@ -1,6 +1,7 @@
+import { Trash2 } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Button } from '@/components/ui/button';
+import { TypeBadge } from '@/components/type-badge';
 import { Field } from '@/components/ui/field';
 import { Panel } from '@/components/ui/panel';
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
@@ -9,8 +10,9 @@ import { ITEM_TYPES, TYPE_LABEL, type DraftItem, type ItemType } from '@/lib/pla
 /**
  * One extracted item, editable before it goes into the plan.
  *
- * Same fields the web app exposes — nothing is saved until the user confirms,
- * so a wrong date or a bad title is theirs to fix first.
+ * Same fields the web app exposes, and the same compact icon-only remove button
+ * beside the type badge — nothing is saved until the user confirms, so a wrong
+ * date or a bad title is theirs to fix first.
  */
 export function DraftCard({
   draft,
@@ -27,6 +29,18 @@ export function DraftCard({
   return (
     <Panel style={styles.wrap}>
       <View style={styles.inner}>
+        <View style={styles.head}>
+          <TypeBadge type={draft.type} />
+          <Pressable
+            onPress={onRemove}
+            accessibilityRole="button"
+            accessibilityLabel="Remove item"
+            style={styles.remove}
+          >
+            <Trash2 size={16} strokeWidth={2.4} color={Palette.ink} />
+          </Pressable>
+        </View>
+
         <View style={styles.chips}>
           {ITEM_TYPES.map((type) => {
             const active = draft.type === type;
@@ -72,15 +86,15 @@ export function DraftCard({
         <Field
           label="Location"
           value={draft.location ?? ''}
+          placeholder="Optional"
           onChangeText={(v) => set('location', v.trim() ? v.trim() : null)}
         />
         <Field
           label="Notes"
           value={draft.notes ?? ''}
+          placeholder="Optional"
           onChangeText={(v) => set('notes', v.trim() ? v.trim() : null)}
         />
-
-        <Button label="Remove" variant="paper" size="sm" onPress={onRemove} />
       </View>
     </Panel>
   );
@@ -89,6 +103,17 @@ export function DraftCard({
 const styles = StyleSheet.create({
   wrap: { marginTop: Spacing.three },
   inner: { padding: Spacing.three, gap: Spacing.three },
+  head: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  remove: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.md,
+    backgroundColor: Palette.paper,
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one + 2 },
   chip: {
     borderWidth: Border.thick,

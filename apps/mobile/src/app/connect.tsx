@@ -1,3 +1,4 @@
+import { CalendarPlus, ListChecks, RefreshCw, type LucideIcon } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -11,6 +12,11 @@ import { Palette, Radius, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
 import { STATE_LABEL, type ConnectorId, type ConnectorStatus } from '@/lib/connectors';
 import { deviceTimezone } from '@/lib/plan';
+
+const CONNECTOR_ICON: Record<ConnectorId, LucideIcon> = {
+  googlecalendar: CalendarPlus,
+  googletasks: ListChecks,
+};
 
 export default function ConnectScreen() {
   return (
@@ -51,7 +57,9 @@ function Connectors() {
       try {
         const result = await api.sync(deviceTimezone());
         if (!alive || result.synced === 0) return;
-        setNotice(`Synced ${result.synced} item${result.synced === 1 ? '' : 's'}.`);
+        setNotice(
+          `Synced ${result.synced} item${result.synced === 1 ? '' : 's'} to your connected services.`,
+        );
         setConnectors(await api.connectors());
       } catch {
         // A sync hiccup shouldn't take the page down; the button still works.
@@ -84,12 +92,12 @@ function Connectors() {
       const result = await api.sync(deviceTimezone(), id);
       setNotice(
         result.synced === 0 && result.failed === 0
-          ? 'Everything is already synced.'
-          : `Synced ${result.synced}${result.failed ? `, ${result.failed} failed` : ''}.`,
+          ? 'Everything is already in your calendar.'
+          : `Synced ${result.synced} item${result.synced === 1 ? '' : 's'}.`,
       );
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not sync.');
+      setError(err instanceof Error ? err.message : 'Could not sync to Google Calendar.');
     } finally {
       setBusy(null);
     }
@@ -98,8 +106,8 @@ function Connectors() {
   return (
     <Screen
       sticker="Connectors"
-      title="Link your services."
-      subtitle="Connect one and it keeps itself in step with your plan."
+      title="Connectors."
+      subtitle="Link the services SCOOP works with. Connect one and it keeps itself in step with your plan."
     >
       {error ? <EmptyState title="Something went wrong" body={error} /> : null}
 
@@ -117,15 +125,21 @@ function Connectors() {
 
       {(connectors ?? []).map((connector) => {
         const connected = connector.state === 'connected';
+        const Icon = CONNECTOR_ICON[connector.id];
+        const isBusy = busy === connector.id;
+
         return (
           <Panel key={connector.id} style={styles.panel}>
             <View style={styles.inner}>
               <View style={styles.head}>
-                <Text style={styles.name}>{connector.name}</Text>
+                <View style={styles.nameRow}>
+                  <View style={[styles.iconBadge, connected && styles.iconBadgeOn]}>
+                    <Icon size={20} strokeWidth={2.4} color={Palette.ink} />
+                  </View>
+                  <Text style={styles.name}>{connector.name}</Text>
+                </View>
                 <View style={[styles.state, connected && styles.stateOn]}>
-                  <Text style={[styles.stateLabel, connected && styles.stateLabelOn]}>
-                    {STATE_LABEL[connector.state]}
-                  </Text>
+                  <Text style={styles.stateLabel}>{STATE_LABEL[connector.state]}</Text>
                 </View>
               </View>
 
@@ -134,31 +148,33 @@ function Connectors() {
 
               {connected ? (
                 <Text style={styles.counts}>
-                  {connector.syncedCount} synced
-                  {connector.pendingCount > 0 ? ` · ${connector.pendingCount} waiting` : ''}
+                  {connector.syncedCount} in your calendar
+                  {connector.pendingCount > 0 ? ` · ${connector.pendingCount} syncing` : ''}
                 </Text>
               ) : null}
 
               {connector.state === 'unavailable' ? (
                 <Text style={styles.unavailable}>
-                  Not available right now. Please try again later.
+                  Not available on this account right now. Please try again later.
                 </Text>
               ) : connected ? (
                 <Button
-                  label="Sync again"
+                  label={isBusy ? 'Syncing…' : 'Sync again'}
+                  icon={isBusy ? undefined : RefreshCw}
                   variant="paper"
                   size="sm"
-                  loading={busy === connector.id}
+                  loading={isBusy}
                   onPress={() => void sync(connector.id)}
                   style={styles.action}
                 />
               ) : (
                 <>
                   <Button
-                    label={`Connect ${connector.name}`}
+                    label={isBusy ? 'Connecting…' : `Connect ${connector.name}`}
+                    icon={isBusy ? undefined : Icon}
                     variant="yolk"
                     size="lg"
-                    loading={busy === connector.id}
+                    loading={isBusy}
                     onPress={() => void connect(connector.id)}
                     style={styles.action}
                   />
@@ -182,8 +198,31 @@ function Connectors() {
 const styles = StyleSheet.create({
   panel: { marginTop: Spacing.four },
   inner: { padding: Spacing.four },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  name: { flexShrink: 1, fontSize: 19, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
+  head: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
+  iconBadge: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: Palette.ink,
+    borderRadius: Radius.md,
+    backgroundColor: Palette.paper2,
+  },
+  iconBadgeOn: { backgroundColor: Palette.cyan },
+  name: {
+    flexShrink: 1,
+    fontSize: 19,
+    fontWeight: '900',
+    color: Palette.ink,
+    textTransform: 'uppercase',
+  },
   state: {
     borderWidth: 3,
     borderColor: Palette.ink,
@@ -193,8 +232,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   stateOn: { backgroundColor: Palette.cyan },
-  stateLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.4, textTransform: 'uppercase', color: Palette.ink },
-  stateLabelOn: { color: Palette.ink },
+  stateLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: Palette.ink,
+  },
   description: { marginTop: Spacing.two, fontSize: 14, fontWeight: '600', color: Palette.mute },
   detail: { marginTop: Spacing.three, fontSize: 14, lineHeight: 20, color: Palette.mute },
   counts: {
@@ -206,7 +250,7 @@ const styles = StyleSheet.create({
     color: Palette.mute,
   },
   unavailable: { marginTop: Spacing.three, fontSize: 12, color: Palette.mute },
-  action: { marginTop: Spacing.four },
+  action: { marginTop: Spacing.four, alignSelf: 'flex-start' },
   hint: { marginTop: Spacing.two, fontSize: 12, color: Palette.mute },
   noticeInner: { padding: Spacing.three },
   notice: { fontSize: 14, fontWeight: '600', color: Palette.ink },

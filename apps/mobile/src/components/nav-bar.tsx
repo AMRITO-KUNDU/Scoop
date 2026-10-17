@@ -1,16 +1,18 @@
+import { CalendarDays, ScanText, type LucideIcon } from 'lucide-react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 
-/** The app's two main destinations. Connectors is a button, not a tab. */
-const ITEMS = [
-  { href: '/', label: 'Plan' },
-  { href: '/capture', label: 'Capture' },
-] as const;
+/** Same two destinations, and the same order, as the web app's nav. */
+const ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/capture', label: 'Capture', icon: ScanText },
+  { href: '/', label: 'Plan', icon: CalendarDays },
+];
 
 /**
- * Switches between the two tab screens.
+ * The main destinations, as the web app's segmented pill group: one bordered
+ * container, an icon-and-label pill per tab, active pill in yolk.
  *
  * `router.navigate` is the tab-switch call — it resolves to a jump, so it never
  * pushes a screen or replays a transition. (Note `navigate` no longer pops back
@@ -26,7 +28,7 @@ export function NavBar() {
   const router = useRouter();
 
   return (
-    <View style={styles.row}>
+    <View style={styles.group}>
       {ITEMS.map((item) => {
         const active = pathname === item.href;
         return (
@@ -37,9 +39,8 @@ export function NavBar() {
             accessibilityState={{ selected: active }}
             style={StyleSheet.flatten([styles.item, active && styles.itemActive])}
           >
-            <Text style={StyleSheet.flatten([styles.label, active && styles.labelActive])}>
-              {item.label}
-            </Text>
+            <item.icon size={16} strokeWidth={2.4} color={Palette.ink} />
+            <Text style={styles.label}>{item.label}</Text>
           </Pressable>
         );
       })}
@@ -48,16 +49,24 @@ export function NavBar() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: Spacing.two },
-  item: {
+  group: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: Border.thick,
     borderColor: Palette.ink,
     borderRadius: Radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: Palette.paper2,
+    backgroundColor: Palette.paper,
+    padding: 3,
+    gap: 2,
   },
-  itemActive: { backgroundColor: Palette.ink },
-  label: { fontSize: 12, fontWeight: '800', letterSpacing: 0.4, color: Palette.ink },
-  labelActive: { color: Palette.paper },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: Radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  itemActive: { backgroundColor: Palette.yolk },
+  label: { fontSize: 14, fontWeight: '800', letterSpacing: -0.2, color: Palette.ink },
 });

@@ -1,3 +1,4 @@
+import { Check, Trash2 } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,7 @@ export function ItemCard({
         <View style={styles.actions}>
           <Button
             label={item.done ? 'Done' : 'Mark done'}
+            icon={Check}
             variant={item.done ? 'yolk' : 'paper'}
             size="sm"
             disabled={busy}
@@ -56,6 +58,7 @@ export function ItemCard({
           />
           <Button
             label="Delete"
+            icon={Trash2}
             variant="paper"
             size="sm"
             disabled={busy}

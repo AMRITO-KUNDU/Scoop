@@ -1,19 +1,20 @@
+import { CalendarDays } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
 import { ItemCard } from '@/components/item-card';
 import { RequireAuth } from '@/components/require-auth';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
-import { Palette, Spacing } from '@/constants/theme';
+import { Border, Palette, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
 import { matchesFilter, type PlanFilter, type PlanItem } from '@/lib/plan';
 
 const FILTERS: { id: PlanFilter; label: string }[] = [
   { id: 'today', label: 'Today' },
-  { id: 'week', label: 'This week' },
+  { id: 'week', label: 'This Week' },
   { id: 'all', label: 'All' },
 ];
 
@@ -58,7 +59,7 @@ function Plan() {
       await api.setDone(item.id, !item.done);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update that item.');
+      setError(err instanceof Error ? err.message : 'Couldn’t update that item.');
     } finally {
       setBusyId(null);
     }
@@ -71,7 +72,7 @@ function Plan() {
     try {
       await api.remove(item.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete that item.');
+      setError(err instanceof Error ? err.message : 'Couldn’t delete that item.');
       await load();
     } finally {
       setBusyId(null);
@@ -80,8 +81,9 @@ function Plan() {
 
   return (
     <Screen
-      sticker="Your plan"
-      title="Everything in one place."
+      sticker="Plan"
+      title="Your plan."
+      subtitle="What’s on — today, this week, or everything. Push dated items to Google Calendar."
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -95,21 +97,22 @@ function Plan() {
     >
       <View style={styles.filters}>
         {FILTERS.map((f) => {
-          const active = filter === f.id;
+          const on = filter === f.id;
           return (
-            <Button
+            <Pressable
               key={f.id}
-              label={f.label}
-              size="sm"
-              variant={active ? 'ink' : 'paper'}
               onPress={() => setFilter(f.id)}
-              style={styles.filter}
-            />
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+              style={StyleSheet.flatten([styles.filter, on && styles.filterOn])}
+            >
+              <Text style={styles.filterLabel}>{f.label}</Text>
+            </Pressable>
           );
         })}
       </View>
 
-      {error ? <EmptyState title="Something went wrong" body={error} /> : null}
+      {error ? <EmptyState title="Could not load your plan" body={error} /> : null}
 
       {items === null && !error ? (
         <EmptyState title="Loading your plan…" body="One moment." />
@@ -117,6 +120,7 @@ function Plan() {
 
       {items !== null && visible.length === 0 && !error ? (
         <EmptyState
+          icon={CalendarDays}
           title={items.length ? 'Nothing in this view' : 'Your plan is empty'}
           body={
             items.length
@@ -127,7 +131,7 @@ function Plan() {
             <Button
               label="Go to Capture"
               variant="yolk"
-              onPress={() => router.push('/capture')}
+              onPress={() => router.navigate('/capture')}
             />
           }
         />
@@ -147,6 +151,23 @@ function Plan() {
 }
 
 const styles = StyleSheet.create({
-  filters: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.four },
-  filter: { flex: 1 },
+  filters: {
+    marginTop: Spacing.four,
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.paper,
+    padding: 3,
+    gap: 2,
+    shadowColor: Palette.ink,
+    shadowOffset: { width: Shadow.sm, height: Shadow.sm },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: Shadow.sm,
+  },
+  filter: { borderRadius: Radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
+  filterOn: { backgroundColor: Palette.cyan },
+  filterLabel: { fontSize: 14, fontWeight: '800', color: Palette.ink },
 });
