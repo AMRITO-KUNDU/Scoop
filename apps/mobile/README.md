@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# SCOOP — mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The native app. Same plan, same connectors, same rules as the web app — it just
+talks to the backend over HTTP instead of running the server itself.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Setup
 
 ```bash
-npm run reset-project
+cd apps/mobile
+npm install
+cp .env.example .env      # then fill it in
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Two values are required in `.env`:
 
-### Other setup steps
+- `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` — from the Clerk dashboard.
+- `EXPO_PUBLIC_API_URL` — the deployed web app's origin. The mobile app calls the
+  JSON API in `apps/web/src/routes/api/*`.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Also, once per Clerk project: enable the **Native API** on the *Native
+applications* page, and register `com.amritokundu.scoop` as both the iOS bundle
+identifier and the Android package name. Without that, sign-in works in
+development but fails in a production build.
 
-## Learn more
+## How it fits together
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/app/          screens (expo-router): plan, capture, connectors
+src/lib/api.ts    the only door to the backend — Clerk token in a Bearer header
+src/lib/plan.ts   item types, formatting and filters, mirroring apps/web
+src/constants/    design tokens, lifted from the web app's styles.css
+src/components/   the shared UI kit (Panel, Button, TypeBadge, …)
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**Why a separate API rather than the web app's server functions.** TanStack
+Start server functions are same-origin RPC and deliberately not callable from
+outside the app; a native client on another origin needs real HTTP endpoints. So
+`apps/web/src/routes/api/*` exposes the same operations, and those routes are
+thin adapters that call the very same server functions — validation, auth and
+business rules stay in one place.
 
-## Join the community
+**Auth.** A native app has no session cookie, so every request carries the Clerk
+session token as `Authorization: Bearer …`, which the web app's
+`clerkMiddleware()` accepts.
 
-Join our community of developers creating universal apps.
+## Not done yet
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Full editing parity.** Drafts can be edited (title, date, time, location,
+  notes, type) before saving, but items already in the plan can't be edited on
+  mobile — only marked done or deleted.
+- **Space Grotesk.** The web app self-hosts it as `.woff2`, which React Native
+  can't load; the app uses the system font for now. Bundling the `.ttf` files via
+  `expo-font` would close the gap.
+- **Icons.** The web app uses lucide; the mobile UI is text and colour only.
+- **Push notifications.** Not built anywhere yet.

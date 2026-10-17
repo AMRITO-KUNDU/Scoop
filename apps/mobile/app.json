@@ -1,16 +1,19 @@
 {
   "expo": {
-    "name": "scoop",
+    "name": "SCOOP",
     "slug": "scoop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "scoop",
-    "userInterfaceStyle": "automatic",
+    "scheme": "scoopapp",
+    "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.amritokundu.scoop",
+      "supportsTablet": true
     },
     "android": {
+      "package": "com.amritokundu.scoop",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -25,10 +28,12 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      "@clerk/expo",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#faf6f0",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }

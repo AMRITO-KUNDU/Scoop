@@ -1,18 +1,69 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { ClerkProvider } from '@clerk/expo';
+import { tokenCache } from '@clerk/expo/token-cache';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { Palette, Spacing } from '@/constants/theme';
 
-SplashScreen.preventAutoHideAsync();
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+/**
+ * Root layout.
+ *
+ * `publishableKey` must be passed explicitly — environment variables inside
+ * node_modules are not inlined in production React Native builds — and
+ * `tokenCache` persists the session to expo-secure-store, without which the user
+ * is signed out on every cold start.
+ */
+export default function RootLayout() {
+  if (!publishableKey) return <MissingKey />;
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <StatusBar style="dark" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Palette.paper },
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="capture" />
+        <Stack.Screen name="connect" />
+      </Stack>
+    </ClerkProvider>
   );
 }
+
+/** Better than a crash: says exactly what to set. */
+function MissingKey() {
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.inner}>
+        <Text style={styles.title}>Almost there</Text>
+        <Text style={styles.body}>
+          Add your Clerk publishable key to a .env file in apps/mobile and restart:
+        </Text>
+        <Text style={styles.code}>EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_…</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: Palette.paper },
+  inner: { flex: 1, justifyContent: 'center', padding: Spacing.four },
+  title: { fontSize: 26, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
+  body: { marginTop: Spacing.two, fontSize: 14, lineHeight: 20, color: Palette.mute },
+  code: {
+    marginTop: Spacing.three,
+    fontFamily: 'monospace',
+    fontSize: 12,
+    color: Palette.ink,
+    backgroundColor: Palette.paper2,
+    padding: Spacing.three,
+    borderRadius: 8,
+  },
+});
