@@ -8,9 +8,18 @@ talks to the backend over HTTP instead of running the server itself.
 ```bash
 cd apps/mobile
 npm install
+npx expo install @clerk/expo expo-secure-store expo-auth-session expo-crypto date-fns
 cp .env.example .env      # then fill it in
-npx expo start
+npx expo start --clear
 ```
+
+**Always add packages with `npx expo install <package>`, not `npm install
+<package>`.** `expo install` reads the project's Expo SDK and picks the version
+that matches it; plain `npm install` happily pulls a release built for a
+different SDK and you find out at runtime. That is how the versions in
+`package.json` were chosen, so a fresh clone only needs `npm install` — the
+`expo install` line is there to repair or re-resolve them, and to add anything
+new the same way.
 
 Two values are required in `.env`:
 
