@@ -27,13 +27,75 @@ export function composioApiKey(): string | undefined {
   return env("COMPOSIO_API_KEY");
 }
 
-export function googleCalendarAuthConfigId(): string | undefined {
-  return env("COMPOSIO_GCAL_AUTH_CONFIG_ID");
+/** True when Composio is switched on for this deployment. */
+export function composioConfigured(): boolean {
+  return Boolean(composioApiKey());
 }
 
-/** True when the operator has supplied everything the connector needs. */
-export function composioConfigured(): boolean {
-  return Boolean(composioApiKey() && googleCalendarAuthConfigId());
+// Resolved once per server instance — the auth config is project-wide, not
+// per-user, so there is nothing to recompute per request.
+let cachedAuthConfigId: string | undefined;
+
+/**
+ * The Google Calendar auth config id.
+ *
+ * Operators never have to create one: if the project has no config for this
+ * toolkit we ask Composio to make one with its own managed OAuth app, so the
+ * only thing a deployment needs is `COMPOSIO_API_KEY`. Setting
+ * `COMPOSIO_GCAL_AUTH_CONFIG_ID` overrides this when you want your own OAuth
+ * client (for branded consent screens) instead.
+ */
+export async function googleCalendarAuthConfigId(): Promise<string> {
+  const override = env("COMPOSIO_GCAL_AUTH_CONFIG_ID");
+  if (override) return override;
+  if (cachedAuthConfigId) return cachedAuthConfigId;
+
+  // Reuse an existing config for this toolkit, if the project already has one.
+  const listed = await call("/auth_configs", { method: "GET" });
+  if (listed.ok) {
+    const configs = [
+      ...asArray(pick(listed.body, ["items"])),
+      ...asArray(pick(listed.body, ["data", "items"])),
+      ...asArray(pick(listed.body, ["data"])),
+    ];
+    const existing = configs.find((config) => {
+      const slug =
+        asString(pick(config, ["toolkit", "slug"])) ?? asString(pick(config, ["toolkit_slug"]));
+      return slug?.toLowerCase() === GOOGLECALENDAR_SLUG;
+    });
+    const id = existing ? (asString(existing.id) ?? asString(existing.nanoid)) : undefined;
+    if (id) {
+      cachedAuthConfigId = id;
+      return id;
+    }
+  }
+
+  // Otherwise let Composio create one with its managed OAuth app.
+  const created = await call("/auth_configs", {
+    method: "POST",
+    body: JSON.stringify({
+      toolkit: { slug: GOOGLECALENDAR_SLUG },
+      auth_config: {
+        type: "use_composio_managed_auth",
+        credentials: {},
+        restrict_to_following_tools: [],
+      },
+    }),
+  });
+
+  const id =
+    asString(pick(created.body, ["auth_config", "id"])) ??
+    asString(pick(created.body, ["data", "auth_config", "id"])) ??
+    asString(pick(created.body, ["id"])) ??
+    asString(pick(created.body, ["data", "id"]));
+
+  if (!id) {
+    throw new Error(
+      `Composio could not prepare Google Calendar (HTTP ${created.status}). Check COMPOSIO_API_KEY.`,
+    );
+  }
+  cachedAuthConfigId = id;
+  return id;
 }
 
 type Json = Record<string, unknown>;
@@ -146,8 +208,7 @@ export async function createGoogleCalendarLink(
   userId: string,
   callbackUrl?: string,
 ): Promise<string> {
-  const authConfigId = googleCalendarAuthConfigId();
-  if (!authConfigId) throw new Error("COMPOSIO_GCAL_AUTH_CONFIG_ID is not configured.");
+  const authConfigId = await googleCalendarAuthConfigId();
 
   const res = await call("/connected_accounts/link", {
     method: "POST",

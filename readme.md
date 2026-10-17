@@ -125,15 +125,23 @@ Built for the device you always have with you:
 
 ### Connectors
 
-SCOOP can push dated plan items into Google Calendar. This runs through Composio,
-which holds the Google OAuth — SCOOP never sees your Google token.
+SCOOP pushes dated plan items into Google Calendar through
+[Composio](https://composio.dev), which holds the Google OAuth — SCOOP never sees
+your Google token.
 
-1. Create an API key at [app.composio.dev](https://app.composio.dev) → `COMPOSIO_API_KEY`
-2. Create a **Google Calendar** auth config there and copy its id → `COMPOSIO_GCAL_AUTH_CONFIG_ID`
-3. Restart, open **Connectors** in the app, and hit *Connect Google Calendar*
+**Setup is one environment variable.** Create an API key at
+[app.composio.dev](https://app.composio.dev) and set `COMPOSIO_API_KEY`. That's
+it — SCOOP creates the Google Calendar auth config itself using Composio's
+managed OAuth app, so there is nothing to create by hand and nothing for your
+users to configure.
 
-Once connected, items sync as you save them, and the Connectors page has a
-*Sync to Google Calendar* button for anything already in your plan.
+From there a user just hits **Connect Google Calendar**, approves at Google, and
+their plan syncs: new items as they save them, plus everything already in the
+plan on first connect. They never see a setting.
+
+To put your own app name on Google's consent screen instead of Composio's,
+create a Google Calendar auth config in the Composio dashboard with your own
+OAuth client and set `COMPOSIO_GCAL_AUTH_CONFIG_ID` to its id.
 
 ### Quick Start
 

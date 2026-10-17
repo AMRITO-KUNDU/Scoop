@@ -54,8 +54,9 @@ export const getConnectors = createServerFn({ method: "GET" })
     if (!context.userId) throw new Error("Unauthorized");
     const counts = await calendarCounts(context.userId);
 
-    // Only ask Composio for connection state when it is actually configured.
-    let state: ConnectorState = "not_configured";
+    // Only ask Composio for connection state when it is switched on. A failure
+    // here is not the user's problem, so it degrades to "not connected".
+    let state: ConnectorState = "unavailable";
     if (composioConfigured()) {
       const account = await findGoogleCalendarAccount(context.userId).catch(() => null);
       state = account ? "connected" : "ready";
@@ -75,9 +76,7 @@ export const connectGoogleCalendar = createServerFn({ method: "POST" })
   .handler(async ({ context }): Promise<{ url: string }> => {
     if (!context.userId) throw new Error("Unauthorized");
     if (!composioConfigured()) {
-      throw new Error(
-        "Google Calendar isn't configured yet. Set COMPOSIO_API_KEY and COMPOSIO_GCAL_AUTH_CONFIG_ID.",
-      );
+      throw new Error("Calendar connections aren't available right now. Please try again later.");
     }
     const url = await createGoogleCalendarLink(context.userId, `${SITE_URL}/connect`);
     return { url };
@@ -136,9 +135,7 @@ export const syncPlanToCalendar = createServerFn({ method: "POST" })
   .handler(async ({ context, data }): Promise<PushResult> => {
     if (!context.userId) throw new Error("Unauthorized");
     if (!composioConfigured()) {
-      throw new Error(
-        "Google Calendar isn't configured yet. Set COMPOSIO_API_KEY and COMPOSIO_GCAL_AUTH_CONFIG_ID.",
-      );
+      throw new Error("Calendar sync isn't available right now. Please try again later.");
     }
 
     const sql = await getSql();

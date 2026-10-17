@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarPlus, Loader2, RefreshCw, Sparkles, type LucideIcon } from "lucide-react";
+import { CalendarPlus, Check, Loader2, RefreshCw, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,18 @@ const CONNECTOR_ICON: Record<ConnectorId, LucideIcon> = {
 };
 
 const STATE_LABEL: Record<ConnectorState, string> = {
-  not_configured: "Not configured",
+  unavailable: "Unavailable",
   ready: "Not connected",
   connected: "Connected",
 };
+
+function timezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
 
 function ConnectorsPage() {
   return (
@@ -40,23 +48,42 @@ function ConnectorsScreen() {
 
   useEffect(() => {
     let alive = true;
-    void getConnectors()
-      .then((rows) => {
-        if (alive) setConnectors(rows);
-      })
-      .catch((err: unknown) => {
+
+    void (async () => {
+      try {
+        const rows = await getConnectors();
+        if (!alive) return;
+        setConnectors(rows);
+
+        // Returning from Google? Say so, then quietly bring the plan across.
+        if (new URLSearchParams(window.location.search).has("connectedAccountId")) {
+          window.history.replaceState({}, "", window.location.pathname);
+          toast.success("Google Calendar connected.");
+        }
+
+        const google = rows.find((row) => row.id === "googlecalendar");
+        if (google?.state !== "connected" || google.pendingCount === 0) return;
+
+        // Connected, and something is waiting — push it without being asked.
+        try {
+          const result = await syncPlanToCalendar({ data: { timezone: timezone() } });
+          if (!alive || result.synced === 0) return;
+          toast.success(
+            `Synced ${result.synced} item${result.synced === 1 ? "" : "s"} to your calendar.`,
+          );
+          setConnectors(await getConnectors());
+        } catch {
+          // A sync hiccup shouldn't take the page down; the button still works.
+        }
+      } catch (err) {
         if (alive) setError(err instanceof Error ? err.message : "Could not load connectors.");
-      });
+      }
+    })();
+
     return () => {
       alive = false;
     };
   }, []);
-
-  function refresh() {
-    void getConnectors()
-      .then(setConnectors)
-      .catch(() => toast.error("Could not refresh connectors."));
-  }
 
   async function onConnect(id: ConnectorId) {
     setBusy(id);
@@ -72,8 +99,7 @@ function ConnectorsScreen() {
   async function onSync(id: ConnectorId) {
     setBusy(id);
     try {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const result = await syncPlanToCalendar({ data: { timezone } });
+      const result = await syncPlanToCalendar({ data: { timezone: timezone() } });
       if (result.synced === 0 && result.failed === 0) {
         toast.success("Everything is already in your calendar.");
       } else if (result.failed > 0) {
@@ -81,7 +107,7 @@ function ConnectorsScreen() {
       } else {
         toast.success(`Synced ${result.synced} item${result.synced === 1 ? "" : "s"}.`);
       }
-      refresh();
+      setConnectors(await getConnectors());
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not sync to Google Calendar.");
     } finally {
@@ -180,67 +206,52 @@ function ConnectorCard({
 
       {connected ? (
         <p className="mt-3 text-xs font-bold uppercase tracking-widest text-mute">
-          {connector.syncedCount} synced · {connector.pendingCount} waiting
+          {connector.syncedCount} in your calendar
+          {connector.pendingCount > 0 ? ` · ${connector.pendingCount} syncing` : ""}
         </p>
       ) : null}
 
-      {connector.state === "not_configured" ? (
-        <div className="mt-4 space-y-2">
-          {connector.requires.map((name) => (
-            <EnvRow key={name} name={name} hint={envHint(name)} />
-          ))}
-          <p className="text-xs font-medium text-mute">
-            Add these to your environment, then reload this page.
-          </p>
+      {connector.state === "unavailable" ? (
+        <p className="mt-4 text-xs font-medium text-mute">
+          Not available on this account right now. Please try again later.
+        </p>
+      ) : connected ? (
+        <div className="mt-5">
+          <Button variant="paper" size="sm" onClick={onSync} disabled={busy}>
+            {busy ? (
+              <>
+                <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />
+                Syncing…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="size-4" strokeWidth={2.4} />
+                Sync again
+              </>
+            )}
+          </Button>
         </div>
       ) : (
-        <div className="mt-5 flex flex-wrap gap-3">
-          {connected ? (
-            <Button variant="ink" onClick={onSync} disabled={busy}>
-              {busy ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />
-                  Syncing…
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="size-4" strokeWidth={2.4} />
-                  Sync to Google Calendar
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button variant="yolk" onClick={onConnect} disabled={busy}>
-              {busy ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />
-                  Opening Google…
-                </>
-              ) : (
-                <>
-                  <Sparkles className="size-4" strokeWidth={2.4} />
-                  Connect Google Calendar
-                </>
-              )}
-            </Button>
-          )}
+        <div className="mt-5">
+          <Button variant="yolk" size="lg" onClick={onConnect} disabled={busy}>
+            {busy ? (
+              <>
+                <Loader2 className="size-5 animate-spin" strokeWidth={2.4} />
+                Taking you to Google…
+              </>
+            ) : (
+              <>
+                <Icon className="size-5" strokeWidth={2.4} />
+                Connect Google Calendar
+              </>
+            )}
+          </Button>
+          <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-mute">
+            <Check className="size-3.5 shrink-0" strokeWidth={2.6} />
+            One click — you'll approve access at Google, then you're done.
+          </p>
         </div>
       )}
     </section>
-  );
-}
-
-function envHint(name: string) {
-  if (name === "COMPOSIO_API_KEY") return "from app.composio.dev → API keys";
-  if (name === "COMPOSIO_GCAL_AUTH_CONFIG_ID") return "ac_… for the Google Calendar auth config";
-  return "";
-}
-
-function EnvRow({ name, hint }: { name: string; hint: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-xl border-thick border-ink bg-paper-2 px-3 py-2">
-      <code className="min-w-0 flex-1 truncate font-display text-sm font-bold">{name}</code>
-      {hint ? <span className="hidden text-xs font-medium text-mute sm:inline">{hint}</span> : null}
-    </div>
   );
 }
