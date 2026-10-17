@@ -127,10 +127,26 @@ function Privacy() {
               </p>
             </Section>
 
+            <Section heading="Connectors">
+              <p>
+                You can connect SCOOP to Google Calendar and Google Tasks. If you do, the items
+                SCOOP sends — their title, date, time, location and notes — reach that service
+                through Composio, which holds the connection on your behalf. SCOOP never sees or
+                stores your Google password or access token.
+              </p>
+              <p>
+                Nothing goes to Google unless you connect a service, and you can revoke access
+                from your Google account whenever you like. Items you have already sent stay in
+                your Google account until you remove them there.
+              </p>
+            </Section>
+
             <Section heading="Sharing">
               <p>
                 We share data only with the services that run SCOOP: Clerk (authentication), Neon
-                (database) and Groq (AI extraction). We do not sell personal data.
+                (database) and Groq (AI extraction). If you connect a service, the items you send
+                to it go to Google through Composio — see Connectors above. We do not sell
+                personal data.
               </p>
             </Section>
 

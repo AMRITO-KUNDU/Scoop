@@ -66,7 +66,7 @@ All your extracted items become:
 - **Filters** - Narrow the plan to Today, This Week or All
 - **Done and delete** - Tick items off or remove them; the plan stays current
 - **Calendar export** - Open any dated item in Google Calendar, or download it as an `.ics` file
-- **Google Calendar connector** - Connect your calendar once and dated items sync to it automatically (via [Composio](https://composio.dev))
+- **Google connectors** - Connect Google Calendar and Google Tasks once and your plan syncs to them automatically (via [Composio](https://composio.dev))
 - **Duplicate protection** - Re-pasting the same message won't add the same item twice
 
 ### 👨‍👩‍👧‍👦 **Built for School Life**
@@ -125,9 +125,16 @@ Built for the device you always have with you:
 
 ### Connectors
 
-SCOOP pushes dated plan items into Google Calendar through
+SCOOP connects to Google Calendar and Google Tasks through
 [Composio](https://composio.dev), which holds the Google OAuth — SCOOP never sees
 your Google token.
+
+- **Google Calendar** takes anything with a date.
+- **Google Tasks** takes the things you have to do: tasks, deadlines and RSVPs,
+  with the due date filled in where you gave one.
+
+Connect either or both. Each item shows a small chip in your plan once it has
+been sent, so you can see what went where.
 
 **Setup is one environment variable.** Create an API key at
 [app.composio.dev](https://app.composio.dev) and set `COMPOSIO_API_KEY`. That's
@@ -135,9 +142,9 @@ it — SCOOP creates the Google Calendar auth config itself using Composio's
 managed OAuth app, so there is nothing to create by hand and nothing for your
 users to configure.
 
-From there a user just hits **Connect Google Calendar**, approves at Google, and
-their plan syncs: new items as they save them, plus everything already in the
-plan on first connect. They never see a setting.
+From there a user just hits **Connect**, approves at Google, and their plan
+syncs: new items as they save them, plus everything already in the plan on first
+connect. They never see a setting.
 
 #### Do I need a Google Cloud project?
 
@@ -168,10 +175,10 @@ credentials, and set `COMPOSIO_GCAL_AUTH_CONFIG_ID` to that config's id.
 
 - **"App is blocked"** — the auth config is requesting a scope Google hasn't
   approved for that OAuth client. With managed auth, remove the extra scope
-  (drop `COMPOSIO_GCAL_SCOPES`); with your own client, submit the scopes for
+  (drop the `..._SCOPES` override); with your own client, submit the scopes for
   verification.
-- **Events don't appear but connecting worked** — the connection may be missing
-  the calendar scope. Set `COMPOSIO_GCAL_SCOPES` to
+- **Items don't appear but connecting worked** — the connection may be missing a
+  scope. Set `COMPOSIO_GCAL_SCOPES` to
   `https://www.googleapis.com/auth/calendar.events`, then reconnect so the new
   scope set is granted.
 - **The connection shows as expired** — the user revoked access in Google, or
