@@ -34,8 +34,8 @@ export function AccountMenu({ showSignup = true }: { showSignup?: boolean }) {
       <Link
         to="/connect"
         className="inline-flex size-10 items-center justify-center rounded-full border-thick border-ink bg-paper shadow-hard-sm hover:bg-yolk"
-        aria-label="Connect services"
-        title="Connect"
+        aria-label="Connectors"
+        title="Connectors"
       >
         <Cable className="size-4" strokeWidth={2.4} />
       </Link>

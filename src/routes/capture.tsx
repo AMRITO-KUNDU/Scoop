@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { EXAMPLE_CHIPS } from "@/lib/examples";
 import type { DraftItem } from "@/lib/plan";
 import { extractItems, type ExtractEngine } from "@/lib/server/extract";
-import { getIntegrationsStatus } from "@/lib/server/integrations";
 import { addPlanItems } from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
 
@@ -48,26 +47,9 @@ function CaptureScreen() {
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [engine, setEngine] = useState<ExtractEngine | null>(null);
-  const [liveEngine, setLiveEngine] = useState<"groq" | "local">("local");
 
   const canExtract = text.trim().length >= 8 && !extracting;
   const showEmpty = !extracting && drafts === null && text.trim().length === 0;
-
-  useEffect(() => {
-    let alive = true;
-    void getIntegrationsStatus()
-      .then((status) => {
-        if (!alive) return;
-        if (status.groq.wired) setLiveEngine("groq");
-        else setLiveEngine("local");
-      })
-      .catch(() => {
-        /* keep default */
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   async function onExtract() {
     if (!canExtract) return;
@@ -102,16 +84,18 @@ function CaptureScreen() {
       const result = await addPlanItems({
         data: {
           items: drafts.map(({ key: _key, ...item }) => item),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       });
+      const synced = result.synced ? ` ${result.synced} sent to your calendar.` : "";
       if (result.added === 0) {
         toast.error("These items are already in your plan.");
       } else if (result.added < drafts.length) {
         toast.success(
-          `${result.added} new item(s) added to your plan. ${drafts.length - result.added} duplicate(s) skipped.`,
+          `${result.added} new item(s) added to your plan. ${drafts.length - result.added} duplicate(s) skipped.${synced}`,
         );
       } else {
-        toast.success("Added to your plan.");
+        toast.success(`Added to your plan.${synced}`);
       }
       await navigate({ to: "/plan" });
     } catch (err) {
@@ -121,8 +105,6 @@ function CaptureScreen() {
       setSaving(false);
     }
   }
-
-  const readingCopy = liveEngine === "groq" ? "Groq is reading this." : "Pulling out the dates.";
 
   return (
     <div>
@@ -215,7 +197,7 @@ function CaptureScreen() {
             <p className="mt-4 font-display text-2xl font-black uppercase tracking-tight">
               Making a plan…
             </p>
-            <p className="mt-1 text-sm font-medium">{readingCopy}</p>
+            <p className="mt-1 text-sm font-medium">Pulling out the dates.</p>
           </div>
         </section>
       ) : null}

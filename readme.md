@@ -65,7 +65,8 @@ All your extracted items become:
 - **One list** - Events, deadlines, tasks and RSVPs in a single plan
 - **Filters** - Narrow the plan to Today, This Week or All
 - **Done and delete** - Tick items off or remove them; the plan stays current
-- **Calendar export** - Push a dated item to Google Calendar, or download it as an `.ics` file
+- **Calendar export** - Open any dated item in Google Calendar, or download it as an `.ics` file
+- **Google Calendar connector** - Connect your calendar once and dated items sync to it automatically (via [Composio](https://composio.dev))
 - **Duplicate protection** - Re-pasting the same message won't add the same item twice
 
 ### 👨‍👩‍👧‍👦 **Built for School Life**
@@ -121,6 +122,18 @@ Built for the device you always have with you:
 ---
 
 ## 🚀 Getting Started
+
+### Connectors
+
+SCOOP can push dated plan items into Google Calendar. This runs through Composio,
+which holds the Google OAuth — SCOOP never sees your Google token.
+
+1. Create an API key at [app.composio.dev](https://app.composio.dev) → `COMPOSIO_API_KEY`
+2. Create a **Google Calendar** auth config there and copy its id → `COMPOSIO_GCAL_AUTH_CONFIG_ID`
+3. Restart, open **Connectors** in the app, and hit *Connect Google Calendar*
+
+Once connected, items sync as you save them, and the Connectors page has a
+*Sync to Google Calendar* button for anything already in your plan.
 
 ### Quick Start
 

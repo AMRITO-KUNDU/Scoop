@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { parseExtractedItems } from "@/lib/extract-parse";
-import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODELS, readTrimmedEnv } from "@/lib/integrations";
+import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODELS, readTrimmedEnv } from "@/lib/groq";
 import { localExtract } from "@/lib/local-extract";
 import type { ExtractedItem } from "@/lib/plan";
 

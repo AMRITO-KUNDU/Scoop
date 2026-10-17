@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { isItemType, type ExtractedItem, type ItemType, type PlanItem } from "@/lib/plan";
+import { normaliseTimezone, pushItemsToCalendar } from "@/lib/server/connectors";
 
 type Row = {
   id: number;
@@ -122,7 +123,7 @@ export const listPlanItems = createServerFn({ method: "GET" })
 
 export const addPlanItems = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { items: ExtractedItem[] }) => {
+  .validator((input: { items: ExtractedItem[]; timezone?: string }) => {
     if (!input || typeof input !== "object" || !Array.isArray(input.items)) {
       throw new Error("Invalid payload: items array is required.");
     }
@@ -135,7 +136,7 @@ export const addPlanItems = createServerFn({ method: "POST" })
       .filter((x): x is ExtractedItem => x !== null);
 
     if (!items.length) throw new Error("Nothing to add.");
-    return { items };
+    return { items, timezone: normaliseTimezone(input.timezone) };
   })
   .handler(async ({ context, data }) => {
     if (!context.userId) throw new Error("Unauthorized");
@@ -157,15 +158,15 @@ export const addPlanItems = createServerFn({ method: "POST" })
       notes: row.notes,
     }));
 
-    let addedCount = 0;
     const batchAdded: ExtractedItem[] = [];
+    const inserted: { id: number; item: ExtractedItem }[] = [];
 
     for (const item of data.items) {
       const isDuplicateInDb = processedExisting.some((existing) => isDuplicateItem(existing, item));
       const isDuplicateInBatch = batchAdded.some((added) => isDuplicateItem(added, item));
 
       if (!isDuplicateInDb && !isDuplicateInBatch) {
-        await sql`
+        const rows = await sql<{ id: number }>`
           insert into plan_items (user_id, type, title, date, time, location, notes)
           values (
             ${userId},
@@ -176,12 +177,22 @@ export const addPlanItems = createServerFn({ method: "POST" })
             ${item.location},
             ${item.notes}
           )
+          returning id
         `;
-        addedCount++;
+        const id = Number(rows[0]?.id);
+        if (Number.isFinite(id)) inserted.push({ id, item });
         batchAdded.push(item);
       }
     }
-    return { added: addedCount };
+
+    // Best-effort: if a calendar is connected, push the new dated items now so
+    // they sync "automatically". Never allowed to fail the add.
+    const sync = await pushItemsToCalendar(userId, inserted, data.timezone).catch(() => ({
+      synced: 0,
+      failed: 0,
+    }));
+
+    return { added: inserted.length, synced: sync.synced };
   });
 
 export const setPlanItemDone = createServerFn({ method: "POST" })
