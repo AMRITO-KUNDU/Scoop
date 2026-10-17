@@ -139,9 +139,44 @@ From there a user just hits **Connect Google Calendar**, approves at Google, and
 their plan syncs: new items as they save them, plus everything already in the
 plan on first connect. They never see a setting.
 
-To put your own app name on Google's consent screen instead of Composio's,
-create a Google Calendar auth config in the Composio dashboard with your own
-OAuth client and set `COMPOSIO_GCAL_AUTH_CONFIG_ID` to its id.
+#### Do I need a Google Cloud project?
+
+**No.** Google Calendar is on Composio's list of toolkits with managed OAuth, so
+Composio supplies and maintains the OAuth app. You do not register a client,
+enable a Google API, or complete Google's app verification. That is exactly why
+setup here is a single API key.
+
+#### When to bring your own Google OAuth app
+
+Managed auth is the right default, but switch to your own OAuth client before
+you scale, because of four things:
+
+- **Branding.** Users see *"Composio wants to access your Google Account"*. In
+  production they should see your app's name. This is the usual reason to switch.
+- **Scopes.** Composio's defaults for a toolkit are sensible, but not adjustable
+  per-toolkit beyond that.
+- **Quota.** Managed apps share rate limits across every Composio user; your own
+  app gets a dedicated quota.
+- **Polling.** Managed auth enforces a 15-minute minimum polling interval.
+
+To switch: create a Google Cloud project, enable the Google Calendar API, create
+an OAuth 2.0 Web client, set its authorised redirect URI to Composio's callback,
+create a **Google Calendar** auth config in the Composio dashboard with those
+credentials, and set `COMPOSIO_GCAL_AUTH_CONFIG_ID` to that config's id.
+
+#### If connecting fails
+
+- **"App is blocked"** — the auth config is requesting a scope Google hasn't
+  approved for that OAuth client. With managed auth, remove the extra scope
+  (drop `COMPOSIO_GCAL_SCOPES`); with your own client, submit the scopes for
+  verification.
+- **Events don't appear but connecting worked** — the connection may be missing
+  the calendar scope. Set `COMPOSIO_GCAL_SCOPES` to
+  `https://www.googleapis.com/auth/calendar.events`, then reconnect so the new
+  scope set is granted.
+- **The connection shows as expired** — the user revoked access in Google, or
+  Google invalidated the session. Composio stops acting on that account until
+  they reconnect, which is a single sign-in.
 
 ### Quick Start
 

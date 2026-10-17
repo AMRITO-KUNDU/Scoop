@@ -8,6 +8,12 @@ import type { ExtractedItem } from "@/lib/plan";
  * hosted connect link, then execute the Google Calendar toolkit's
  * `GOOGLECALENDAR_CREATE_EVENT` tool on the user's connected account.
  *
+ * No Google Cloud project is required. Google Calendar is on Composio's managed
+ * OAuth list, so the auth config is created with `use_composio_managed_auth`
+ * and Composio's own OAuth app does the consent screen. Bringing your own OAuth
+ * client is only worth it later for branding, custom scopes or a dedicated
+ * quota — see the README.
+ *
  * Docs: https://docs.composio.dev/reference/v3/api-reference/connected-accounts
  *       https://docs.composio.dev/toolkits/googlecalendar
  *
@@ -70,15 +76,19 @@ export async function googleCalendarAuthConfigId(): Promise<string> {
     }
   }
 
-  // Otherwise let Composio create one with its managed OAuth app.
+  // Otherwise let Composio create one with its managed OAuth app. Composio
+  // picks sensible default scopes for the toolkit, so `credentials` is normally
+  // empty; COMPOSIO_GCAL_SCOPES is the escape hatch if the defaults ever turn
+  // out not to cover calendar writes.
+  const scopes = env("COMPOSIO_GCAL_SCOPES")?.trim();
   const created = await call("/auth_configs", {
     method: "POST",
     body: JSON.stringify({
       toolkit: { slug: GOOGLECALENDAR_SLUG },
       auth_config: {
+        name: "SCOOP Google Calendar",
         type: "use_composio_managed_auth",
-        credentials: {},
-        restrict_to_following_tools: [],
+        credentials: scopes ? { scopes } : {},
       },
     }),
   });
@@ -177,6 +187,13 @@ export async function findGoogleCalendarAccount(userId: string): Promise<Connect
     ];
     if (!items.length) continue;
 
+    // Safety: never adopt an account we can't attribute to this user. If the
+    // response exposes ownership at all, require a match — otherwise only trust
+    // a response we explicitly filtered by user, and never the unfiltered list.
+    const exposesOwner = items.some(
+      (account) => asString(account.user_id) ?? asString(account.entity_id),
+    );
+
     const match = items.find((account) => {
       const status = asString(account.status) ?? asString(pick(account, ["connection", "status"]));
       const slug =
@@ -186,7 +203,7 @@ export async function findGoogleCalendarAccount(userId: string): Promise<Connect
       const owner = asString(account.user_id) ?? asString(account.entity_id);
       const active = (status ?? "").toUpperCase() === "ACTIVE";
       const rightToolkit = !slug || slug.toLowerCase() === GOOGLECALENDAR_SLUG;
-      const rightUser = !owner || owner === userId;
+      const rightUser = exposesOwner ? owner === userId : Boolean(query);
       return active && rightToolkit && rightUser;
     });
 
