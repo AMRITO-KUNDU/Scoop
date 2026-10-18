@@ -35,8 +35,8 @@ export default function RootLayout() {
       >
         {/* No transition between tabs — they're peers, not a drill-down. */}
         <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-        {/* A real sub-page, so it gets the normal push animation. */}
-        <Stack.Screen name="connect" options={{ animation: 'slide_from_right' }} />
+        {/* Normal platform transition for drill-down pages. */}
+        <Stack.Screen name="connect" options={{ animation: 'default' }} />
       </Stack>
     </ClerkProvider>
   );

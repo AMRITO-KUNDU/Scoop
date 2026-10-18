@@ -1,4 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
+import { CalendarPlus, Check, ListChecks, RefreshCw, type LucideIcon } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -7,10 +8,15 @@ import { RequireAuth } from '@/components/require-auth';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Panel } from '@/components/ui/panel';
-import { Palette, Radius, Spacing } from '@/constants/theme';
+import { Border, Palette, Radius, Shadow, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
 import { STATE_LABEL, type ConnectorId, type ConnectorStatus } from '@/lib/connectors';
 import { deviceTimezone } from '@/lib/plan';
+
+const CONNECTOR_ICON: Record<ConnectorId, LucideIcon> = {
+  googlecalendar: CalendarPlus,
+  googletasks: ListChecks,
+};
 
 export default function ConnectScreen() {
   return (
@@ -116,12 +122,21 @@ function Connectors() {
       ) : null}
 
       {(connectors ?? []).map((connector) => {
+        const Icon = CONNECTOR_ICON[connector.id];
         const connected = connector.state === 'connected';
         return (
           <Panel key={connector.id} style={styles.panel}>
             <View style={styles.inner}>
               <View style={styles.head}>
-                <Text style={styles.name}>{connector.name}</Text>
+                <View style={styles.headLeft}>
+                  <View style={[styles.iconBox, connected && styles.iconBoxConnected]}>
+                    <Icon size={20} color={Palette.ink} strokeWidth={2.4} />
+                  </View>
+                  <View style={styles.titleCol}>
+                    <Text style={styles.name}>{connector.name}</Text>
+                    <Text style={styles.description}>{connector.description}</Text>
+                  </View>
+                </View>
                 <View style={[styles.state, connected && styles.stateOn]}>
                   <Text style={[styles.stateLabel, connected && styles.stateLabelOn]}>
                     {STATE_LABEL[connector.state]}
@@ -129,25 +144,25 @@ function Connectors() {
                 </View>
               </View>
 
-              <Text style={styles.description}>{connector.description}</Text>
               <Text style={styles.detail}>{connector.detail}</Text>
 
               {connected ? (
                 <Text style={styles.counts}>
-                  {connector.syncedCount} synced
-                  {connector.pendingCount > 0 ? ` · ${connector.pendingCount} waiting` : ''}
+                  {connector.syncedCount} in your calendar
+                  {connector.pendingCount > 0 ? ` · ${connector.pendingCount} syncing` : ''}
                 </Text>
               ) : null}
 
               {connector.state === 'unavailable' ? (
                 <Text style={styles.unavailable}>
-                  Not available right now. Please try again later.
+                  Not available on this account right now. Please try again later.
                 </Text>
               ) : connected ? (
                 <Button
                   label="Sync again"
                   variant="paper"
                   size="sm"
+                  icon={RefreshCw}
                   loading={busy === connector.id}
                   onPress={() => void sync(connector.id)}
                   style={styles.action}
@@ -158,13 +173,17 @@ function Connectors() {
                     label={`Connect ${connector.name}`}
                     variant="yolk"
                     size="lg"
+                    icon={Icon}
                     loading={busy === connector.id}
                     onPress={() => void connect(connector.id)}
                     style={styles.action}
                   />
-                  <Text style={styles.hint}>
-                    One tap — you'll approve access at Google, then you're done.
-                  </Text>
+                  <View style={styles.hintRow}>
+                    <Check size={14} color={Palette.mute} strokeWidth={2.6} />
+                    <Text style={styles.hint}>
+                      One tap — you'll approve access at Google, then you're done.
+                    </Text>
+                  </View>
                 </>
               )}
             </View>
@@ -182,10 +201,31 @@ function Connectors() {
 const styles = StyleSheet.create({
   panel: { marginTop: Spacing.four },
   inner: { padding: Spacing.four },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  name: { flexShrink: 1, fontSize: 19, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
+  head: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
+  headLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, flex: 1 },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    backgroundColor: Palette.paper2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Palette.ink,
+    shadowOffset: { width: Shadow.sm, height: Shadow.sm },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: Shadow.sm,
+  },
+  iconBoxConnected: {
+    backgroundColor: Palette.cyan,
+  },
+  titleCol: { flex: 1 },
+  name: { fontSize: 18, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
+  description: { marginTop: 2, fontSize: 13, fontWeight: '600', color: Palette.mute },
   state: {
-    borderWidth: 3,
+    borderWidth: Border.thick,
     borderColor: Palette.ink,
     borderRadius: Radius.pill,
     backgroundColor: Palette.paper2,
@@ -195,10 +235,9 @@ const styles = StyleSheet.create({
   stateOn: { backgroundColor: Palette.cyan },
   stateLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.4, textTransform: 'uppercase', color: Palette.ink },
   stateLabelOn: { color: Palette.ink },
-  description: { marginTop: Spacing.two, fontSize: 14, fontWeight: '600', color: Palette.mute },
   detail: { marginTop: Spacing.three, fontSize: 14, lineHeight: 20, color: Palette.mute },
   counts: {
-    marginTop: Spacing.two,
+    marginTop: Spacing.three,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.6,
@@ -207,7 +246,8 @@ const styles = StyleSheet.create({
   },
   unavailable: { marginTop: Spacing.three, fontSize: 12, color: Palette.mute },
   action: { marginTop: Spacing.four },
-  hint: { marginTop: Spacing.two, fontSize: 12, color: Palette.mute },
+  hintRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: Spacing.two },
+  hint: { fontSize: 12, color: Palette.mute },
   noticeInner: { padding: Spacing.three },
   notice: { fontSize: 14, fontWeight: '600', color: Palette.ink },
   footer: { marginTop: Spacing.five, fontSize: 12, color: Palette.mute },

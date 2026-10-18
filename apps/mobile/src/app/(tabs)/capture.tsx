@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -22,6 +23,7 @@ export default function CaptureScreen() {
 
 function Capture() {
   const api = useApi();
+  const router = useRouter();
 
   const [text, setText] = useState('');
   const [extracting, setExtracting] = useState(false);
@@ -66,6 +68,7 @@ function Capture() {
       setDrafts(null);
       setText('');
       setEngine(null);
+      router.navigate({ pathname: '/', params: { filter: 'all' } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add those items.');
     } finally {

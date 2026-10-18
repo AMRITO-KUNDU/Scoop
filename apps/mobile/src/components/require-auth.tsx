@@ -2,9 +2,10 @@ import { useAuth } from '@clerk/expo';
 import { useHostedAuth } from '@clerk/expo/hosted-auth';
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FaviconLogo } from '@/components/favicon-logo';
 import { Button } from '@/components/ui/button';
-import { Panel } from '@/components/ui/panel';
 import { Palette, Spacing } from '@/constants/theme';
 
 /**
@@ -19,7 +20,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <View style={styles.centre}>
+      <View style={styles.loadingCentre}>
         <ActivityIndicator size="large" color={Palette.ink} />
       </View>
     );
@@ -48,44 +49,61 @@ function SignInPrompt() {
   }
 
   return (
-    <View style={styles.centre}>
-      <Panel style={styles.card}>
-        <View style={styles.inner}>
-          <Text style={styles.title}>Sign in to SCOOP</Text>
-          <Text style={styles.body}>
-            Your plan is tied to your account, so it's there when you come back — on this phone or
-            on the web.
-          </Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.centre}>
+        <FaviconLogo size={140} />
+      </View>
 
-          <View style={styles.actions}>
-            <Button
-              label="Sign in"
-              variant="yolk"
-              size="lg"
-              loading={busy}
-              onPress={() => void signIn('sign-in')}
-            />
-            <Button
-              label="Create an account"
-              variant="paper"
-              disabled={busy}
-              onPress={() => void signIn('sign-up')}
-            />
-          </View>
-
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-        </View>
-      </Panel>
-    </View>
+      <View style={styles.bottom}>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <Button
+          label="Sign in"
+          variant="yolk"
+          size="lg"
+          loading={busy}
+          onPress={() => void signIn('sign-in')}
+        />
+        <Button
+          label="Create an account"
+          variant="paper"
+          size="lg"
+          disabled={busy}
+          onPress={() => void signIn('sign-up')}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  centre: { flex: 1, justifyContent: 'center', padding: Spacing.four, backgroundColor: Palette.paper },
-  card: { alignSelf: 'stretch', maxWidth: 460, width: '100%', marginHorizontal: 'auto' },
-  inner: { padding: Spacing.four },
-  title: { fontSize: 24, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },
-  body: { marginTop: Spacing.two, fontSize: 14, lineHeight: 20, color: Palette.mute },
-  actions: { marginTop: Spacing.four, gap: Spacing.two },
-  error: { marginTop: Spacing.three, fontSize: 13, color: Palette.hot, fontWeight: '600' },
+  loadingCentre: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Palette.paper,
+  },
+  screen: {
+    flex: 1,
+    backgroundColor: Palette.paper,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+  },
+  centre: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottom: {
+    width: '100%',
+    maxWidth: 460,
+    alignSelf: 'center',
+    gap: Spacing.two,
+  },
+  error: {
+    marginBottom: Spacing.two,
+    textAlign: 'center',
+    fontSize: 13,
+    color: Palette.hot,
+    fontWeight: '600',
+  },
 });

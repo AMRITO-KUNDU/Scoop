@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, type RefreshControlProps } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConnectorsButton } from '@/components/connectors-button';
+import { LogoutButton } from '@/components/logout-button';
 import { NavBar } from '@/components/nav-bar';
 import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
 
@@ -48,7 +49,10 @@ export function Screen({
       >
         <View style={styles.header}>
           <NavBar />
-          <ConnectorsButton />
+          <View style={styles.headerRight}>
+            <ConnectorsButton />
+            <LogoutButton />
+          </View>
         </View>
         {sticker ? <Sticker label={sticker} /> : null}
         <Text style={styles.title}>{title}</Text>
@@ -75,6 +79,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Spacing.two,
     marginBottom: Spacing.three,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   sticker: {
     alignSelf: 'flex-start',

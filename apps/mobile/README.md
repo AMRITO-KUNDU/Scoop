@@ -67,5 +67,5 @@ from the header button, so back returns to the tab you came from.
 - **Space Grotesk.** The web app self-hosts it as `.woff2`, which React Native
   can't load; the app uses the system font for now. Bundling the `.ttf` files via
   `expo-font` would close the gap.
-- **Icons.** The web app uses lucide; the mobile UI is text and colour only.
+- **Icons.** Lucide icons are bundled via `lucide-react-native` and `react-native-svg` matching the web design.
 - **Push notifications.** Not built anywhere yet.

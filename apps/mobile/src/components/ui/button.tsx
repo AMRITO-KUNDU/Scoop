@@ -21,6 +21,7 @@ export function Button({
   disabled = false,
   loading = false,
   size = 'md',
+  icon: Icon,
   style,
 }: {
   label: string;
@@ -29,6 +30,7 @@ export function Button({
   disabled?: boolean;
   loading?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  icon?: (props: { size?: number; color?: string; strokeWidth?: number }) => React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
   const tone = TONE[variant];
@@ -48,7 +50,15 @@ export function Button({
         style,
       ]}
     >
-      {loading ? <ActivityIndicator size="small" color={tone.fg} /> : null}
+      {loading ? (
+        <ActivityIndicator size="small" color={tone.fg} />
+      ) : Icon ? (
+        <Icon
+          size={size === 'sm' ? 14 : size === 'lg' ? 18 : 16}
+          color={tone.fg}
+          strokeWidth={2.4}
+        />
+      ) : null}
       <Text
         style={[styles.label, { color: tone.fg }, size === 'lg' && styles.labelLg]}
         numberOfLines={1}

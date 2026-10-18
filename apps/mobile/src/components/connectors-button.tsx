@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from 'expo-router';
+import { Cable } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
@@ -22,6 +23,7 @@ export function ConnectorsButton() {
       accessibilityState={{ selected: active }}
       style={StyleSheet.flatten([styles.button, active && styles.buttonActive])}
     >
+      <Cable size={13} color={Palette.paper} strokeWidth={2.4} />
       <Text style={StyleSheet.flatten([styles.label, active && styles.labelActive])}>
         Connectors
       </Text>
@@ -31,6 +33,9 @@ export function ConnectorsButton() {
 
 const styles = StyleSheet.create({
   button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderWidth: Border.thick,
     borderColor: Palette.ink,
     borderRadius: Radius.pill,

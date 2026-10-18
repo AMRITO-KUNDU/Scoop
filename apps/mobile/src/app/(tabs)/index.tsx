@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
@@ -28,11 +28,18 @@ export default function PlanScreen() {
 function Plan() {
   const api = useApi();
   const router = useRouter();
+  const params = useLocalSearchParams<{ filter?: string }>();
   const [items, setItems] = useState<PlanItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<PlanFilter>('all');
   const [busyId, setBusyId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (params.filter === 'all' || params.filter === 'today' || params.filter === 'week') {
+      setFilter(params.filter as PlanFilter);
+    }
+  }, [params.filter]);
 
   const load = useCallback(async () => {
     try {
@@ -43,9 +50,11 @@ function Plan() {
     }
   }, [api]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   const visible = useMemo(
     () => (items ?? []).filter((item) => matchesFilter(item, filter)),
