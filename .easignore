@@ -1,0 +1,62 @@
+# ===========================================================================
+# .easignore - files EAS Build does NOT upload to the cloud build servers.
+#
+# WHY THIS FILE IS AT THE REPO ROOT (not inside apps/mobile/):
+#   EAS CLI reads .easignore from the root of the git repository, and when it
+#   exists it REPLACES every .gitignore file for archiving purposes.
+#   See https://docs.expo.dev/build-reference/easignore/
+#   So the rules from apps/mobile/.gitignore and apps/web/.gitignore are
+#   repeated here, plus extra exclusions that shrink the upload and save
+#   bandwidth. (An .easignore placed inside apps/mobile is silently ignored.)
+#
+# Pattern syntax is the same as .gitignore. To force-include a path, prefix it
+# with "!" as the last matching rule.
+# ===========================================================================
+
+# --- dependencies: the build worker runs `npm install` fresh ---
+node_modules/
+
+# --- Expo / Metro caches, generated types, web build output ---
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# --- native projects are generated on the worker by `expo prebuild` (CNG) ---
+/android
+/ios
+apps/mobile/android/
+apps/mobile/ios/
+.kotlin/
+
+# --- signing / secret material (never upload) ---
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+.env*.local
+
+# NOTE: apps/mobile/.env is intentionally NOT ignored - it holds only public
+# EXPO_PUBLIC_* values that the production build inlines.
+
+# --- logs, TypeScript build info, editor / OS cruft ---
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+*.tsbuildinfo
+.DS_Store
+.vscode/
+.idea/
+example
+
+# --- repo extras the mobile build never reads (keeps the upload small) ---
+screenshots/
+apps/web/
+coverage/
+*.tgz
+*.tar.gz
+*.zip
