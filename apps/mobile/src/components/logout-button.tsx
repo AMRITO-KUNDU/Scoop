@@ -1,15 +1,15 @@
 import { useAuth } from '@clerk/expo';
 import { LogOut } from 'lucide-react-native';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { IconButton } from '@/components/ui/icon-button';
 
-export function LogoutButton() {
+export const LogoutButton = memo(function LogoutButton() {
   const { signOut } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  async function handleLogout() {
+  const handleLogout = useCallback(() => {
     Alert.alert('Log out', 'Are you sure you want to log out of SCOOP?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -27,15 +27,15 @@ export function LogoutButton() {
         },
       },
     ]);
-  }
+  }, [signOut]);
 
   return (
     <IconButton
       icon={LogOut}
-      onPress={() => void handleLogout()}
+      onPress={handleLogout}
       accessibilityLabel="Log out"
       variant="paper"
       loading={busy}
     />
   );
-}
+});

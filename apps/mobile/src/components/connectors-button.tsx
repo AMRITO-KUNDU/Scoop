@@ -1,44 +1,47 @@
 import { usePathname, useRouter } from 'expo-router';
 import { Cable } from 'lucide-react-native';
+import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { Border, Palette, Radius, Spacing } from '@/constants/theme';
+import { Border, Palette, Radius } from '@/constants/theme';
 
 /**
  * Connectors is a secondary screen, not one of the main destinations — the same
  * way the web app reaches it from a small button rather than the main nav. It
  * sits at the right of the header and pushes onto the stack, so back returns
  * you to whichever tab you came from.
+ *
+ * Memoised: re-renders only when the active path changes.
  */
-export function ConnectorsButton() {
+export const ConnectorsButton = memo(function ConnectorsButton() {
   const pathname = usePathname();
   const router = useRouter();
   const active = pathname === '/connect';
 
+  const handlePress = useCallback(() => router.push('/connect'), [router]);
+
   return (
     <Pressable
-      onPress={() => router.push('/connect')}
+      onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel="Connectors"
       accessibilityState={{ selected: active }}
-      style={StyleSheet.flatten([styles.button, active && styles.buttonActive])}
+      style={active ? [styles.button, styles.buttonActive] : styles.button}
     >
       <Cable size={13} color={Palette.paper} strokeWidth={2.4} />
-      <Text style={StyleSheet.flatten([styles.label, active && styles.labelActive])}>
-        Connectors
-      </Text>
+      <Text style={active ? [styles.label, styles.labelActive] : styles.label}>Connectors</Text>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderWidth: Border.thick,
+    borderWidth: 3,
     borderColor: Palette.ink,
-    borderRadius: Radius.pill,
+    borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
     backgroundColor: Palette.grape,
@@ -47,3 +50,4 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, fontWeight: '800', letterSpacing: 0.4, color: Palette.paper },
   labelActive: { color: Palette.paper },
 });
+

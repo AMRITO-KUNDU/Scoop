@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
@@ -29,11 +29,16 @@ function Plan() {
   const api = useApi();
   const router = useRouter();
   const params = useLocalSearchParams<{ filter?: string }>();
-  const [items, setItems] = useState<PlanItem[] | null>(null);
+
+  // Start with an empty array so the list never collapses to null between refreshes.
+  const [items, setItems] = useState<PlanItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<PlanFilter>('all');
   const [busyId, setBusyId] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // Show the loading placeholder only on the very first load, not on every focus.
+  const [initialLoading, setInitialLoading] = useState(true);
+  const hasFetchedOnce = useRef(false);
 
   useEffect(() => {
     if (params.filter === 'all' || params.filter === 'today' || params.filter === 'week') {
@@ -41,65 +46,87 @@ function Plan() {
     }
   }, [params.filter]);
 
-  const load = useCallback(async () => {
-    try {
-      setItems(await api.listPlan());
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load your plan.');
-    }
-  }, [api]);
+  const load = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      try {
+        const next = await api.listPlan();
+        setItems(next);
+        setError(null);
+      } catch (err) {
+        // On a background refetch keep visible items — just surface the error banner.
+        if (!opts?.silent) {
+          setError(err instanceof Error ? err.message : 'Could not load your plan.');
+        }
+      } finally {
+        if (!hasFetchedOnce.current) {
+          hasFetchedOnce.current = true;
+          setInitialLoading(false);
+        }
+      }
+    },
+    [api],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      void load();
+      // Subsequent focuses load silently — existing items stay visible while
+      // the request is in flight (stale-while-revalidate).
+      void load({ silent: hasFetchedOnce.current });
     }, [load]),
   );
 
   const visible = useMemo(
-    () => (items ?? []).filter((item) => matchesFilter(item, filter)),
+    () => items.filter((item) => matchesFilter(item, filter)),
     [items, filter],
   );
 
-  async function toggleDone(item: PlanItem) {
-    setBusyId(item.id);
-    try {
-      await api.setDone(item.id, !item.done);
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update that item.');
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const toggleDone = useCallback(
+    async (item: PlanItem) => {
+      setBusyId(item.id);
+      try {
+        await api.setDone(item.id, !item.done);
+        // Optimistic local flip — avoids a round-trip re-render flash.
+        setItems((prev) =>
+          prev.map((row) => (row.id === item.id ? { ...row, done: !row.done } : row)),
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not update that item.');
+        void load({ silent: true });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [api, load],
+  );
 
-  async function remove(item: PlanItem) {
-    setBusyId(item.id);
-    // Optimistic: drop it now, put it back if the server disagrees.
-    setItems((prev) => (prev ?? []).filter((row) => row.id !== item.id));
-    try {
-      await api.remove(item.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete that item.');
-      await load();
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const remove = useCallback(
+    async (item: PlanItem) => {
+      setBusyId(item.id);
+      // Optimistic: drop immediately, restore on failure.
+      setItems((prev) => prev.filter((row) => row.id !== item.id));
+      try {
+        await api.remove(item.id);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not delete that item.');
+        void load({ silent: true });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [api, load],
+  );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    void load().finally(() => setRefreshing(false));
+  }, [load]);
 
   return (
     <Screen
       sticker="Your plan"
       title="Everything in one place."
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            void load().finally(() => setRefreshing(false));
-          }}
-          tintColor={Palette.ink}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Palette.ink} />
       }
     >
       <View style={styles.filters}>
@@ -120,11 +147,11 @@ function Plan() {
 
       {error ? <EmptyState title="Something went wrong" body={error} /> : null}
 
-      {items === null && !error ? (
-        <EmptyState title="Loading your planâ€¦" body="One moment." />
+      {initialLoading && !error ? (
+        <EmptyState title="Loading your plan..." body="One moment." />
       ) : null}
 
-      {items !== null && visible.length === 0 && !error ? (
+      {!initialLoading && visible.length === 0 && !error ? (
         <EmptyState
           title={items.length ? 'Nothing in this view' : 'Your plan is empty'}
           body={
@@ -147,8 +174,8 @@ function Plan() {
           key={item.id}
           item={item}
           busy={busyId === item.id}
-          onToggleDone={() => void toggleDone(item)}
-          onRemove={() => void remove(item)}
+          onToggleDone={toggleDone}
+          onRemove={remove}
         />
       ))}
     </Screen>

@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { memo, type ReactElement, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View, type RefreshControlProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,7 +8,13 @@ import { NavBar } from '@/components/nav-bar';
 import { MaxContentWidth, Palette, Radius, Spacing } from '@/constants/theme';
 
 /** The sticker pill used for the small uppercase label above a screen title. */
-export function Sticker({ label, tone = Palette.grape }: { label: string; tone?: string }) {
+export const Sticker = memo(function Sticker({
+  label,
+  tone = Palette.grape,
+}: {
+  label: string;
+  tone?: string;
+}) {
   const dark = tone !== Palette.yolk;
   return (
     <View style={[styles.sticker, { backgroundColor: tone }]}>
@@ -17,7 +23,7 @@ export function Sticker({ label, tone = Palette.grape }: { label: string; tone?:
       </Text>
     </View>
   );
-}
+});
 
 /**
  * Common screen chrome: safe area, scrolling content, a centred max-width column

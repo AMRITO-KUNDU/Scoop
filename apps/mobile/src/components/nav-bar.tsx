@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from 'expo-router';
+import { memo, useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
@@ -9,43 +10,59 @@ const ITEMS = [
   { href: '/capture', label: 'Capture' },
 ] as const;
 
+type Href = (typeof ITEMS)[number]['href'];
+
+/** A single nav pill, memoised so it only re-renders when its active state changes. */
+const NavItem = memo(function NavItem({
+  href,
+  label,
+  active,
+  onPress,
+}: {
+  href: Href;
+  label: string;
+  active: boolean;
+  onPress: (href: Href) => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => onPress(href)}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      style={active ? [styles.item, styles.itemActive] : styles.item}
+    >
+      <Text style={active ? [styles.label, styles.labelActive] : styles.label}>{label}</Text>
+    </Pressable>
+  );
+});
+
 /**
  * Switches between the two tab screens.
  *
- * `router.navigate` is the tab-switch call — it resolves to a jump, so it never
- * pushes a screen or replays a transition. (Note `navigate` no longer pops back
- * to an existing route in current Expo Router; it behaves like `push` on a
- * stack. That is why the main destinations are tabs, not stacked screens.)
- *
- * Navigation goes through the router rather than `<Link asChild>` because
- * Link's asChild renders its child through expo-router's Slot, which clones the
- * element and needs a flattened style object.
+ * Wrapped in memo — the header renders on every scroll event via the parent
+ * ScrollView's sticky header logic; memoising avoids re-computing pathname
+ * comparisons and re-creating Pressable children on unrelated parent re-renders.
  */
-export function NavBar() {
+export const NavBar = memo(function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const handlePress = useCallback((href: Href) => router.navigate(href), [router]);
+
   return (
     <View style={styles.row}>
-      {ITEMS.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Pressable
-            key={item.href}
-            onPress={() => router.navigate(item.href)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            style={StyleSheet.flatten([styles.item, active && styles.itemActive])}
-          >
-            <Text style={StyleSheet.flatten([styles.label, active && styles.labelActive])}>
-              {item.label}
-            </Text>
-          </Pressable>
-        );
-      })}
+      {ITEMS.map((item) => (
+        <NavItem
+          key={item.href}
+          href={item.href}
+          label={item.label}
+          active={pathname === item.href}
+          onPress={handlePress}
+        />
+      ))}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: Spacing.two },

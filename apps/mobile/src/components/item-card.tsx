@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ const SYNCED_LABEL: Record<ConnectorId, string> = {
 };
 
 /** One item in the plan, with its actions and where it has been synced. */
-export function ItemCard({
+export const ItemCard = memo(function ItemCard({
   item,
   busy,
   onToggleDone,
@@ -21,15 +22,15 @@ export function ItemCard({
 }: {
   item: PlanItem;
   busy: boolean;
-  onToggleDone: () => void;
-  onRemove: () => void;
+  onToggleDone: (item: PlanItem) => void;
+  onRemove: (item: PlanItem) => void;
 }) {
   return (
     <Panel style={styles.wrap}>
       <View style={styles.inner}>
         <TypeBadge type={item.type} />
 
-        <Text style={[styles.title, item.done && styles.titleDone]}>{item.title}</Text>
+        <Text style={item.done ? [styles.title, styles.titleDone] : styles.title}>{item.title}</Text>
         <Text style={styles.when}>{formatWhen(item)}</Text>
 
         {item.location ? <Text style={styles.meta}>{item.location}</Text> : null}
@@ -51,7 +52,7 @@ export function ItemCard({
             variant={item.done ? 'yolk' : 'paper'}
             size="sm"
             disabled={busy}
-            onPress={onToggleDone}
+            onPress={() => onToggleDone(item)}
             style={styles.action}
           />
           <Button
@@ -59,14 +60,15 @@ export function ItemCard({
             variant="paper"
             size="sm"
             disabled={busy}
-            onPress={onRemove}
+            onPress={() => onRemove(item)}
             style={styles.action}
           />
         </View>
       </View>
     </Panel>
   );
-}
+});
+
 
 const styles = StyleSheet.create({
   wrap: { marginTop: Spacing.three },

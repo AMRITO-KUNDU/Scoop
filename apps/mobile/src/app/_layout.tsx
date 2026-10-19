@@ -35,8 +35,8 @@ export default function RootLayout() {
       >
         {/* No transition between tabs — they're peers, not a drill-down. */}
         <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-        {/* Normal platform transition for drill-down pages. */}
-        <Stack.Screen name="connect" options={{ animation: 'default' }} />
+        {/* Connectors feels like a peer of Plan/Capture, so no slide animation. */}
+        <Stack.Screen name="connect" options={{ animation: 'none' }} />
       </Stack>
     </ClerkProvider>
   );
