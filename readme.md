@@ -6,25 +6,6 @@ SCOOP is your personal assistant for managing the overwhelming stream of school 
 
 ---
 
-## Repo layout
-
-This is a two-app repo. Each app installs and runs independently — there is no workspace root.
-
-| Path | What it is |
-| --- | --- |
-| `apps/web` | The web app — TanStack Start, deployed to Vercel. It also hosts the JSON API at `src/routes/api/*` that the mobile app calls. |
-| `apps/mobile` | The native app — Expo / React Native. Signs in with Clerk and talks to that API over HTTP. See `apps/mobile/README.md`. |
-
-```bash
-cd apps/web && npm install && npm run dev     # web
-cd apps/mobile && npm install && npx expo start   # mobile
-```
-
-The mobile app needs `EXPO_PUBLIC_API_URL` pointing at the web app, and the web
-app needs `CLERK_SECRET_KEY` so it can verify the mobile client's session token.
-
----
-
 ## 🎯 The Problem
 
 Every parent knows the feeling: your inbox is flooded with school newsletters, WhatsApp groups are buzzing with last-minute changes, and paper flyers get lost in the abyss of backpacks. Meanwhile, your calendar is a maze of conflicting commitments, and somehow you're still the one who forgets about the class trip.
