@@ -12,6 +12,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_ABI_SPLIT": "true"
+      },
       "android": {
         "buildType": "apk"
       }
@@ -25,6 +28,9 @@
     "production-apk": {
       "extends": "production",
       "distribution": "internal",
+      "env": {
+        "EXPO_ABI_SPLIT": "true"
+      },
       "android": {
         "buildType": "apk"
       }
