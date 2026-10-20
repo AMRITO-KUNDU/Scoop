@@ -1,24 +1,34 @@
 import { Wordmark } from "@/components/logo";
 
 /**
- * Branded loading screen shown while the session is still resolving.
+ * Loading state for the app shell while the session resolves.
  *
- * Clerk resolves on the client only, so the server always renders the pending
- * state — this is what a signed-in visitor briefly sees before the app takes
- * over. A centred wordmark rather than a layout skeleton: it reads as an
- * intentional "getting you in" moment instead of flashing the wrong screen's
- * chrome first.
+ * This is the app's own skeleton idiom — the `animate-pulse` placeholder blocks
+ * used by Plan and Connectors, and the same shell chrome that was here before —
+ * rather than a spinner or a branded splash. It shows the shape of the screen
+ * that is about to appear, with no loading copy.
  */
-export function Splash({ label = "Loading…" }: { label?: string }) {
+export function Splash() {
   return (
-    <div className="grid min-h-dvh place-items-center bg-paper">
-      <div className="flex flex-col items-center gap-5" role="status" aria-live="polite">
-        <span className="animate-pulse">
-          <Wordmark />
-        </span>
-        <span className="font-display text-xs font-black uppercase tracking-widest text-mute">
-          {label}
-        </span>
+    <div className="min-h-dvh bg-paper">
+      <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+          <Wordmark compact />
+          <div className="inline-flex rounded-full border-thick border-ink bg-paper p-1 shadow-hard-sm">
+            <span className="inline-flex h-9 items-center px-3 font-display text-sm font-black">
+              Capture
+            </span>
+            <span className="inline-flex h-9 items-center px-3 font-display text-sm font-black text-mute">
+              Plan
+            </span>
+          </div>
+        </div>
+      </header>
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <div className="h-8 w-40 animate-pulse rounded-full border-thick border-ink bg-paper-2" />
+        <div className="mt-4 h-6 w-56 animate-pulse rounded-full bg-paper-2" />
+        <div className="mt-8 h-40 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
+        <div className="mt-3 h-24 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
       </div>
     </div>
   );
