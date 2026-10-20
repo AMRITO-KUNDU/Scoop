@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, redirect } from "@tanstack/react-router";
 import {
   Bell,
   CalendarCheck,
@@ -12,9 +12,21 @@ import { LandingPreview } from "@/components/landing-preview";
 import { CtaBand, PublicShell } from "@/components/public-shell";
 import { Button } from "@/components/ui/button";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { getSignedInState } from "@/lib/server/auth-state";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
+  // Redirect signed-in visitors on the server, before any HTML is sent, so they
+  // never see the marketing page flash past on the way to the app. Signed-out
+  // visitors — including every crawler, which has no session cookie — get the
+  // landing page rendered as usual, so this does not affect SEO.
+  beforeLoad: async () => {
+    const { signedIn } = await getSignedInState();
+    if (signedIn) throw redirect({ to: "/capture" });
+  },
+  // The response now depends on the session cookie, so it must never be publicly
+  // cached: a cached redirect would bounce signed-out visitors off the landing.
+  headers: () => ({ "Cache-Control": "private, no-store" }),
   head: () => ({
     meta: [
       { title: "SCOOP — Turn school emails & WhatsApp chaos into a family plan" },
@@ -96,7 +108,8 @@ function Home() {
   // IMPORTANT: never block the landing page on auth. Clerk resolves on the client
   // only, so during SSR `isPending` is always true. Rendering a skeleton here
   // meant crawlers, link previews and scrapers received an empty page.
-  // Signed-in users are redirected once the session is known.
+  // Signed-in users are redirected once the session is known (and, in
+  // production, on the server before this ever renders — see beforeLoad).
   if (user) return <Navigate to="/capture" />;
   return <Landing user={user} isPending={isPending} />;
 }

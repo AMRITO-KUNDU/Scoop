@@ -42,6 +42,30 @@ export const Route = createRootRoute({
       },
       { rel: "stylesheet", href: appCss },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": `${SITE_URL}/#organization`,
+              name: "SCOOP",
+              url: `${SITE_URL}/`,
+              logo: `${SITE_URL}/og-image.png`,
+            },
+            {
+              "@type": "WebSite",
+              "@id": `${SITE_URL}/#website`,
+              name: "SCOOP",
+              url: `${SITE_URL}/`,
+              publisher: { "@id": `${SITE_URL}/#organization` },
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: () => (
     <html lang="en" className="antialiased" suppressHydrationWarning>

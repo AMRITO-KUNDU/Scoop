@@ -5,6 +5,7 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { AccountMenu } from "@/components/account-menu";
 import { Wordmark } from "@/components/logo";
+import { Splash } from "@/components/splash";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -48,35 +49,9 @@ function AppNav() {
   );
 }
 
-function ShellSkeleton() {
-  return (
-    <div className="min-h-dvh bg-paper">
-      <header className="sticky top-0 z-40 border-b-thick border-ink bg-paper">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <Wordmark compact />
-          <div className="inline-flex rounded-full border-thick border-ink bg-paper p-1 shadow-hard-sm">
-            <span className="inline-flex h-9 items-center px-3 font-display text-sm font-black">
-              Capture
-            </span>
-            <span className="inline-flex h-9 items-center px-3 font-display text-sm font-black text-mute">
-              Plan
-            </span>
-          </div>
-        </div>
-      </header>
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="font-display text-title font-black uppercase tracking-tight">
-          Dump the chaos.
-        </h1>
-        <div className="mt-6 h-40 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
-      </div>
-    </div>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, isPending } = useCurrentUserState();
-  if (isPending) return <ShellSkeleton />;
+  if (isPending) return <Splash />;
   if (!user) return <RedirectToSignIn />;
   return (
     <div className="min-h-dvh bg-paper">
