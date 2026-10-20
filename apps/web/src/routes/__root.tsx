@@ -40,6 +40,16 @@ export const Route = createRootRoute({
         href: "/fonts/space-grotesk-400.woff2",
         crossOrigin: "anonymous",
       },
+      // The landing headline is the LCP element and uses the 700-900 face, so
+      // preload that file too — otherwise it is only discovered after the CSS
+      // is parsed and the headline paints late in the fallback font.
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/space-grotesk-700.woff2",
+        crossOrigin: "anonymous",
+      },
       { rel: "stylesheet", href: appCss },
     ],
     scripts: [

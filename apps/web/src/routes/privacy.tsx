@@ -11,6 +11,10 @@ const CONTACT_EMAIL = "amritokundu719@gmail.com";
 const LAST_UPDATED = "14 October 2026";
 
 export const Route = createFileRoute("/privacy")({
+  // Static legal content — safe to cache at the CDN edge for a faster TTFB.
+  headers: () => ({
+    "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
+  }),
   head: () => ({
     meta: [
       { title: PAGE_TITLE },
