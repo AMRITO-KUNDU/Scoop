@@ -32,6 +32,10 @@ const STACK = [
 ];
 
 export const Route = createFileRoute("/about")({
+  // Static marketing content — safe to cache at the CDN edge for a faster TTFB.
+  headers: () => ({
+    "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
+  }),
   head: () => ({
     meta: [
       { title: PAGE_TITLE },
