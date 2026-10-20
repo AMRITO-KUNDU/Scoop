@@ -24,9 +24,11 @@ export const Route = createFileRoute("/")({
     const { signedIn } = await getSignedInState();
     if (signedIn) throw redirect({ to: "/capture" });
   },
-  // The response now depends on the session cookie, so it must never be publicly
+  // The response depends on the session cookie, so it must not be publicly
   // cached: a cached redirect would bounce signed-out visitors off the landing.
-  headers: () => ({ "Cache-Control": "private, no-store" }),
+  // `private` keeps it out of shared/CDN caches while staying eligible for the
+  // back/forward cache — `no-store` would have blocked bfcache entirely.
+  headers: () => ({ "Cache-Control": "private, max-age=0, must-revalidate" }),
   head: () => ({
     meta: [
       { title: "SCOOP — Turn school emails & WhatsApp chaos into a family plan" },
@@ -186,6 +188,12 @@ function Landing({
                 </div>
               ))}
             </div>
+            <Link
+              to="/how-it-works"
+              className="mt-6 inline-flex items-center gap-1 font-display text-sm font-black uppercase tracking-wide underline decoration-2 underline-offset-4"
+            >
+              See the full walkthrough
+            </Link>
           </div>
         </section>
 
