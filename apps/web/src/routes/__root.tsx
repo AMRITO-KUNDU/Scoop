@@ -64,6 +64,11 @@ export const Route = createRootRoute({
               name: "SCOOP",
               url: `${SITE_URL}/`,
               logo: `${SITE_URL}/og-image.png`,
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "customer support",
+                email: "amritokundu719@gmail.com",
+              },
             },
             {
               "@type": "WebSite",

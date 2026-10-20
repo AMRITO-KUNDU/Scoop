@@ -29,7 +29,13 @@ export function LandingPreview() {
   const [active, setActive] = useState<string | null>(DEMO_CHIPS[0]?.id ?? null);
   const [sorted, setSorted] = useState(false);
 
-  const items = useMemo(() => localExtract(text, DEMO_TODAY).slice(0, 4), [text]);
+  // Only parse when the demo is actually showing results. Parsing on mount ran
+  // the extractor on every landing-page load for output nobody had asked to
+  // see yet — wasted main-thread work before first paint.
+  const items = useMemo(
+    () => (sorted ? localExtract(text, DEMO_TODAY).slice(0, 4) : []),
+    [text, sorted],
+  );
 
   return (
     <div className="relative mx-auto w-full max-w-md px-2 pt-3 lg:max-w-none">

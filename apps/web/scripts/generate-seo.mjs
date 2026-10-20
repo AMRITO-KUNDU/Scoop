@@ -26,8 +26,9 @@ const ROUTES = [
   { path: "/terms", priority: "0.3", changefreq: "yearly" },
 ];
 
-const lastmod = new Date().toISOString().slice(0, 10);
-
+// No <lastmod>. Stamping it with the build date made it change on every deploy,
+// which Google treats as unreliable and ignores — so it carried no signal.
+// Give a route a `lastmod` in ROUTES above when you want to publish a real date.
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
@@ -35,7 +36,6 @@ const sitemap = [
     [
       "  <url>",
       `    <loc>${origin}${route.path}</loc>`,
-      `    <lastmod>${lastmod}</lastmod>`,
       `    <changefreq>${route.changefreq}</changefreq>`,
       `    <priority>${route.priority}</priority>`,
       "  </url>",
