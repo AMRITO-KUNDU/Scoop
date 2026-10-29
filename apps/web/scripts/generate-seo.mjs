@@ -11,7 +11,7 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const FALLBACK_ORIGIN = "https://scoop-topaz.vercel.app";
+const FALLBACK_ORIGIN = "https://scoopfamily.xyz";
 
 const rawOrigin =
   process.env.VITE_SITE_URL?.trim() || process.env.SITE_URL?.trim() || FALLBACK_ORIGIN;

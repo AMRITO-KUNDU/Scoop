@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://scoop-topaz.vercel.app/</loc>
+    <loc>https://scoopfamily.xyz/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://scoop-topaz.vercel.app/how-it-works</loc>
+    <loc>https://scoopfamily.xyz/how-it-works</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://scoop-topaz.vercel.app/about</loc>
+    <loc>https://scoopfamily.xyz/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://scoop-topaz.vercel.app/privacy</loc>
+    <loc>https://scoopfamily.xyz/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://scoop-topaz.vercel.app/terms</loc>
+    <loc>https://scoopfamily.xyz/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

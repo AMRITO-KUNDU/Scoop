@@ -19,11 +19,11 @@ SCOOP is built for parents and carers who are the default keeper of the family c
 - Reminders or notifications
 
 ## Pages
-- [Home](https://scoop-topaz.vercel.app/): what SCOOP is and how it works
-- [How it works](https://scoop-topaz.vercel.app/how-it-works): the three steps, the four item types, the two extraction paths, and FAQs
-- [About](https://scoop-topaz.vercel.app/about): the problem it solves, who it is for, and how it is built
-- [Privacy](https://scoop-topaz.vercel.app/privacy)
-- [Terms](https://scoop-topaz.vercel.app/terms)
+- [Home](https://scoopfamily.xyz/): what SCOOP is and how it works
+- [How it works](https://scoopfamily.xyz/how-it-works): the three steps, the four item types, the two extraction paths, and FAQs
+- [About](https://scoopfamily.xyz/about): the problem it solves, who it is for, and how it is built
+- [Privacy](https://scoopfamily.xyz/privacy)
+- [Terms](https://scoopfamily.xyz/terms)
 
 ## Notes
 - A free account is required to use the app. The pages listed above are public and need no sign-in.
