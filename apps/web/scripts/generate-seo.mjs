@@ -13,9 +13,12 @@ import { dirname, join } from "node:path";
 
 const FALLBACK_ORIGIN = "https://scoopfamily.xyz";
 
-const rawOrigin =
+const configured =
   process.env.VITE_SITE_URL?.trim() || process.env.SITE_URL?.trim() || FALLBACK_ORIGIN;
-const origin = rawOrigin.replace(/\/+$/, "");
+// Must be absolute: both the sitemap <loc> entries and the robots.txt `Sitemap:`
+// line need a scheme, or Google rejects the sitemap as invalid.
+const withScheme = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`;
+const origin = withScheme.replace(/\/+$/, "");
 
 /** Public, indexable routes only — anything with a `noindex` meta must NOT appear. */
 const ROUTES = [
