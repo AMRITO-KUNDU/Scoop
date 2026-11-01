@@ -212,7 +212,8 @@ export const syncConnectors = createServerFn({ method: "POST" })
     }
 
     const sql = await getSql();
-    const rows = await sql<{
+
+    type SyncRow = {
       id: number;
       type: string;
       title: string;
@@ -222,13 +223,50 @@ export const syncConnectors = createServerFn({ method: "POST" })
       notes: string | null;
       calendar_event_id: string | null;
       tasks_task_id: string | null;
-    }>`
-      select id, type, title, date, time, location, notes, calendar_event_id, tasks_task_id
-      from plan_items
-      where user_id = ${userId}
-      order by date asc, time asc, id asc
-      limit ${MAX_SYNC_PER_CALL}
-    `;
+    };
+
+    // The `limit` must bound *unsynced* rows, so "still waiting on this
+    // connector" is part of the `where` clause rather than a filter applied
+    // afterwards. Filtering in JS instead would strand a user whose oldest 50
+    // items are already pushed: every call would select the same synced 50, find
+    // nothing pending and return {synced: 0}, leaving item 51 unreachable.
+    //
+    // The predicates mirror `connectorTakes()` (see CONNECTOR_CATALOGUE.routing):
+    // Google Calendar wants dated items, Google Tasks wants task/deadline/rsvp.
+    // Written per connector, like `counts()`, so each stays a plain tagged
+    // template with nothing interpolated into the SQL text.
+    const rows =
+      data.id === "googlecalendar"
+        ? await sql<SyncRow>`
+            select id, type, title, date, time, location, notes, calendar_event_id, tasks_task_id
+            from plan_items
+            where user_id = ${userId}
+              and calendar_event_id is null
+              and date is not null
+            order by date asc, time asc, id asc
+            limit ${MAX_SYNC_PER_CALL}
+          `
+        : data.id === "googletasks"
+          ? await sql<SyncRow>`
+              select id, type, title, date, time, location, notes, calendar_event_id, tasks_task_id
+              from plan_items
+              where user_id = ${userId}
+                and tasks_task_id is null
+                and type in ('task', 'deadline', 'rsvp')
+              order by date asc, time asc, id asc
+              limit ${MAX_SYNC_PER_CALL}
+            `
+          : await sql<SyncRow>`
+              select id, type, title, date, time, location, notes, calendar_event_id, tasks_task_id
+              from plan_items
+              where user_id = ${userId}
+                and (
+                  (calendar_event_id is null and date is not null)
+                  or (tasks_task_id is null and type in ('task', 'deadline', 'rsvp'))
+                )
+              order by date asc, time asc, id asc
+              limit ${MAX_SYNC_PER_CALL}
+            `;
 
     return pushItemsToConnectors(
       userId,

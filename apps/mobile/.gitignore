@@ -30,7 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files — `.env` holds this machine's values and is never committed;
+# the checked-in template is `.env.example`.
+.env
 .env*.local
 
 # typescript

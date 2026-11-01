@@ -39,8 +39,9 @@ apps/mobile/ios/
 *.mobileprovision
 .env*.local
 
-# NOTE: apps/mobile/.env is intentionally NOT ignored - it holds only public
-# EXPO_PUBLIC_* values that the production build inlines.
+# NOTE: apps/mobile/.env is untracked (see .gitignore) and holds only public
+# EXPO_PUBLIC_* values. Builds no longer depend on it: eas.json sets those same
+# values per build profile, so a cloud build works from a clean checkout.
 
 # --- logs, TypeScript build info, editor / OS cruft ---
 npm-debug.*

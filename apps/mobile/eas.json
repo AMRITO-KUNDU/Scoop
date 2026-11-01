@@ -6,6 +6,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ"
+      },
       "android": {
         "buildType": "apk"
       }
@@ -13,6 +17,8 @@
     "preview": {
       "distribution": "internal",
       "env": {
+        "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ",
         "EXPO_ABI_SPLIT": "true",
         "EXPO_MINIFY": "true"
       },
@@ -22,6 +28,10 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ"
+      },
       "android": {
         "buildType": "app-bundle"
       }

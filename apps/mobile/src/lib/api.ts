@@ -15,11 +15,22 @@ import { useMemo, useRef } from 'react';
 import type { ConnectorId, ConnectorStatus } from '@/lib/connectors';
 import type { ExtractedItem, PlanItem } from '@/lib/plan';
 
-/** Public origin of the web app. Set EXPO_PUBLIC_API_URL for other environments. */
-const BASE = (process.env.EXPO_PUBLIC_API_URL ?? 'https://scoop-topaz.vercel.app').replace(
-  /\/+$/,
-  '',
-);
+/**
+ * Public origin of the web app, from EXPO_PUBLIC_API_URL.
+ *
+ * Required, deliberately with no fallback: a built-in default would let a build
+ * with the variable missing ship silently against whatever deployment that
+ * default happened to name, and the first symptom would be a sign-in or sync
+ * failure on a real device. Failing here names the cause instead.
+ */
+const apiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+if (!apiUrl) {
+  throw new Error(
+    'EXPO_PUBLIC_API_URL is not set. Copy apps/mobile/.env.example to apps/mobile/.env ' +
+      'and point it at your deployed web app (no trailing slash).',
+  );
+}
+const BASE = apiUrl.replace(/\/+$/, '');
 
 export class ApiError extends Error {
   readonly status: number;
