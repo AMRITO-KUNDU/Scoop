@@ -142,9 +142,7 @@ function Capture() {
               : 'No items found'}
           </Text>
           {engine ? (
-            <Text style={styles.engine}>
-              {engine === 'groq' ? 'Extracted with Groq' : 'Extracted by the built-in parser'}
-            </Text>
+            <Text style={styles.engine}>SCOOP read this for you — edit anything before saving.</Text>
           ) : null}
 
           {drafts.map((draft) => (

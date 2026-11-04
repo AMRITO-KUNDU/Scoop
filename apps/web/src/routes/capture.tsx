@@ -26,9 +26,7 @@ function newKey() {
 }
 
 function engineLabel(engine: ExtractEngine | null): string {
-  if (engine === "groq") return "Extracted with Groq";
-  if (engine === "local") return "Extracted on-device";
-  return "Review";
+  return engine ? "Read by SCOOP" : "Review";
 }
 
 function CapturePage() {

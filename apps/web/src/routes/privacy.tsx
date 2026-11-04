@@ -98,15 +98,14 @@ function Privacy() {
               </ul>
             </Section>
 
-            <Section heading="The AI step">
+            <Section heading="How SCOOP reads your message">
               <p>
-                When an AI key is configured, the text you paste is sent to Groq to extract items.
-                It's processed to return the structured result and is not used for advertising.
+                The text you paste is sent to our AI provider (Groq) to work out the items. It is
+                processed to produce that result and is not used for advertising.
               </p>
               <p>
-                When no AI key is configured — or if the AI call fails — a built-in rule-based
-                parser does the same extraction instead, and the text is not sent to an AI provider
-                for that step.
+                If that service is unavailable, SCOOP falls back to its own built-in reader on our
+                server, and your text is not sent to an AI provider for that step.
               </p>
             </Section>
 
@@ -119,8 +118,8 @@ function Privacy() {
 
             <Section heading="Where it's stored">
               <p>
-                Plan items are stored in a Postgres database (Neon in production). Sign-in sessions
-                are managed by Clerk.
+                Your plan items are stored in a managed database (Neon). Sign-in sessions are
+                handled by our authentication provider (Clerk).
               </p>
             </Section>
 

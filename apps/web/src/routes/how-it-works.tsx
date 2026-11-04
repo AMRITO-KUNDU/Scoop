@@ -73,14 +73,17 @@ const CATEGORIES = [
 const PLAN_FEATURES = [
   { icon: CheckCircle2, text: "Filter your plan to Today, This Week or All." },
   { icon: ListChecks, text: "Mark items done or delete them — your plan stays current." },
-  { icon: CalendarPlus, text: "Push a dated item to Google Calendar, or download it as an .ics file." },
+  {
+    icon: CalendarPlus,
+    text: "Send anything with a date to Google Calendar, or save it to your phone's calendar.",
+  },
   { icon: Sparkles, text: "Duplicate items are skipped automatically when you add to your plan." },
 ];
 
 const FAQ = [
   {
-    q: "How does SCOOP extract school information?",
-    a: "When an AI key is configured, SCOOP uses Groq tool calling — a structured extraction model — to pull events, deadlines, tasks and RSVPs out of the text you paste. With no key configured, or if the AI call fails, a built-in rule-based parser does the same extraction instead, without sending your text to an AI provider.",
+    q: "How does SCOOP know what’s in the message?",
+    a: "SCOOP reads it the way a careful person would: what’s happening, what’s due, what you need to bring or buy, and what needs a reply. It copes with real messages — ‘next Tuesday’, ‘by Friday’, a flyer with no full stops — and hands you back four clear types: events, deadlines, tasks and RSVPs.",
   },
   {
     q: "What if the AI gets something wrong?",
@@ -96,7 +99,7 @@ const FAQ = [
   },
   {
     q: "What can I do with an item once it’s in my plan?",
-    a: "Filter to Today, This Week or All, mark items done or delete them, and push a dated item straight to Google Calendar or download it as an .ics file.",
+    a: "Filter to Today, This Week or All, mark items done or delete them, and send anything with a date straight to Google Calendar — or save it to your phone's calendar.",
   },
 ];
 
@@ -227,33 +230,32 @@ function HowItWorks() {
         <section className="border-b-thick border-ink px-4 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl">
             <h2 className="font-display text-title font-black uppercase tracking-tight">
-              Two ways it reads your message.
+              Nothing lands in your plan until you say so.
             </h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="panel bg-paper-2 p-6">
                 <p className="sticker inline-flex rounded-full bg-grape px-3 py-1 text-xs text-paper">
-                  With an AI key
+                  You check everything
                 </p>
                 <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight">
-                  Groq tool calling
+                  SCOOP suggests. You decide.
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-mute">
-                  SCOOP asks a structured extraction model to return items in a fixed shape — type,
-                  title, date, time, location and notes. It’s precise because the model fills a
-                  schema rather than writing prose.
+                  Every item is shown before it’s saved. Rewrite the title, fix the date, add what
+                  the school forgot to mention, or bin it — then confirm. If SCOOP reads “Thursday”
+                  wrong, you catch it in the review, not at the school gate.
                 </p>
               </div>
               <div className="panel bg-paper-2 p-6">
                 <p className="sticker inline-flex rounded-full bg-cyan px-3 py-1 text-xs">
-                  Always available
+                  Private by default
                 </p>
                 <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight">
-                  Built-in parser
+                  Your messages aren’t ours.
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-mute">
-                  With no AI key configured — or if the AI call fails — a built-in rule-based parser
-                  does the same extraction instead, without sending your text to an AI provider. It
-                  reads dates, times and locations, and still sorts everything into the four types.
+                  We don’t sell your data, we don’t advertise against it, and nothing from your
+                  plan is used to train anything. Delete an item and it’s gone from your plan.
                 </p>
               </div>
             </div>

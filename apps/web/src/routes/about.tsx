@@ -1,20 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircle2, Code2, Lightbulb, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { CheckCircle2, Lightbulb, ShieldCheck, Sparkles } from "lucide-react";
 import { CtaBand, PageHero, PublicShell } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/about`;
 const PAGE_TITLE = "About SCOOP — the family admin app for school life";
 const PAGE_DESCRIPTION =
-  "SCOOP turns school emails, WhatsApp messages, newsletters and flyers into one calm, editable family plan. Here's what it is, who it's for and how it's built.";
+  "SCOOP turns school emails, WhatsApp messages, newsletters and flyers into one calm, editable family plan. What it does, who it's for, and what it won't do yet.";
 
 const HERE_TODAY = [
   "Paste any school message — email, WhatsApp thread, newsletter or flyer text.",
-  "AI extraction (Groq tool calling) with a built-in on-device fallback.",
+  "SCOOP reads it and pulls out the events, deadlines, tasks and RSVPs — even when the message is a mess.",
   "Review and edit every item before it’s saved.",
-  "A plan with events, deadlines, tasks and RSVPs.",
+  "One calm plan for the week ahead, with everything in date order.",
   "Tick items off, delete them, and filter to Today, This Week or All.",
-  "Push dated items to Google Calendar, or download them as .ics files.",
+  "Send anything with a date straight to Google Calendar, or save it to your phone's calendar.",
 ];
 
 const NOT_YET = [
@@ -24,11 +24,22 @@ const NOT_YET = [
   "Reminders and notifications",
 ];
 
-const STACK = [
-  { icon: Code2, label: "TanStack Start + React", body: "The app and its server functions." },
-  { icon: ShieldCheck, label: "Clerk", body: "Sign-in and account sessions." },
-  { icon: Sparkles, label: "Groq", body: "Structured AI extraction of pasted text." },
-  { icon: Users, label: "Postgres", body: "Stores your plan items — Neon in production." },
+const PROMISES = [
+  {
+    icon: ShieldCheck,
+    label: "Your data stays yours",
+    body: "We don't sell it, we don't advertise against it, and we don't build profiles out of your children's school life.",
+  },
+  {
+    icon: CheckCircle2,
+    label: "You approve everything",
+    body: "Nothing reaches your plan until you've seen it and said yes. Every item is editable, and deleting is one tap.",
+  },
+  {
+    icon: Sparkles,
+    label: "Built for the school run",
+    body: "Phone first, big buttons, nothing to learn. If it takes longer than reading the email, we've built it wrong.",
+  },
 ];
 
 export const Route = createFileRoute("/about")({
@@ -177,13 +188,13 @@ function About() {
         <section className="border-b-thick border-ink px-4 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl">
             <h2 className="font-display text-title font-black uppercase tracking-tight">
-              How it’s built.
+              What we promise.
             </h2>
             <p className="mt-2 max-w-xl text-sm font-medium text-mute">
-              A small, deliberately plain stack.
+              Three things we won’t trade away as SCOOP grows.
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {STACK.map((item) => {
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {PROMISES.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div key={item.label} className="panel p-5">
