@@ -12,7 +12,7 @@
  * which `clerkMiddleware()` accepts.
  */
 
-import { UnauthorizedError } from "@/lib/auth/verify.server";
+import { expectedFrontendApi, UnauthorizedError } from "@/lib/auth/verify.server";
 
 /**
  * Turn a thrown error into a JSON response.
@@ -22,6 +22,11 @@ import { UnauthorizedError } from "@/lib/auth/verify.server";
  * deliberately loose — anything carrying a 401 status or the error's name is
  * treated as unauthorised, in case the error crosses a boundary and loses its
  * prototype.
+ *
+ * A 401 carries two extra fields, because "Unauthorized" on its own is
+ * undebuggable from a phone: `reason` says which check failed, and `frontendApi`
+ * names the Clerk instance this server verifies against, so the client can spot
+ * a build pointed at a different Clerk app.
  */
 export function apiError(err: unknown): Response {
   const status =
@@ -33,13 +38,19 @@ export function apiError(err: unknown): Response {
           ? 401
           : 400;
 
-  const message =
-    status === 401
-      ? "Unauthorized"
-      : err instanceof Error
-        ? err.message
-        : "Something went wrong.";
+  if (status === 401) {
+    const reason = (err as { reason?: unknown })?.reason;
+    return Response.json(
+      {
+        error: "Unauthorized",
+        reason: typeof reason === "string" ? reason : "no_valid_session",
+        frontendApi: expectedFrontendApi,
+      },
+      { status: 401 },
+    );
+  }
 
+  const message = err instanceof Error ? err.message : "Something went wrong.";
   return Response.json({ error: message }, { status });
 }
 
