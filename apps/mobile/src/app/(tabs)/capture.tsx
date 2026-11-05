@@ -98,6 +98,13 @@ function Capture() {
         />
       </Panel>
 
+      <View style={styles.demoRow}>
+        <View style={styles.demoTag}>
+          <Text style={styles.demoTagText}>Demo</Text>
+        </View>
+        <Text style={styles.demoHint}>Tap one to see SCOOP work.</Text>
+      </View>
+
       <View style={styles.chips}>
         {EXAMPLE_CHIPS.map((chip) => (
           <Pressable
@@ -181,7 +188,29 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: Palette.ink,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.three },
+  demoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.four,
+  },
+  demoTag: {
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.paper2,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  demoTagText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: Palette.ink,
+  },
+  demoHint: { flex: 1, fontSize: 11, fontWeight: '600', color: Palette.mute },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.two },
   chip: {
     borderWidth: Border.thick,
     borderColor: Palette.ink,

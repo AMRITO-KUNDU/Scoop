@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { EXAMPLE_CHIPS } from "@/lib/examples";
+import { CAPTURE_CHIPS } from "@/lib/examples";
 import type { DraftItem } from "@/lib/plan";
 import { extractItems, type ExtractEngine } from "@/lib/server/extract";
 import { addPlanItems } from "@/lib/server/plan-items";
@@ -133,28 +133,38 @@ function CaptureScreen() {
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {EXAMPLE_CHIPS.map((chip) => {
-          const on = activeChip === chip.id;
-          return (
-            <button
-              key={chip.id}
-              type="button"
-              onClick={() => {
-                setText(chip.text);
-                setActiveChip(chip.id);
-                setDrafts(null);
-                setEngine(null);
-              }}
-              className={cn(
-                "h-11 rounded-full border-thick border-ink px-3.5 font-display text-sm font-bold shadow-hard-sm",
-                on ? "bg-yolk" : "bg-paper hover:bg-paper-2",
-              )}
-            >
-              {chip.label}
-            </button>
-          );
-        })}
+      <div className="mt-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="sticker inline-flex rounded-full bg-paper-2 px-2.5 py-1 text-[10px]">
+            Demo
+          </span>
+          <span className="text-xs font-medium text-mute">
+            Tap one to see SCOOP work — no typing needed.
+          </span>
+        </div>
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {CAPTURE_CHIPS.map((chip) => {
+            const on = activeChip === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => {
+                  setText(chip.text);
+                  setActiveChip(chip.id);
+                  setDrafts(null);
+                  setEngine(null);
+                }}
+                className={cn(
+                  "h-11 rounded-full border-thick border-ink px-3.5 font-display text-sm font-bold shadow-hard-sm",
+                  on ? "bg-yolk" : "bg-paper hover:bg-paper-2",
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <Button

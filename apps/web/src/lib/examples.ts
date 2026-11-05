@@ -118,3 +118,17 @@ export const LANDING_CHIPS: ExampleChip[] = LANDING_IDS.map((id) => {
   if (!chip) throw new Error(`Missing landing chip: ${id}`);
   return chip;
 });
+
+/**
+ * The three offered on the capture screen. One per job — a deadline with money,
+ * an RSVP, and a message that turns into several items at once — so the demo
+ * shows the range without turning the screen into a wall of buttons.
+ * The rest of EXAMPLE_CHIPS stays for the landing preview.
+ */
+const CAPTURE_IDS = ["trip", "party", "newsletter"] as const;
+
+export const CAPTURE_CHIPS: ExampleChip[] = CAPTURE_IDS.map((id) => {
+  const chip = EXAMPLE_CHIPS.find((c) => c.id === id);
+  if (!chip) throw new Error(`Missing capture chip: ${id}`);
+  return chip;
+});
