@@ -1,15 +1,22 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { DraftCard } from '@/components/draft-card';
 import { EmptyState } from '@/components/empty-state';
 import { ItemCard } from '@/components/item-card';
 import { RequireAuth } from '@/components/require-auth';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
-import { Palette, Spacing } from '@/constants/theme';
+import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
-import { matchesFilter, type PlanFilter, type PlanItem } from '@/lib/plan';
+import {
+  deviceTimezone,
+  matchesFilter,
+  type DraftItem,
+  type PlanFilter,
+  type PlanItem,
+} from '@/lib/plan';
 
 const FILTERS: { id: PlanFilter; label: string }[] = [
   { id: 'today', label: 'Today' },
@@ -35,6 +42,10 @@ function Plan() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<PlanFilter>('all');
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState<DraftItem | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [undoItem, setUndoItem] = useState<PlanItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   // Show the loading placeholder only on the very first load, not on every focus.
   const [initialLoading, setInitialLoading] = useState(true);
@@ -53,7 +64,7 @@ function Plan() {
         setItems(next);
         setError(null);
       } catch (err) {
-        // On a background refetch keep visible items � just surface the error banner.
+        // On a background refetch keep visible items — just surface the error banner.
         if (!opts?.silent) {
           setError(err instanceof Error ? err.message : 'Could not load your plan.');
         }
@@ -69,7 +80,7 @@ function Plan() {
 
   useFocusEffect(
     useCallback(() => {
-      // Subsequent focuses load silently � existing items stay visible while
+      // Subsequent focuses load silently — existing items stay visible while
       // the request is in flight (stale-while-revalidate).
       void load({ silent: hasFetchedOnce.current });
     }, [load]),
@@ -85,7 +96,7 @@ function Plan() {
       setBusyId(item.id);
       try {
         await api.setDone(item.id, !item.done);
-        // Optimistic local flip � avoids a round-trip re-render flash.
+        // Optimistic local flip — avoids a round-trip re-render flash.
         setItems((prev) =>
           prev.map((row) => (row.id === item.id ? { ...row, done: !row.done } : row)),
         );
@@ -99,13 +110,78 @@ function Plan() {
     [api, load],
   );
 
+  const startEdit = useCallback((item: PlanItem) => {
+    setEditingId(item.id);
+    setEditDraft({
+      key: String(item.id),
+      type: item.type,
+      title: item.title,
+      date: item.date,
+      time: item.time,
+      location: item.location,
+      notes: item.notes,
+    });
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditDraft(null);
+  }, []);
+
+  const saveEdit = useCallback(async () => {
+    if (!editDraft || editingId === null) return;
+    if (!editDraft.title.trim()) {
+      setError('An item needs a title.');
+      return;
+    }
+    const { key: _key, ...fields } = editDraft;
+    setSavingEdit(true);
+    try {
+      await api.updateItem(editingId, fields, deviceTimezone());
+      setItems((prev) => prev.map((row) => (row.id === editingId ? { ...row, ...fields } : row)));
+      cancelEdit();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save that change.');
+    } finally {
+      setSavingEdit(false);
+    }
+  }, [api, cancelEdit, editDraft, editingId]);
+
+  /** Deleting is one tap and permanent, so offer it back. The item is re-created. */
+  const restore = useCallback(
+    async (item: PlanItem) => {
+      setUndoItem(null);
+      try {
+        await api.addItems(
+          [
+            {
+              type: item.type,
+              title: item.title,
+              date: item.date,
+              time: item.time,
+              location: item.location,
+              notes: item.notes,
+            },
+          ],
+          deviceTimezone(),
+        );
+        void load({ silent: true });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not restore that item.');
+      }
+    },
+    [api, load],
+  );
+
   const remove = useCallback(
     async (item: PlanItem) => {
       setBusyId(item.id);
       // Optimistic: drop immediately, restore on failure.
       setItems((prev) => prev.filter((row) => row.id !== item.id));
+      if (editingId === item.id) cancelEdit();
       try {
         await api.remove(item.id);
+        setUndoItem(item);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not delete that item.');
         void load({ silent: true });
@@ -113,7 +189,7 @@ function Plan() {
         setBusyId(null);
       }
     },
-    [api, load],
+    [api, cancelEdit, editingId, load],
   );
 
   const onRefresh = useCallback(() => {
@@ -145,6 +221,20 @@ function Plan() {
         })}
       </View>
 
+      {undoItem ? (
+        <View style={styles.undoBar}>
+          <Text style={styles.undoText} numberOfLines={1}>
+            Deleted “{undoItem.title}”
+          </Text>
+          <Button
+            label="Undo"
+            variant="paper"
+            size="sm"
+            onPress={() => void restore(undoItem)}
+          />
+        </View>
+      ) : null}
+
       {error ? <EmptyState title="Something went wrong" body={error} /> : null}
 
       {initialLoading && !error ? (
@@ -169,15 +259,39 @@ function Plan() {
         />
       ) : null}
 
-      {visible.map((item) => (
-        <ItemCard
-          key={item.id}
-          item={item}
-          busy={busyId === item.id}
-          onToggleDone={toggleDone}
-          onRemove={remove}
-        />
-      ))}
+      {visible.map((item) =>
+        editingId === item.id && editDraft ? (
+          <View key={item.id} style={styles.editWrap}>
+            <DraftCard draft={editDraft} onChange={setEditDraft} />
+            <View style={styles.editActions}>
+              <Button
+                label={savingEdit ? 'Saving…' : 'Save changes'}
+                variant="ink"
+                size="sm"
+                disabled={savingEdit}
+                onPress={() => void saveEdit()}
+                style={styles.editAction}
+              />
+              <Button
+                label="Cancel"
+                variant="paper"
+                size="sm"
+                onPress={cancelEdit}
+                style={styles.editAction}
+              />
+            </View>
+          </View>
+        ) : (
+          <ItemCard
+            key={item.id}
+            item={item}
+            busy={busyId === item.id}
+            onToggleDone={toggleDone}
+            onRemove={remove}
+            onEdit={startEdit}
+          />
+        ),
+      )}
     </Screen>
   );
 }
@@ -185,4 +299,20 @@ function Plan() {
 const styles = StyleSheet.create({
   filters: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.four },
   filter: { flex: 1 },
+  undoBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.lg,
+    backgroundColor: Palette.paper2,
+  },
+  undoText: { flex: 1, fontSize: 13, fontWeight: '600', color: Palette.ink },
+  editWrap: { marginTop: Spacing.three },
+  editActions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
+  editAction: { flex: 1 },
 });

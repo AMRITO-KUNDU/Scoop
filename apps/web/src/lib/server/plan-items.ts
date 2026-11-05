@@ -275,3 +275,85 @@ export const deletePlanItem = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/**
+ * Keep Google in step after an edit.
+ *
+ * The services hold a copy of the *old* version, so changing a title or a date
+ * here would leave a stale event in the calendar. Replace it: delete the copy we
+ * made, clear the marker, push the edited item back to the same connectors it
+ * was on. Best effort — an edit must never fail because Google is slow.
+ */
+async function resyncEditedItem(
+  userId: string,
+  id: number,
+  item: ExtractedItem,
+  timezone: string,
+  copies: { calendarEventId: string | null; tasksTaskId: string | null },
+): Promise<void> {
+  const eventId =
+    copies.calendarEventId && copies.calendarEventId !== "unknown" ? copies.calendarEventId : null;
+  const taskId = copies.tasksTaskId && copies.tasksTaskId !== "unknown" ? copies.tasksTaskId : null;
+  if (!eventId && !taskId) return; // never pushed anywhere — nothing to keep in step
+
+  await removePushedCopies(userId, { eventId, taskId });
+
+  const sql = await getSql();
+  await sql`
+    update plan_items
+    set calendar_event_id = null, tasks_task_id = null
+    where id = ${id} and user_id = ${userId}
+  `;
+
+  const wasOn: ConnectorId[] = [];
+  if (eventId) wasOn.push("googlecalendar");
+  if (taskId) wasOn.push("googletasks");
+
+  for (const connector of wasOn) {
+    await pushItemsToConnectors(userId, [{ id, item }], timezone, connector).catch(() => ({
+      synced: 0,
+      failed: 0,
+    }));
+  }
+}
+
+export const updatePlanItem = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: { id: number; item: ExtractedItem; timezone?: string }) => {
+    if (!input || typeof input !== "object") throw new Error("Invalid payload.");
+    const id = Number(input.id);
+    if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid item ID.");
+    const item = cleanItem(input.item);
+    if (!item) throw new Error("An item needs a title.");
+    return { id, item, timezone: normaliseTimezone(input.timezone) };
+  })
+  .handler(async ({ context, data }) => {
+    const userId = context.userId;
+    if (!userId) throw new Error("Unauthorized");
+    const sql = await getSql();
+
+    const rows = await sql<{
+      id: number;
+      calendar_event_id: string | null;
+      tasks_task_id: string | null;
+    }>`
+      update plan_items
+      set type = ${data.item.type},
+          title = ${data.item.title},
+          date = ${data.item.date},
+          time = ${data.item.time},
+          location = ${data.item.location},
+          notes = ${data.item.notes}
+      where id = ${data.id} and user_id = ${userId}
+      returning id, calendar_event_id, tasks_task_id
+    `;
+
+    const row = rows[0];
+    if (!row) throw new Error("Item not found or access denied.");
+
+    await resyncEditedItem(userId, Number(row.id), data.item, data.timezone, {
+      calendarEventId: row.calendar_event_id,
+      tasksTaskId: row.tasks_task_id,
+    });
+
+    return { ok: true as const };
+  });

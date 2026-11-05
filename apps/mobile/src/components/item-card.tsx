@@ -19,11 +19,13 @@ export const ItemCard = memo(function ItemCard({
   busy,
   onToggleDone,
   onRemove,
+  onEdit,
 }: {
   item: PlanItem;
   busy: boolean;
   onToggleDone: (item: PlanItem) => void;
   onRemove: (item: PlanItem) => void;
+  onEdit: (item: PlanItem) => void;
 }) {
   return (
     <Panel style={styles.wrap}>
@@ -47,6 +49,14 @@ export const ItemCard = memo(function ItemCard({
         ) : null}
 
         <View style={styles.actions}>
+          <Button
+            label="Edit"
+            variant="paper"
+            size="sm"
+            disabled={busy}
+            onPress={() => onEdit(item)}
+            style={styles.action}
+          />
           <Button
             label={item.done ? 'Done' : 'Mark done'}
             variant={item.done ? 'yolk' : 'paper'}

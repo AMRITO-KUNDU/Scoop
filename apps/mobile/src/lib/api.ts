@@ -215,6 +215,12 @@ function createApi(getToken: TokenGetter) {
         body: JSON.stringify({ done }),
       }),
 
+    updateItem: (id: number, item: ExtractedItem, timezone: string) =>
+      request<{ ok: boolean }>(`/api/plan/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ item, timezone }),
+      }),
+
     remove: (id: number) => request<{ ok: boolean }>(`/api/plan/${id}`, { method: 'DELETE' }),
 
     capture: (text: string) =>

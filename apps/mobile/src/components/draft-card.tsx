@@ -19,7 +19,8 @@ export function DraftCard({
 }: {
   draft: DraftItem;
   onChange: (next: DraftItem) => void;
-  onRemove: () => void;
+  /** Omitted when editing an existing item, where removing is the Delete button's job. */
+  onRemove?: () => void;
 }) {
   const set = <K extends keyof DraftItem>(key: K, value: DraftItem[K]) =>
     onChange({ ...draft, [key]: value });
@@ -80,7 +81,9 @@ export function DraftCard({
           onChangeText={(v) => set('notes', v.trim() ? v.trim() : null)}
         />
 
-        <Button label="Remove" variant="paper" size="sm" onPress={onRemove} />
+        {onRemove ? (
+          <Button label="Remove" variant="paper" size="sm" onPress={onRemove} />
+        ) : null}
       </View>
     </Panel>
   );

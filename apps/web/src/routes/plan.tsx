@@ -8,18 +8,26 @@ import {
   Download,
   ListChecks,
   MapPin,
+  Pencil,
   ScanText,
   Trash2,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { DraftCard } from "@/components/draft-card";
 import { EmptyState } from "@/components/empty-state";
 import { TypeBadge } from "@/components/type-badge";
 import { Button } from "@/components/ui/button";
 import { downloadIcs, googleCalendarUrl } from "@/lib/calendar";
-import { formatWhen, matchesFilter, type PlanFilter, type PlanItem } from "@/lib/plan";
-import { deletePlanItem, listPlanItems, setPlanItemDone } from "@/lib/server/plan-items";
+import { formatWhen, matchesFilter, type DraftItem, type PlanFilter, type PlanItem } from "@/lib/plan";
+import {
+  addPlanItems,
+  deletePlanItem,
+  listPlanItems,
+  setPlanItemDone,
+  updatePlanItem,
+} from "@/lib/server/plan-items";
 import { cn } from "@/lib/utils";
 import type { ConnectorId } from "@/lib/connectors";
 
@@ -52,6 +60,15 @@ const FILTERS: { id: PlanFilter; label: string }[] = [
   { id: "all", label: "All" },
 ];
 
+/** The browser's zone, sent with edits so Google gets the right wall-clock time. */
+function timezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
 function PlanPage() {
   return (
     <AppShell>
@@ -65,6 +82,9 @@ function PlanScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<PlanFilter>("all");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState<DraftItem | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   async function reload() {
     setLoading(true);
@@ -103,12 +123,82 @@ function PlanScreen() {
     }
   }
 
+  function startEdit(item: PlanItem) {
+    setEditingId(item.id);
+    setEditDraft({
+      key: String(item.id),
+      type: item.type,
+      title: item.title,
+      date: item.date,
+      time: item.time,
+      location: item.location,
+      notes: item.notes,
+    });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft(null);
+  }
+
+  async function saveEdit() {
+    if (!editDraft || editingId === null) return;
+    const { key: _key, ...fields } = editDraft;
+    if (!fields.title.trim()) {
+      toast.error("An item needs a title.");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      await updatePlanItem({
+        data: { id: editingId, item: fields, timezone: timezone() },
+      });
+      setItems((prev) =>
+        prev.map((row) => (row.id === editingId ? { ...row, ...fields } : row)),
+      );
+      toast.success("Changes saved.");
+      cancelEdit();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn’t save that change.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  /** Deleting is one tap and permanent, so give it back. The item is re-created. */
+  async function restore(item: PlanItem) {
+    try {
+      await addPlanItems({
+        data: {
+          items: [
+            {
+              type: item.type,
+              title: item.title,
+              date: item.date,
+              time: item.time,
+              location: item.location,
+              notes: item.notes,
+            },
+          ],
+          timezone: timezone(),
+        },
+      });
+      toast.success("Item restored.");
+      await reload();
+    } catch {
+      toast.error("Couldn’t restore that item.");
+    }
+  }
+
   async function remove(item: PlanItem) {
     const removedAt = items.findIndex((row) => row.id === item.id);
     setItems((prev) => prev.filter((row) => row.id !== item.id));
+    if (editingId === item.id) cancelEdit();
     try {
       await deletePlanItem({ data: { id: item.id } });
-      toast.success("Item deleted.");
+      toast.success("Item deleted.", {
+        action: { label: "Undo", onClick: () => void restore(item) },
+      });
     } catch {
       // Put it back where it was, not at the end of the list.
       setItems((prev) => {
@@ -191,7 +281,25 @@ function PlanScreen() {
       ) : (
         <ul className="space-y-3">
           {visible.map((item) => (
-            <li key={item.id} className="panel p-4">
+            <li key={item.id} className={editingId === item.id ? "" : "panel p-4"}>
+              {editingId === item.id && editDraft ? (
+                <div className="space-y-3">
+                  <DraftCard item={editDraft} onChange={setEditDraft} />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ink"
+                      className="flex-1"
+                      disabled={savingEdit}
+                      onClick={() => void saveEdit()}
+                    >
+                      {savingEdit ? "Saving…" : "Save changes"}
+                    </Button>
+                    <Button variant="paper" className="flex-1" onClick={cancelEdit}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">
                   <TypeBadge type={item.type} />
@@ -261,6 +369,14 @@ function PlanScreen() {
                   ) : null}
                   <button
                     type="button"
+                    onClick={() => startEdit(item)}
+                    className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-thick border-ink bg-paper px-3 font-display text-sm font-bold hover:bg-paper-2 sm:flex-none"
+                  >
+                    <Pencil className="size-4" strokeWidth={2.4} />
+                    Edit
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => void remove(item)}
                     className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-thick border-ink bg-paper px-3 font-display text-sm font-bold hover:bg-hot hover:text-paper sm:flex-none"
                   >
@@ -269,6 +385,7 @@ function PlanScreen() {
                   </button>
                 </div>
               </div>
+              )}
             </li>
           ))}
         </ul>

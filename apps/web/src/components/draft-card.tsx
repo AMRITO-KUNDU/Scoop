@@ -20,7 +20,8 @@ export function DraftCard({
 }: {
   item: DraftItem;
   onChange: (next: DraftItem) => void;
-  onRemove: () => void;
+  /** Omitted when editing an existing item, where removing is the Delete button's job. */
+  onRemove?: () => void;
 }) {
   const set = <K extends keyof DraftItem>(key: K, value: DraftItem[K]) =>
     onChange({ ...item, [key]: value });
@@ -29,14 +30,16 @@ export function DraftCard({
     <article className="panel p-4 sm:p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <TypeBadge type={item.type} />
-        <button
-          type="button"
-          onClick={onRemove}
-          className="grid size-11 place-items-center rounded-xl border-thick border-ink bg-paper hover:bg-hot hover:text-paper"
-          aria-label="Remove item"
-        >
-          <Trash2 className="size-4" strokeWidth={2.4} />
-        </button>
+        {onRemove ? (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="grid size-11 place-items-center rounded-xl border-thick border-ink bg-paper hover:bg-hot hover:text-paper"
+            aria-label="Remove item"
+          >
+            <Trash2 className="size-4" strokeWidth={2.4} />
+          </button>
+        ) : null}
       </div>
 
       <div className="mb-4 flex flex-wrap gap-1.5">
