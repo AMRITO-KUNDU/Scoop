@@ -10,6 +10,7 @@ import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
+import { requestReminderPermission, syncReminders } from '@/lib/reminders';
 import {
   deviceTimezone,
   matchesFilter,
@@ -50,6 +51,9 @@ function Plan() {
   // Show the loading placeholder only on the very first load, not on every focus.
   const [initialLoading, setInitialLoading] = useState(true);
   const hasFetchedOnce = useRef(false);
+  // Ask for notification permission once per app run, and only when there is
+  // something worth reminding about.
+  const askedForReminders = useRef(false);
 
   useEffect(() => {
     if (params.filter === 'all' || params.filter === 'today' || params.filter === 'week') {
@@ -63,6 +67,19 @@ function Plan() {
         const next = await api.listPlan();
         setItems(next);
         setError(null);
+
+        // Keep the phone's pending reminders in step with the plan. The first
+        // time there is a dated item, ask for permission — never at launch,
+        // where a prompt about nothing gets denied.
+        const hasDated = next.some((row) => row.date && !row.done);
+        if (hasDated && !askedForReminders.current) {
+          askedForReminders.current = true;
+          void requestReminderPermission().then((granted) => {
+            if (granted) void syncReminders(next);
+          });
+        } else if (hasDated) {
+          void syncReminders(next);
+        }
       } catch (err) {
         // On a background refetch keep visible items — just surface the error banner.
         if (!opts?.silent) {
