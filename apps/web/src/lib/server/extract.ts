@@ -3,6 +3,7 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { parseExtractedItems } from "@/lib/extract-parse";
 import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODELS, readTrimmedEnv } from "@/lib/groq";
 import { localExtract } from "@/lib/local-extract";
+import { claimExtraction } from "@/lib/server/rate-limit";
 import type { ExtractedItem } from "@/lib/plan";
 
 export type ExtractEngine = "groq" | "local";
@@ -132,6 +133,7 @@ type ToolCallResult =
 async function extractWithToolCalling(
   text: string,
   target: ToolCallTarget,
+  timeoutMs: number,
 ): Promise<ToolCallResult> {
   const today = new Date().toISOString().slice(0, 10);
   const weekday = new Date().toLocaleDateString("en-GB", {
@@ -142,7 +144,7 @@ async function extractWithToolCalling(
   });
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     // Call Groq API with tool calling enabled
@@ -226,7 +228,7 @@ async function extractWithToolCalling(
     return { ok: true, items: [] };
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
-      return { ok: false, error: "Groq tool calling request timed out (12s limit)." };
+      return { ok: false, error: `Groq tool calling request timed out (${Math.round(timeoutMs / 1000)}s limit).` };
     }
     const message = err instanceof Error ? err.message : String(err);
     return { ok: false, error: `Groq tool calling extraction failed: ${message}` };
@@ -270,13 +272,29 @@ export const extractItems = createServerFn({ method: "POST" })
     if (text.length > 6000) throw new Error("That's too long — try a shorter excerpt.");
     return { text: text.slice(0, 6000) };
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    // Refuse before spending: this is the only endpoint that costs money per call.
+    await claimExtraction(context.userId);
+
     const targets = toolCallingTargets();
+
+    // The whole AI attempt gets a hard deadline, not a per-model one: a serverless
+    // function that runs out of time returns a 504 and the local parser never
+    // runs. 9s fits inside the smallest default function limit with room to spare.
+    const TOTAL_BUDGET_MS = 9_000;
+    const PER_ATTEMPT_MS = 8_000;
+    const startedAt = Date.now();
 
     // Try tool calling extraction first
     let lastError: string | null = null;
     for (const target of targets) {
-      const res = await extractWithToolCalling(data.text, target);
+      const remaining = TOTAL_BUDGET_MS - (Date.now() - startedAt);
+      if (remaining < 1_000) break; // out of time — hand over to the local parser
+      const res = await extractWithToolCalling(
+        data.text,
+        target,
+        Math.min(PER_ATTEMPT_MS, remaining),
+      );
       if (res.ok) {
         return {
           ok: true as const,
