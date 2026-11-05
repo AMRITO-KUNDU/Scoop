@@ -8,11 +8,9 @@ import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CAPTURE_CHIPS } from "@/lib/examples";
 import type { DraftItem } from "@/lib/plan";
 import { extractItems, type ExtractEngine } from "@/lib/server/extract";
 import { addPlanItems } from "@/lib/server/plan-items";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/capture")({
   head: () => ({
@@ -40,7 +38,6 @@ function CapturePage() {
 function CaptureScreen() {
   const navigate = useNavigate();
   const [text, setText] = useState("");
-  const [activeChip, setActiveChip] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
@@ -118,7 +115,6 @@ function CaptureScreen() {
     if (pasted.trim().length < 200) return;
     e.preventDefault();
     setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${pasted}` : pasted));
-    setActiveChip(null);
     setDrafts(null);
     setEngine(null);
     setCollapsed(true);
@@ -127,7 +123,6 @@ function CaptureScreen() {
   function clearMessage() {
     setText("");
     setCollapsed(false);
-    setActiveChip(null);
     setDrafts(null);
     setEngine(null);
   }
@@ -184,10 +179,7 @@ function CaptureScreen() {
           <Textarea
             id="capture-text"
             value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setActiveChip(null);
-            }}
+            onChange={(e) => setText(e.target.value)}
             onPaste={handlePaste}
             rows={9}
             placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
@@ -195,41 +187,6 @@ function CaptureScreen() {
           />
         </div>
       )}
-
-      <div className="mt-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="sticker inline-flex rounded-full bg-paper-2 px-2.5 py-1 text-[10px]">
-            Demo
-          </span>
-          <span className="text-xs font-medium text-mute">
-            Tap one to see SCOOP work — no typing needed.
-          </span>
-        </div>
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          {CAPTURE_CHIPS.map((chip) => {
-            const on = activeChip === chip.id;
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => {
-                  setText(chip.text);
-                  setActiveChip(chip.id);
-                  setDrafts(null);
-                  setEngine(null);
-                  setCollapsed(true);
-                }}
-                className={cn(
-                  "h-11 rounded-full border-thick border-ink px-3.5 font-display text-sm font-bold shadow-hard-sm",
-                  on ? "bg-yolk" : "bg-paper hover:bg-paper-2",
-                )}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <Button
         className="mt-5 w-full sm:w-auto sm:min-w-56"
@@ -256,7 +213,7 @@ function CaptureScreen() {
             <EmptyState
               icon={<Sparkles className="size-6" strokeWidth={2.4} />}
               title="Nothing pasted yet"
-              body="Drop in a messy school email or tap a chip above. We’ll pull out events, deadlines, tasks and RSVPs."
+              body="Drop in a messy school email, a group chat or a flyer. We’ll pull out the events, deadlines, tasks and RSVPs."
             />
           </div>
         </section>
@@ -290,7 +247,7 @@ function CaptureScreen() {
               </p>
             ) : (
               <p className="mt-1 text-sm font-medium text-mute">
-                Try another excerpt, or tap a chip for a working example.
+                Try a shorter excerpt — the important part of the message usually works best.
               </p>
             )}
           </div>
