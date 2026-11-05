@@ -37,7 +37,7 @@ const PROMISES = [
   },
   {
     icon: Sparkles,
-    label: "Built for the school run",
+    label: "Built for busy mornings",
     body: "Phone first, big buttons, nothing to learn. If it takes longer than reading the email, we've built it wrong.",
   },
 ];
@@ -98,7 +98,7 @@ function About() {
       <main>
         <PageHero
           eyebrow="About"
-          title="Less chaos. Fewer forgotten permission slips."
+          title="Less chaos. Fewer missed deadlines."
           lead="SCOOP is a small app for one of the most under-served jobs in family life: keeping track of school."
           tone="bg-grape text-paper"
         />

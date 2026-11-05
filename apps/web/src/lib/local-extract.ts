@@ -43,7 +43,7 @@ const MONTH_RE =
 const WEEKDAY_RE = "sunday|monday|tuesday|wednesday|thursday|friday|saturday";
 
 const EVENT_RE =
-  /\b(party|trip|appointment|conferences?|parent-teacher|fair|photos?|swimming|bake sale|museum|dentist|club|coding club|inset|meet the teacher|welcome evening|bus|pickup)\b/i;
+  /\b(party|trip|appointment|conferences?|parent-teacher|parents' evening|fair|photos?|swimming|bake sale|museum|dentist|club|coding club|inset|training day|meet the teacher|welcome evening|bus|pickup)\b/i;
 
 function iso(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -204,7 +204,7 @@ function extractLocation(text: string): string | null {
 function classify(text: string): ItemType {
   if (/\brsvp\b|\breply yes\b|\breply if\b/i.test(text)) return "rsvp";
   if (
-    /\b(sign and return|return the|return this|due by|book your slot|pay by|pay £|have these by|data collection form|supply list)\b/i.test(
+    /\b(sign and return|return the|return this|due by|book your slot|pay by|pay £|payment|have these by|data collection form|consent form|supply list)\b/i.test(
       text,
     ) ||
     (/\bby\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d)/i.test(text) &&
@@ -214,7 +214,7 @@ function classify(text: string): ItemType {
   }
   if (EVENT_RE.test(text)) return "event";
   if (
-    /\b(need|bring|pack|packed lunch|swimsuit|volunteers needed|water bottle|pe kit|wellies|uniform|pencil case)\b/i.test(
+    /\b(need|bring|pack|packed lunch|swimsuit|volunteers needed|water bottle|pe kit|sports kit|wellies|raincoat|uniform|pencil case)\b/i.test(
       text,
     )
   ) {
@@ -253,29 +253,27 @@ function shortenTitle(raw: string, type: ItemType): string {
   if (appt) return cap(appt[1]);
 
   if (/\bmeet the teacher\b/i.test(t)) return "Meet the teacher";
-  if (/\binset\b/i.test(t)) return "INSET day (school closed)";
+  if (/\b(inset|staff training day|training day)\b/i.test(t))
+    return "School closed — staff training day";
   if (/\bcoding club\b/i.test(t)) return "Coding Club";
-  if (/\bwelcome evening\b/i.test(t)) return "PTA welcome evening";
+  if (/\bwelcome evening\b/i.test(t)) return "Welcome evening";
   if (/\b(first morning run|route \d|school bus)\b/i.test(t)) {
     const route = raw.match(/route\s+\d+/i);
     return route ? `School bus ${cap(route[0])}` : "School bus pickup";
   }
   if (/\bphotos?\b/i.test(t)) return "School photos";
-  if (/\bpe kit\b/i.test(t)) return "PE kit";
-  if (/\bwellies\b/i.test(t)) return "Wellies for forest Friday";
-  if (/\bparentpay\b/i.test(t) || /\bpay £\d/i.test(t)) {
-    const money = t.match(/£[\d.]+/);
-    return money ? `Pay ${money[0]} per week on ParentPay` : "Pay on ParentPay";
-  }
+  if (/\b(pe kit|sports kit)\b/i.test(t)) return "Sports kit";
+  if (/\b(wellies|raincoat)\b/i.test(t)) return "Raincoat for outdoor days";
+  // Payment lines carry no currency in the title: the symbol is the most
+  // country-specific thing in a school message, and it reads badly abroad.
+  if (/\bparentpay\b|\bpay £\d|\bpayment is due\b/i.test(t)) return "Payment due";
   if (/\bwater bottle\b/i.test(t) && /pencil/i.test(t)) {
     return "Named water bottle and pencil case";
   }
   if (/\bwater bottle\b/i.test(t)) return "Bring a water bottle";
   if (/\buniform\b/i.test(t)) return "Label school uniform";
   if (/\bdata collection form\b/i.test(t)) return "Return data collection form";
-  if (/\bsupply list\b/i.test(t) || /\bhave these by\b/i.test(t)) {
-    return "Year 4 supply list";
-  }
+  if (/\bsupply list\b/i.test(t) || /\bhave these by\b/i.test(t)) return "Supply list";
 
   if (type === "rsvp") {
     const who = raw.match(/\b([A-Z][a-z]+)'s\b/);
@@ -288,14 +286,13 @@ function shortenTitle(raw: string, type: ItemType): string {
   }
 
   if (type === "deadline") {
-    if (/permission slip/i.test(t) && /£|\$|pay|£\d/i.test(t)) {
-      const money = t.match(/£[\d.]+|\$[\d.]+/);
-      return money ? `Return permission slip + ${money[0]}` : "Return the permission slip";
+    if (/\b(permission slip|consent form)\b/i.test(t) && /£|\$|₹|€|\bpay\b/i.test(t)) {
+      return "Return the consent form";
     }
-    if (/permission slip|sign and return/i.test(t)) {
-      return "Sign and return permission slip";
+    if (/\b(permission slip|consent form|sign and return)\b/i.test(t)) {
+      return "Sign and return the consent form";
     }
-    if (/book your slot/i.test(t)) return "Book parent-teacher slot";
+    if (/book your slot/i.test(t)) return "Book a parents' evening slot";
     const beforeBy = t.split(/\bby\b/i)[0]?.trim();
     if (beforeBy && beforeBy.length >= 8 && beforeBy.length < 64) {
       t = beforeBy;
@@ -439,7 +436,7 @@ export function localExtract(text: string, from = new Date()): ExtractedItem[] {
       Boolean(time) ||
       type === "rsvp" ||
       type === "deadline" ||
-      /\b(need|bring|pack|appointment|trip|party|photos|swimming|conference|bake|fair|dentist|swimsuit|volunteers|club|bus|uniform|pe kit|wellies|water bottle|inset|form|minutes early)\b/i.test(
+      /\b(need|bring|pack|appointment|trip|party|photos|swimming|conference|bake|fair|dentist|swimsuit|volunteers|club|bus|uniform|pe kit|sports kit|wellies|raincoat|water bottle|inset|form|payment|minutes early)\b/i.test(
         chunk,
       );
     if (!actionable) continue;

@@ -99,7 +99,7 @@ const STEPS = [
 const FEATURES = [
   { icon: Mail, title: "School emails", tone: "bg-cyan" },
   { icon: CalendarCheck, title: "Events & deadlines", tone: "bg-hot text-paper" },
-  { icon: Bell, title: "RSVPs & slips", tone: "bg-yolk" },
+  { icon: Bell, title: "RSVPs & forms", tone: "bg-yolk" },
   { icon: ClipboardPaste, title: "WhatsApp chaos", tone: "bg-grape text-paper" },
   { icon: Smartphone, title: "Phone-first", tone: "bg-cyan" },
   { icon: ListChecks, title: "One calm plan", tone: "bg-hot text-paper" },
@@ -200,7 +200,7 @@ function Landing({
         <section className="border-b-thick border-ink px-4 py-12 sm:py-16">
           <div className="mx-auto max-w-6xl">
             <h2 className="font-display text-title font-black uppercase tracking-tight">
-              Built for the school run brain.
+              Built for the 8am scramble.
             </h2>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {FEATURES.map((feature) => {

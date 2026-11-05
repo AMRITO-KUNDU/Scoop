@@ -48,13 +48,13 @@ const CATEGORIES = [
     icon: CalendarCheck,
     label: "Events",
     tone: "bg-grape text-paper",
-    body: "Trips, parties, parent-teacher evenings, clubs and school photos — anything that happens on a date.",
+    body: "Trips, parties, parents' evenings, clubs and school photos — anything that happens on a date.",
   },
   {
     icon: Bell,
     label: "Deadlines",
     tone: "bg-hot text-paper",
-    body: "Return slips, payment due dates, forms and supply lists — the things that are due by a certain day.",
+    body: "Consent forms, payment dates, forms and supply lists — the things that are due by a certain day.",
   },
   {
     icon: ClipboardPaste,

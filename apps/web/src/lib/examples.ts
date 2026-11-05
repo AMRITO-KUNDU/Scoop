@@ -4,13 +4,18 @@ export type ExampleChip = {
   text: string;
 };
 
+/**
+ * Worked examples for the demo tiles. Deliberately country-neutral: no currency
+ * symbols, no grade or year names, no school-specific jargon that only makes
+ * sense in one country's system — so a parent anywhere recognises the message.
+ */
 export const EXAMPLE_CHIPS: ExampleChip[] = [
   {
     id: "party",
     label: "Party invite",
-    text: `Hi parents! You're invited to Maya's 8th birthday party this Saturday, 3pm at Bounce House Fun Park, 42 Oak Street.
+    text: `Hi everyone! You're invited to Maya's 8th birthday party this Saturday, 3pm at Bounce House Fun Park, 42 Oak Street.
 
-Please RSVP by Thursday so we can get the cake count right. Bring socks! No gifts needed — Maya would love a book donation to the class library instead.
+Please RSVP by Thursday so we can get the cake count right. Bring socks! No gifts needed — Maya would love a book for the class library instead.
 
 Hope you can make it,
 Priya`,
@@ -18,39 +23,40 @@ Priya`,
   {
     id: "trip",
     label: "School trip",
-    text: `Year 4 Science Museum Trip — Friday 3 October
+    text: `Science Museum Trip — Friday 3 October
 
 Coach leaves at 8:45am sharp from the main gate. Return approx 3:30pm.
 
-Please return the permission slip and £12.50 by Wednesday 24 September.
+Please sign and return the consent form by Wednesday 24 September.
 Children need a packed lunch (no nuts) and a waterproof coat.
 
-Ms. Okonkwo, Year 4`,
+Thank you,
+Ms. Okonkwo`,
   },
   {
     id: "newsletter",
     label: "Newsletter",
-    text: `St. Helen's Weekly Newsletter
+    text: `Riverside School Weekly Newsletter
 
-• Parent-teacher conferences: 22–24 September. Book your slot by Friday.
+• Parents' evening: 22–24 September. Book your slot by Friday.
 • Book fair in the hall Monday–Wednesday next week, 8:30–9:15am.
-• PTA bake sale Friday after school — volunteers needed.
-• Reminder: school photos Thursday 18 September. Uniform please!
+• Bake sale Friday after school — volunteers needed.
+• Reminder: school photos Thursday 18 September. Full uniform please.
 
 Have a good week,
-Mr. Ellis, Headteacher`,
+Mr. Ellis, Principal`,
   },
   {
     id: "permission",
-    label: "Permission slip",
-    text: `PERMISSION SLIP — Swimming Term
+    label: "Consent form",
+    text: `CONSENT FORM — Swimming
 
-Term swimming starts Monday 22 September at Riverside Leisure Centre.
+Swimming lessons start Monday 22 September at Riverside Leisure Centre.
 Sessions 1:15–2:30pm. Please sign and return by Friday 19 September.
 
-Your child will need a swimsuit, towel, and goggles. Hair tied back.
+Your child will need a swimsuit, towel and goggles. Hair tied back.
 
-Contact: Ms. Patel, pe@sthelens.sch.uk`,
+Contact: Ms. Patel, sports@riversideschool.edu`,
   },
   {
     id: "dentist",
@@ -67,23 +73,23 @@ Smile Kids Dental`,
     label: "Welcome letter",
     text: `Dear families,
 
-Welcome back to St. Helen's, Year 3.
+Welcome back.
 
-Meet the teacher is Wednesday 24 September, 3:30–4:15pm in the Year 3 classroom.
-INSET day Friday 26 September — school closed.
+Meet the teacher is Wednesday 24 September, 3:30–4:15pm in the classroom.
+School closed Friday 26 September for a staff training day.
 Please return the data collection form by Friday 26 September.
 Uniform: labelled jumpers, black shoes, no jewellery.
 
-Ms. Okonkwo, Year 3`,
+Ms. Okonkwo`,
   },
   {
     id: "club",
     label: "After-school club",
-    text: `Year 3 & 4 Coding Club starts Thursday 25 September, 3:20–4:30pm in the ICT suite.
+    text: `Coding Club starts Thursday 25 September, 3:20–4:30pm in the computer room.
 
-Places limited. Reply yes by Monday 22 September to reserve a spot.
+Places are limited. Reply yes by Monday 22 September to reserve a spot.
 Please bring a water bottle.
-Pay £4 per week via ParentPay after the first free session.
+Payment is due weekly after the first free session.
 
 Mr. Shah, Computing`,
   },
@@ -92,7 +98,7 @@ Mr. Shah, Computing`,
     label: "Bus times",
     text: `School bus — Route 7
 
-First morning run is Monday 22 September. Pickup at Oak Street stop at 8:10am. Drop-off 3:25pm at the same stop.
+First morning run is Monday 22 September. Pickup at the Oak Street stop at 8:10am. Drop-off 3:25pm at the same stop.
 
 Please be 5 minutes early. Reply if you still need a seat this term.
 
@@ -101,13 +107,13 @@ Transport office`,
   {
     id: "supplies",
     label: "Supply list",
-    text: `Year 4 supply list — please have these by Friday 26 September.
+    text: `Supply list — please have these by Friday 26 September.
 
-Bring a named water bottle and a pencil case (HB pencils, rubber, sharpener).
-PE kit: white t-shirt, navy shorts, trainers — labelled please.
-Wellies needed for forest Friday.
+Bring a named water bottle and a pencil case (pencils, rubber, sharpener).
+Sports kit: white t-shirt, navy shorts, trainers — labelled please.
+A raincoat for outdoor days.
 
-PTA will sell packs at the welcome evening on Tuesday 23 September, 5pm in the hall.`,
+The parents' association will sell packs at the welcome evening on Tuesday 23 September, 5pm in the hall.`,
   },
 ];
 
@@ -120,10 +126,9 @@ export const LANDING_CHIPS: ExampleChip[] = LANDING_IDS.map((id) => {
 });
 
 /**
- * The three offered on the capture screen. One per job — a deadline with money,
- * an RSVP, and a message that turns into several items at once — so the demo
- * shows the range without turning the screen into a wall of buttons.
- * The rest of EXAMPLE_CHIPS stays for the landing preview.
+ * The three offered on the capture screen. One per job — a deadline that needs
+ * a form back, an RSVP, and a message that turns into several items at once —
+ * so the demo shows the range without turning the screen into a wall of buttons.
  */
 const CAPTURE_IDS = ["trip", "party", "newsletter"] as const;
 
