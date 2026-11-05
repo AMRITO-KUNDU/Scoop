@@ -420,3 +420,38 @@ export async function createGoogleTask(
 
   return executeTool("GOOGLETASKS_INSERT_TASK", accountId, userId, [full, minimal]);
 }
+
+/** Delete the Google Task a plan item became. */
+export async function deleteGoogleTask(
+  userId: string,
+  accountId: string,
+  taskId: string,
+): Promise<ToolResult> {
+  return executeTool("GOOGLETASKS_DELETE_TASK", accountId, userId, [
+    { tasklist_id: "@default", task_id: taskId },
+  ]);
+}
+
+/** Tick — or untick — the Google Task a plan item became. */
+export async function setGoogleTaskStatus(
+  userId: string,
+  accountId: string,
+  taskId: string,
+  done: boolean,
+): Promise<ToolResult> {
+  return executeTool("GOOGLETASKS_PATCH_TASK", accountId, userId, [
+    { tasklist_id: "@default", task_id: taskId, status: done ? "completed" : "needsAction" },
+  ]);
+}
+
+/** Delete the calendar event a plan item became. A 404 is a no-op on Google's side. */
+export async function deleteCalendarEvent(
+  userId: string,
+  accountId: string,
+  eventId: string,
+): Promise<ToolResult> {
+  return executeTool("GOOGLECALENDAR_DELETE_EVENT", accountId, userId, [
+    { calendar_id: "primary", event_id: eventId, send_updates: "none" },
+    { calendar_id: "primary", event_id: eventId },
+  ]);
+}

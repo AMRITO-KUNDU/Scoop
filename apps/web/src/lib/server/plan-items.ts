@@ -3,7 +3,12 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { isItemType, type ExtractedItem, type ItemType, type PlanItem } from "@/lib/plan";
 import type { ConnectorId } from "@/lib/connectors";
-import { normaliseTimezone, pushItemsToConnectors } from "@/lib/server/connectors";
+import {
+  normaliseTimezone,
+  pushItemsToConnectors,
+  removePushedCopies,
+  syncTaskStatus,
+} from "@/lib/server/connectors";
 
 type Row = {
   id: number;
@@ -220,15 +225,19 @@ export const setPlanItemDone = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     if (!context.userId) throw new Error("Unauthorized");
     const sql = await getSql();
-    const result = await sql<{ id: number }>`
+    const result = await sql<{ id: number; tasks_task_id: string | null }>`
       update plan_items
       set done = ${data.done}
       where id = ${data.id} and user_id = ${context.userId}
-      returning id
+      returning id, tasks_task_id
     `;
     if (!result.length) {
       throw new Error("Item not found or access denied.");
     }
+
+    // Google holds its own copy; ticking here must tick there.
+    await syncTaskStatus(context.userId, result[0]?.tasks_task_id, data.done);
+
     return { ok: true as const };
   });
 
@@ -243,14 +252,26 @@ export const deletePlanItem = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     if (!context.userId) throw new Error("Unauthorized");
     const sql = await getSql();
-    const result = await sql<{ id: number }>`
+    const result = await sql<{
+      id: number;
+      tasks_task_id: string | null;
+      calendar_event_id: string | null;
+    }>`
       delete from plan_items
       where id = ${data.id} and user_id = ${context.userId}
-      returning id
+      returning id, tasks_task_id, calendar_event_id
     `;
     if (!result.length) {
       throw new Error("Item not found or access denied.");
     }
+
+    // Take the copies down with it, so deleting here does not leave a ghost in
+    // the user's task list or calendar.
+    await removePushedCopies(context.userId, {
+      taskId: result[0]?.tasks_task_id,
+      eventId: result[0]?.calendar_event_id,
+    });
+
     return { ok: true as const };
   });
 

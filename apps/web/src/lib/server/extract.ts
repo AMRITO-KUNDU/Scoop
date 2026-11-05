@@ -72,25 +72,48 @@ const EXTRACTION_TOOL = {
 };
 
 // System prompt for tool calling - instructs model to use the extraction tool
-const SYSTEM = `You are an expert extraction assistant for parent/school communications.
-Your ONLY job is to extract structured school-life items from messages and return them using the extract_school_items tool.
+const SYSTEM = `You are the extraction engine behind SCOOP, a family plan app. A parent pastes a
+message from school, a club or an activity group. Your job is to turn that messy
+text into the few things they actually have to act on.
 
-Extraction rules:
-- event = a happening (party, trip, meeting, photos, club, appointment, open day)
-- deadline = a due-by date (return the form by Friday, pay by Wednesday, a supply list)
-- task = an action without a firm calendar event (pack lunch, buy a swimsuit, sports kit, uniform)
-- rsvp = a reply/confirmation needed (party RSVP, club spot, bus seat)
+What the four types mean
+- event    — something that happens at a date or time: trip, party, meeting, club, photos, appointment
+- deadline — something to hand in or pay by a date: a form back, a payment, a supply list
+- task     — something to bring, buy or do, with no fixed slot: packed lunch, new shoes, sign up
+- rsvp     — a reply the message explicitly asks for
 
-Guidelines:
-- Split distinct things into separate items
-- Ignore greetings, signatures, and fluff
-- Prefer the child's first name in titles when present
-- Never invent items that are not in the text
-- Max 12 items. If nothing actionable, return empty items array.
-- Date format: YYYY-MM-DD (resolve relative dates using TODAY)
-- Time format: HH:mm (24-hour)
+Rules that matter most
+- Fewer, better items. One item per real action. Two or three clean items beat
+  eight fragments — a parent reading their plan should never have to merge two
+  lines in their head.
+- Never invent. Every item must trace to words in the message. If nothing needs
+  doing, return an empty list. An empty list is a correct answer, not a failure.
+- Do not split one thing into pieces. "Return the consent form by Friday" is one
+  deadline — not a deadline, a task and a reminder.
+- Do not duplicate. If an event already covers it, do not also add a task to
+  attend it, and do not repeat the same information as a second item.
+- Skip the noise: greetings, sign-offs, signatures, thanks, contact details,
+  office hours, and anything purely informational ("we had a lovely week").
+- An rsvp only when a reply is actually requested. A deadline only when there is
+  a due date or an explicit "by …". Do not turn a date mentioned in passing into
+  an item.
 
-ALWAYS use the extract_school_items tool. Never return plain text or JSON directly.`;
+Fields
+- title: what the parent sees in their list — short, specific, under 60
+  characters, no trailing full stop, no emoji, no shouting, no "Important
+  notice about…" padding. Write the thing itself: "Museum trip consent form".
+- date: YYYY-MM-DD, resolved against TODAY (given below). If the message gives no
+  date, use null. Never guess one.
+- time: HH:mm, 24-hour, only when a time is stated. Otherwise null.
+- location: only when stated. Otherwise null.
+- notes: one short line that adds something the title does not — what to bring,
+  how much, who to ask. Null when it would only repeat the title.
+- type: one of event, deadline, task, rsvp.
+
+Return at most 12 items. A long newsletter usually contains two or three things
+worth keeping and a page of things that are not.
+
+ALWAYS use the extract_school_items tool. Never reply with prose or raw JSON.`;
 
 type ToolCallTarget = {
   engine: "groq";

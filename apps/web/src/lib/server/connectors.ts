@@ -18,6 +18,9 @@ import {
   createCalendarEvent,
   createConnectLink,
   createGoogleTask,
+  deleteCalendarEvent,
+  deleteGoogleTask,
+  setGoogleTaskStatus,
 } from "@/lib/server/composio";
 
 /**
@@ -289,3 +292,58 @@ export const syncConnectors = createServerFn({ method: "POST" })
       data.id,
     );
   });
+
+/**
+ * Delete the copies of a plan item that live in Google.
+ *
+ * Called after the row is gone, so the user's task list and calendar do not fill
+ * up with entries for things they deleted here. Best effort, like the push: a
+ * Google hiccup must never fail the delete they asked for.
+ */
+export async function removePushedCopies(
+  userId: string,
+  copies: { taskId?: string | null; eventId?: string | null },
+): Promise<void> {
+  if (!composioConfigured()) return;
+
+  const taskId = copies.taskId && copies.taskId !== "unknown" ? copies.taskId : null;
+  const eventId = copies.eventId && copies.eventId !== "unknown" ? copies.eventId : null;
+  if (!taskId && !eventId) return;
+
+  if (taskId) {
+    const account = await connectedAccount(userId, "googletasks").catch(() => null);
+    if (account) {
+      await deleteGoogleTask(userId, account.id, taskId).catch((err: unknown) =>
+        console.error("[connectors] could not delete the Google Task:", err),
+      );
+    }
+  }
+
+  if (eventId) {
+    const account = await connectedAccount(userId, "googlecalendar").catch(() => null);
+    if (account) {
+      await deleteCalendarEvent(userId, account.id, eventId).catch((err: unknown) =>
+        console.error("[connectors] could not delete the calendar event:", err),
+      );
+    }
+  }
+}
+
+/**
+ * Tick or untick the Google Task a plan item became.
+ *
+ * SCOOP is the source of truth for its own plan; this keeps Google in step
+ * instead of leaving a task open there for something already done here.
+ */
+export async function syncTaskStatus(
+  userId: string,
+  taskId: string | null | undefined,
+  done: boolean,
+): Promise<void> {
+  if (!composioConfigured() || !taskId || taskId === "unknown") return;
+  const account = await connectedAccount(userId, "googletasks").catch(() => null);
+  if (!account) return;
+  await setGoogleTaskStatus(userId, account.id, taskId, done).catch((err: unknown) =>
+    console.error("[connectors] could not update the Google Task:", err),
+  );
+}

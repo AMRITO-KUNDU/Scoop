@@ -32,6 +32,9 @@ function Capture() {
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // A pasted message is a document, not a form field: collapse it into a card so
+  // the screen still reads as a form.
+  const [collapsed, setCollapsed] = useState(false);
 
   const canExtract = text.trim().length >= 8 && !extracting;
 
@@ -82,21 +85,60 @@ function Capture() {
       title="Dump the chaos."
       subtitle="Paste a WhatsApp message, a school email, or just type what's in your head."
     >
-      <Panel style={styles.panel}>
-        <TextInput
-          value={text}
-          onChangeText={(next: string) => {
-            setText(next);
-            setNotice(null);
-          }}
-          multiline
-          textAlignVertical="top"
-          placeholder="Dear families, welcome back to Year 3…"
-          placeholderTextColor={Palette.mute}
-          accessibilityLabel="Paste a school message"
-          style={styles.input}
-        />
-      </Panel>
+      {collapsed ? (
+        <Panel style={styles.panel}>
+          <View style={styles.pastedRow}>
+            <View style={styles.pastedIcon}>
+              <Text style={styles.pastedIconText}>Aa</Text>
+            </View>
+            <View style={styles.pastedBody}>
+              <Text style={styles.pastedTitle}>Pasted message</Text>
+              <Text style={styles.pastedPreview} numberOfLines={1}>
+                {text.trim().split(/\n+/)[0]}
+              </Text>
+              <Text style={styles.pastedMeta}>
+                {text.trim().length} characters · {text.trim() ? text.trim().split(/\n+/).length : 0}{' '}
+                lines
+              </Text>
+            </View>
+          </View>
+          <View style={styles.pastedActions}>
+            <Pressable onPress={() => setCollapsed(false)} style={styles.pastedButton}>
+              <Text style={styles.pastedButtonLabel}>Edit</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                setText('');
+                setCollapsed(false);
+                setDrafts(null);
+                setNotice(null);
+              }}
+              style={styles.pastedButton}
+            >
+              <Text style={styles.pastedButtonLabel}>Clear</Text>
+            </Pressable>
+          </View>
+        </Panel>
+      ) : (
+        <Panel style={styles.panel}>
+          <TextInput
+            value={text}
+            onChangeText={(next: string) => {
+              // A jump this big is a paste, not typing — collapse it.
+              const pasted = next.length - text.length > 100;
+              setText(next);
+              setNotice(null);
+              if (pasted && next.trim().length >= 200) setCollapsed(true);
+            }}
+            multiline
+            textAlignVertical="top"
+            placeholder="Paste a message from school, a club or a group chat…"
+            placeholderTextColor={Palette.mute}
+            accessibilityLabel="Paste a school message"
+            style={styles.input}
+          />
+        </Panel>
+      )}
 
       <View style={styles.demoRow}>
         <View style={styles.demoTag}>
@@ -113,6 +155,7 @@ function Capture() {
               setText(chip.text);
               setDrafts(null);
               setNotice(null);
+              setCollapsed(true);
             }}
             style={styles.chip}
           >
@@ -188,6 +231,45 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: Palette.ink,
   },
+  pastedRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.three },
+  pastedIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.md,
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Palette.paper2,
+  },
+  pastedIconText: { fontSize: 13, fontWeight: '900', color: Palette.ink },
+  pastedBody: { flex: 1, minWidth: 0 },
+  pastedTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: Palette.ink,
+  },
+  pastedPreview: { marginTop: 2, fontSize: 13, fontWeight: '600', color: Palette.mute },
+  pastedMeta: {
+    marginTop: 4,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: Palette.mute,
+  },
+  pastedActions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.three },
+  pastedButton: {
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.paper,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  pastedButtonLabel: { fontSize: 12, fontWeight: '800', color: Palette.ink },
   demoRow: {
     flexDirection: 'row',
     alignItems: 'center',

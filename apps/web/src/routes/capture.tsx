@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ClipboardEvent } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, FileText, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { DraftCard } from "@/components/draft-card";
@@ -45,6 +45,9 @@ function CaptureScreen() {
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [engine, setEngine] = useState<ExtractEngine | null>(null);
+  // A pasted message is a document, not a form field. Collapse it into a card so
+  // the screen still reads as a form.
+  const [collapsed, setCollapsed] = useState(false);
 
   const canExtract = text.trim().length >= 8 && !extracting;
   const showEmpty = !extracting && drafts === null && text.trim().length === 0;
@@ -104,6 +107,31 @@ function CaptureScreen() {
     }
   }
 
+  const trimmed = text.trim();
+  const charCount = trimmed.length;
+  const lineCount = trimmed ? trimmed.split(/\n+/).length : 0;
+  const preview = trimmed.split(/\n+/)[0]?.slice(0, 90) ?? "";
+
+  /** Long pastes become a card instead of a wall of text in the box. */
+  function handlePaste(e: ClipboardEvent<HTMLTextAreaElement>) {
+    const pasted = e.clipboardData.getData("text");
+    if (pasted.trim().length < 200) return;
+    e.preventDefault();
+    setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${pasted}` : pasted));
+    setActiveChip(null);
+    setDrafts(null);
+    setEngine(null);
+    setCollapsed(true);
+  }
+
+  function clearMessage() {
+    setText("");
+    setCollapsed(false);
+    setActiveChip(null);
+    setDrafts(null);
+    setEngine(null);
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -116,22 +144,57 @@ function CaptureScreen() {
         </p>
       </div>
 
-      <div className="panel overflow-hidden">
-        <Label htmlFor="capture-text" className="sr-only">
-          Paste a school message
-        </Label>
-        <Textarea
-          id="capture-text"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setActiveChip(null);
-          }}
-          rows={9}
-          placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
-          className="min-h-48 rounded-none border-0 shadow-none focus:shadow-none sm:min-h-56 sm:text-base"
-        />
-      </div>
+      {collapsed ? (
+        <div className="panel flex items-start gap-3 p-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl border-thick border-ink bg-cyan">
+            <FileText className="size-5" strokeWidth={2.4} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-sm font-black uppercase tracking-tight">
+              Pasted message
+            </p>
+            <p className="mt-1 truncate text-sm font-medium text-mute">{preview}…</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-mute">
+              {charCount.toLocaleString()} characters · {lineCount} line
+              {lineCount === 1 ? "" : "s"}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              className="h-9 rounded-full border-thick border-ink bg-paper px-3 font-display text-xs font-bold hover:bg-paper-2"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={clearMessage}
+              className="h-9 rounded-full border-thick border-ink bg-paper px-3 font-display text-xs font-bold hover:bg-hot hover:text-paper"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="panel overflow-hidden">
+          <Label htmlFor="capture-text" className="sr-only">
+            Paste a school message
+          </Label>
+          <Textarea
+            id="capture-text"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              setActiveChip(null);
+            }}
+            onPaste={handlePaste}
+            rows={9}
+            placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
+            className="min-h-48 rounded-none border-0 shadow-none focus:shadow-none sm:min-h-56 sm:text-base"
+          />
+        </div>
+      )}
 
       <div className="mt-5">
         <div className="flex flex-wrap items-center gap-2">
@@ -154,6 +217,7 @@ function CaptureScreen() {
                   setActiveChip(chip.id);
                   setDrafts(null);
                   setEngine(null);
+                  setCollapsed(true);
                 }}
                 className={cn(
                   "h-11 rounded-full border-thick border-ink px-3.5 font-display text-sm font-bold shadow-hard-sm",
