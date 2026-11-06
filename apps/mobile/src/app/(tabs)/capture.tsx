@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -26,6 +27,28 @@ function Capture() {
   const router = useRouter();
 
   const [text, setText] = useState('');
+
+  /**
+   * One tap instead of the long-press, copy, long-press, paste dance.
+   *
+   * Appends rather than replaces: a parent often pastes two messages from the
+   * same thread before extracting.
+   */
+  async function pasteFromClipboard() {
+    try {
+      const clip = await Clipboard.getStringAsync();
+      if (!clip.trim()) {
+        setNotice('Nothing in your clipboard.');
+        return;
+      }
+      setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${clip}` : clip));
+      setDrafts(null);
+      setNotice(null);
+      if (clip.trim().length >= 200) setCollapsed(true);
+    } catch {
+      setNotice('Could not read the clipboard.');
+    }
+  }
 
   // A message shared into SCOOP from another app is handed over before this
   // screen mounts; take it once and drop it in the box.
@@ -210,7 +233,17 @@ function Capture() {
 }
 
 const styles = StyleSheet.create({
-  panel: { marginTop: Spacing.four },
+  pasteRow: { marginTop: Spacing.four, flexDirection: 'row', justifyContent: 'flex-end' },
+  pasteButton: {
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.paper2,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  pasteLabel: { fontSize: 12, fontWeight: '800', color: Palette.ink },
+  panel: { marginTop: Spacing.two },
   input: {
     minHeight: 160,
     padding: Spacing.three,

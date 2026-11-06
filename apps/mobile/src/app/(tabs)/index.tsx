@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -10,7 +11,7 @@ import { RequireAuth } from '@/components/require-auth';
 import { Screen } from '@/components/screen';
 import { Button } from '@/components/ui/button';
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
-import { useApi } from '@/lib/api';
+import { isConnectionProblem, useApi } from '@/lib/api';
 import {
   deviceTimezone,
   matchesFilter,
@@ -51,6 +52,7 @@ function Plan() {
   const [savingNew, setSavingNew] = useState(false);
   const [undoItem, setUndoItem] = useState<PlanItem | null>(null);
   const [query, setQuery] = useState('');
+  const [offline, setOffline] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   // Show the loading placeholder only on the very first load, not on every focus.
   const [initialLoading, setInitialLoading] = useState(true);
@@ -68,8 +70,11 @@ function Plan() {
         const next = await api.listPlan();
         setItems(next);
         setError(null);
+        setOffline(false);
       } catch (err) {
-        // On a background refetch keep visible items — just surface the error banner.
+        // Whatever happens, what is already on screen stays: a plan you cannot
+        // refresh is still a plan, and blanking it is the worst possible answer.
+        setOffline(isConnectionProblem(err));
         if (!opts?.silent) {
           setError(err instanceof Error ? err.message : 'Could not load your plan.');
         }
@@ -106,6 +111,7 @@ function Plan() {
   const toggleDone = useCallback(
     async (item: PlanItem) => {
       setBusyId(item.id);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       try {
         await api.setDone(item.id, !item.done);
         // Optimistic local flip — avoids a round-trip re-render flash.
@@ -226,6 +232,7 @@ function Plan() {
   const remove = useCallback(
     async (item: PlanItem) => {
       setBusyId(item.id);
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
       // Optimistic: drop immediately, restore on failure.
       setItems((prev) => prev.filter((row) => row.id !== item.id));
       if (editingId === item.id) cancelEdit();
@@ -322,7 +329,22 @@ function Plan() {
         </View>
       ) : null}
 
-      {error ? <EmptyState title="Something went wrong" body={error} /> : null}
+      {offline && items.length > 0 ? (
+        <View style={styles.offlineBar}>
+          <Text style={styles.offlineText} numberOfLines={2}>
+            Offline — showing what you last loaded.
+          </Text>
+          <Button label="Retry" variant="paper" size="sm" onPress={onRefresh} />
+        </View>
+      ) : null}
+
+      {error && items.length === 0 ? (
+        <EmptyState
+          title="Couldn’t load your plan"
+          body={error}
+          action={<Button label="Try again" variant="yolk" onPress={onRefresh} />}
+        />
+      ) : null}
 
       {initialLoading && !error ? (
         <EmptyState title="Loading your plan..." body="One moment." />
@@ -399,6 +421,19 @@ function Plan() {
 
 const styles = StyleSheet.create({
   addRow: { marginTop: Spacing.four, flexDirection: 'row' },
+  offlineBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.lg,
+    backgroundColor: Palette.paper2,
+  },
+  offlineText: { flex: 1, fontSize: 12, fontWeight: '700', color: Palette.mute },
   search: {
     marginTop: Spacing.four,
     height: 44,
