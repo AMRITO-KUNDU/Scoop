@@ -1,6 +1,6 @@
-import { useState, type ClipboardEvent } from "react";
+import { useEffect, useRef, useState, type ClipboardEvent } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, FileText, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, FileText, Loader2, Mic, Sparkles, Square } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { DraftCard } from "@/components/draft-card";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { DraftItem } from "@/lib/plan";
 import { extractItems, type ExtractEngine } from "@/lib/server/extract";
 import { addPlanItems } from "@/lib/server/plan-items";
+import { transcribeAudio } from "@/lib/server/transcribe";
 
 export const Route = createFileRoute("/capture")({
   head: () => ({
@@ -21,6 +22,19 @@ export const Route = createFileRoute("/capture")({
 
 function newKey() {
   return crypto.randomUUID();
+}
+
+/** Blob -> bare base64 (no `data:` prefix), which is the shape the server takes. */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read that recording."));
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      resolve(result.slice(result.indexOf(",") + 1));
+    };
+    reader.readAsDataURL(blob);
+  });
 }
 
 function engineLabel(engine: ExtractEngine | null): string {
@@ -45,6 +59,13 @@ function CaptureScreen() {
   // A pasted message is a document, not a form field. Collapse it into a card so
   // the screen still reads as a form.
   const [collapsed, setCollapsed] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const canExtract = text.trim().length >= 8 && !extracting;
   const showEmpty = !extracting && drafts === null && text.trim().length === 0;
@@ -127,6 +148,75 @@ function CaptureScreen() {
     setEngine(null);
   }
 
+  const micSupported =
+    typeof window !== "undefined" &&
+    typeof window.MediaRecorder !== "undefined" &&
+    Boolean(navigator.mediaDevices?.getUserMedia);
+
+  function clearRecordingTimers() {
+    if (tickRef.current) clearInterval(tickRef.current);
+    if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
+    tickRef.current = null;
+    stopTimerRef.current = null;
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        clearRecordingTimers();
+        setRecording(false);
+        void sendRecording(
+          new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" }),
+        );
+      };
+
+      recorder.start(500);
+      recorderRef.current = recorder;
+      setRecording(true);
+      setRecordSeconds(0);
+      tickRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
+      // A voice note is a sentence or two; cap it so nobody uploads a lecture.
+      stopTimerRef.current = setTimeout(() => {
+        if (recorder.state === "recording") recorder.stop();
+      }, 60_000);
+    } catch {
+      toast.error("Couldn’t reach the microphone. Check the browser’s permission.");
+    }
+  }
+
+  function stopRecording() {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state === "recording") recorder.stop();
+  }
+
+  async function sendRecording(blob: Blob) {
+    if (!blob.size) return;
+    setTranscribing(true);
+    try {
+      const audio = await blobToBase64(blob);
+      const result = await transcribeAudio({
+        data: { audio, mimeType: blob.type || "audio/webm" },
+      });
+      setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${result.text}` : result.text));
+      setCollapsed(false);
+      toast.success("Added what you said.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn’t transcribe that.");
+    } finally {
+      setTranscribing(false);
+    }
+  }
+
+  useEffect(() => () => clearRecordingTimers(), []);
+
   return (
     <div>
       <div className="mb-6">
@@ -172,7 +262,7 @@ function CaptureScreen() {
           </div>
         </div>
       ) : (
-        <div className="panel overflow-hidden">
+        <div className="panel relative overflow-hidden">
           <Label htmlFor="capture-text" className="sr-only">
             Paste a school message
           </Label>
@@ -182,9 +272,36 @@ function CaptureScreen() {
             onChange={(e) => setText(e.target.value)}
             onPaste={handlePaste}
             rows={9}
-            placeholder="Paste any school email, WhatsApp message, newsletter or flyer text…"
-            className="min-h-48 rounded-none border-0 shadow-none focus:shadow-none sm:min-h-56 sm:text-base"
+            placeholder="Paste a school email, WhatsApp message or flyer — or tap the mic and say it…"
+            className="min-h-48 rounded-none border-0 pb-16 shadow-none focus:shadow-none sm:min-h-56 sm:text-base"
           />
+          {micSupported ? (
+            <div className="absolute right-3 bottom-3 flex items-center gap-2">
+              {recording ? (
+                <span className="rounded-full border-thick border-ink bg-hot px-2 py-0.5 font-display text-[10px] font-black tracking-widest text-paper uppercase tabular-nums">
+                  {Math.floor(recordSeconds / 60)}:{String(recordSeconds % 60).padStart(2, "0")}
+                </span>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => (recording ? stopRecording() : void startRecording())}
+                disabled={transcribing}
+                aria-label={recording ? "Stop recording" : "Dictate a message"}
+                title={recording ? "Stop recording" : "Dictate a message"}
+                className={`grid size-11 place-items-center rounded-full border-thick border-ink shadow-hard-sm disabled:opacity-50 ${
+                  recording ? "bg-hot text-paper" : "bg-yolk text-ink hover:bg-paper-2"
+                }`}
+              >
+                {transcribing ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : recording ? (
+                  <Square className="size-4" strokeWidth={3} />
+                ) : (
+                  <Mic className="size-5" strokeWidth={2.4} />
+                )}
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
 

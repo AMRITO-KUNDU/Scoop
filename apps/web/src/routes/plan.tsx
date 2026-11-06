@@ -9,6 +9,7 @@ import {
   ListChecks,
   MapPin,
   Pencil,
+  Plus,
   ScanText,
   Trash2,
   type LucideIcon,
@@ -85,6 +86,9 @@ function PlanScreen() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<DraftItem | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [newDraft, setNewDraft] = useState<DraftItem | null>(null);
+  const [savingNew, setSavingNew] = useState(false);
 
   async function reload() {
     setLoading(true);
@@ -120,6 +124,49 @@ function PlanScreen() {
         prev.map((row) => (row.id === item.id ? { ...row, done: item.done } : row)),
       );
       toast.error("Couldn’t update that item.");
+    }
+  }
+
+  function startAdd() {
+    setNewDraft({
+      key: "new",
+      type: "task",
+      title: "",
+      date: null,
+      time: null,
+      location: null,
+      notes: null,
+    });
+    setAdding(true);
+  }
+
+  function cancelAdd() {
+    setAdding(false);
+    setNewDraft(null);
+  }
+
+  /** A plan is not only what other people send you. */
+  async function saveNew() {
+    if (!newDraft) return;
+    const { key: _key, ...fields } = newDraft;
+    if (!fields.title.trim()) {
+      toast.error("An item needs a title.");
+      return;
+    }
+    setSavingNew(true);
+    try {
+      const result = await addPlanItems({ data: { items: [fields], timezone: timezone() } });
+      if (result.added === 0) {
+        toast.error("That item is already in your plan.");
+      } else {
+        toast.success("Added to your plan.");
+      }
+      cancelAdd();
+      await reload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn’t add that item.");
+    } finally {
+      setSavingNew(false);
     }
   }
 
@@ -244,6 +291,30 @@ function PlanScreen() {
           );
         })}
       </div>
+
+      {adding && newDraft ? (
+        <div className="mb-6 space-y-3">
+          <DraftCard item={newDraft} onChange={setNewDraft} />
+          <div className="flex gap-2">
+            <Button
+              variant="ink"
+              className="flex-1"
+              disabled={savingNew}
+              onClick={() => void saveNew()}
+            >
+              {savingNew ? "Adding…" : "Add to plan"}
+            </Button>
+            <Button variant="paper" className="flex-1" onClick={cancelAdd}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button variant="paper" size="sm" className="mb-6" onClick={startAdd}>
+          <Plus className="size-4" strokeWidth={2.6} />
+          Add an item
+        </Button>
+      )}
 
       {loading ? (
         <div className="space-y-3">

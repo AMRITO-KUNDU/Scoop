@@ -45,6 +45,9 @@ function Plan() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<DraftItem | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [newDraft, setNewDraft] = useState<DraftItem | null>(null);
+  const [savingNew, setSavingNew] = useState(false);
   const [undoItem, setUndoItem] = useState<PlanItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   // Show the loading placeholder only on the very first load, not on every focus.
@@ -109,6 +112,44 @@ function Plan() {
     },
     [api, load],
   );
+
+  const startAdd = useCallback(() => {
+    setNewDraft({
+      key: 'new',
+      type: 'task',
+      title: '',
+      date: null,
+      time: null,
+      location: null,
+      notes: null,
+    });
+    setAdding(true);
+  }, []);
+
+  const cancelAdd = useCallback(() => {
+    setAdding(false);
+    setNewDraft(null);
+  }, []);
+
+  /** A plan is not only what other people send you. */
+  const saveNew = useCallback(async () => {
+    if (!newDraft) return;
+    if (!newDraft.title.trim()) {
+      setError('An item needs a title.');
+      return;
+    }
+    const { key: _key, ...fields } = newDraft;
+    setSavingNew(true);
+    try {
+      await api.addItems([fields], deviceTimezone());
+      cancelAdd();
+      await load({ silent: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add that item.');
+    } finally {
+      setSavingNew(false);
+    }
+  }, [api, cancelAdd, load, newDraft]);
 
   const startEdit = useCallback((item: PlanItem) => {
     setEditingId(item.id);
@@ -205,6 +246,33 @@ function Plan() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Palette.ink} />
       }
     >
+      {adding && newDraft ? (
+        <View style={styles.editWrap}>
+          <DraftCard draft={newDraft} onChange={setNewDraft} />
+          <View style={styles.editActions}>
+            <Button
+              label={savingNew ? 'Adding…' : 'Add to plan'}
+              variant="ink"
+              size="sm"
+              disabled={savingNew}
+              onPress={() => void saveNew()}
+              style={styles.editAction}
+            />
+            <Button
+              label="Cancel"
+              variant="paper"
+              size="sm"
+              onPress={cancelAdd}
+              style={styles.editAction}
+            />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.addRow}>
+          <Button label="+ Add an item" variant="paper" size="sm" onPress={startAdd} />
+        </View>
+      )}
+
       <View style={styles.filters}>
         {FILTERS.map((f) => {
           const active = filter === f.id;
@@ -297,6 +365,7 @@ function Plan() {
 }
 
 const styles = StyleSheet.create({
+  addRow: { marginTop: Spacing.four, flexDirection: 'row' },
   filters: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.four },
   filter: { flex: 1 },
   undoBar: {
