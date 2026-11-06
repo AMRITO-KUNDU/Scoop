@@ -6,7 +6,7 @@ import { Panel } from '@/components/ui/panel';
 import { TypeBadge } from '@/components/type-badge';
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 import type { ConnectorId } from '@/lib/connectors';
-import { formatWhen, type PlanItem } from '@/lib/plan';
+import { formatWhen, isOverdue, type PlanItem } from '@/lib/plan';
 
 const SYNCED_LABEL: Record<ConnectorId, string> = {
   googlecalendar: 'Calendar',
@@ -30,10 +30,29 @@ export const ItemCard = memo(function ItemCard({
   return (
     <Panel style={styles.wrap}>
       <View style={styles.inner}>
-        <TypeBadge type={item.type} />
+        <View style={styles.badgeRow}>
+          <TypeBadge type={item.type} />
+          {isOverdue(item) ? (
+            <View style={styles.overdueChip}>
+              <Text style={styles.overdueLabel}>Overdue</Text>
+            </View>
+          ) : null}
+        </View>
 
-        <Text style={item.done ? [styles.title, styles.titleDone] : styles.title}>{item.title}</Text>
-        <Text style={styles.when}>{formatWhen(item)}</Text>
+        <Text
+          style={
+            item.done
+              ? [styles.title, styles.titleDone]
+              : isOverdue(item)
+                ? [styles.title, styles.titleOverdue]
+                : styles.title
+          }
+        >
+          {item.title}
+        </Text>
+        <Text style={isOverdue(item) ? [styles.when, styles.whenOverdue] : styles.when}>
+          {formatWhen(item)}
+        </Text>
 
         {item.location ? <Text style={styles.meta}>{item.location}</Text> : null}
         {item.notes ? <Text style={styles.notes}>{item.notes}</Text> : null}
@@ -85,7 +104,25 @@ const styles = StyleSheet.create({
   inner: { padding: Spacing.three },
   title: { marginTop: Spacing.two, fontSize: 18, fontWeight: '700', color: Palette.ink },
   titleDone: { color: Palette.mute, textDecorationLine: 'line-through' },
+  titleOverdue: { color: Palette.hot },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  overdueChip: {
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.hot,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  overdueLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: Palette.paper,
+  },
   when: { marginTop: Spacing.one, fontSize: 13, fontWeight: '600', color: Palette.mute },
+  whenOverdue: { color: Palette.hot, fontWeight: '800' },
   meta: { marginTop: Spacing.one, fontSize: 13, color: Palette.mute },
   notes: { marginTop: Spacing.two, fontSize: 14, lineHeight: 20, color: Palette.ink },
   synced: { marginTop: Spacing.three, flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 
 import { DraftCard } from '@/components/draft-card';
 import { EmptyState } from '@/components/empty-state';
@@ -49,6 +50,7 @@ function Plan() {
   const [newDraft, setNewDraft] = useState<DraftItem | null>(null);
   const [savingNew, setSavingNew] = useState(false);
   const [undoItem, setUndoItem] = useState<PlanItem | null>(null);
+  const [query, setQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   // Show the loading placeholder only on the very first load, not on every focus.
   const [initialLoading, setInitialLoading] = useState(true);
@@ -89,10 +91,17 @@ function Plan() {
     }, [load]),
   );
 
-  const visible = useMemo(
-    () => items.filter((item) => matchesFilter(item, filter)),
-    [items, filter],
-  );
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((item) => {
+      if (!matchesFilter(item, filter)) return false;
+      if (!q) return true;
+      return [item.title, item.location ?? '', item.notes ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [items, filter, query]);
 
   const toggleDone = useCallback(
     async (item: PlanItem) => {
@@ -246,6 +255,16 @@ function Plan() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Palette.ink} />
       }
     >
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search your plan…"
+        placeholderTextColor={Palette.mute}
+        accessibilityLabel="Search your plan"
+        autoCorrect={false}
+        style={styles.search}
+      />
+
       {adding && newDraft ? (
         <View style={styles.editWrap}>
           <DraftCard draft={newDraft} onChange={setNewDraft} />
@@ -350,14 +369,28 @@ function Plan() {
             </View>
           </View>
         ) : (
-          <ItemCard
+          <Swipeable
             key={item.id}
-            item={item}
-            busy={busyId === item.id}
-            onToggleDone={toggleDone}
-            onRemove={remove}
-            onEdit={startEdit}
-          />
+            overshootRight={false}
+            renderRightActions={() => (
+              <Pressable
+                onPress={() => void remove(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`Delete ${item.title}`}
+                style={styles.swipeDelete}
+              >
+                <Text style={styles.swipeDeleteLabel}>Delete</Text>
+              </Pressable>
+            )}
+          >
+            <ItemCard
+              item={item}
+              busy={busyId === item.id}
+              onToggleDone={toggleDone}
+              onRemove={remove}
+              onEdit={startEdit}
+            />
+          </Swipeable>
         ),
       )}
     </Screen>
@@ -366,6 +399,36 @@ function Plan() {
 
 const styles = StyleSheet.create({
   addRow: { marginTop: Spacing.four, flexDirection: 'row' },
+  search: {
+    marginTop: Spacing.four,
+    height: 44,
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.pill,
+    backgroundColor: Palette.paper,
+    paddingHorizontal: Spacing.three,
+    fontSize: 14,
+    fontWeight: '600',
+    color: Palette.ink,
+  },
+  swipeDelete: {
+    marginTop: Spacing.three,
+    marginLeft: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: Border.thick,
+    borderColor: Palette.ink,
+    borderRadius: Radius.lg,
+    backgroundColor: Palette.hot,
+  },
+  swipeDeleteLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: Palette.paper,
+  },
   filters: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.four },
   filter: { flex: 1 },
   undoBar: {

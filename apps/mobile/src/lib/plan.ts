@@ -90,3 +90,18 @@ export function deviceTimezone(): string {
     return 'UTC';
   }
 }
+
+/**
+ * A dated item whose day has passed and is still open.
+ *
+ * Compared by calendar day, not timestamp: something due at 9am is not "late" at
+ * 9:01am, it is late tomorrow.
+ */
+export function isOverdue(item: Pick<PlanItem, "date" | "done">): boolean {
+  if (!item.date || item.done) return false;
+  const d = parseDate(item.date);
+  if (!d) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return d.getTime() < today.getTime();
+}

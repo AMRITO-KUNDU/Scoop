@@ -3,6 +3,7 @@ import { tokenCache } from '@clerk/expo/token-cache';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Palette, Spacing } from '@/constants/theme';
@@ -27,6 +28,8 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <StatusBar style="dark" />
+      {/* Required for swipe gestures (swipe-to-delete on the plan) to fire. */}
+      <GestureHandlerRootView style={styles.root}>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -38,6 +41,7 @@ export default function RootLayout() {
         {/* Connectors feels like a peer of Plan/Capture, so no slide animation. */}
         <Stack.Screen name="connect" options={{ animation: 'none' }} />
       </Stack>
+      </GestureHandlerRootView>
     </ClerkProvider>
   );
 }
@@ -58,6 +62,7 @@ function MissingKey() {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   safe: { flex: 1, backgroundColor: Palette.paper },
   inner: { flex: 1, justifyContent: 'center', padding: Spacing.four },
   title: { fontSize: 26, fontWeight: '900', color: Palette.ink, textTransform: 'uppercase' },

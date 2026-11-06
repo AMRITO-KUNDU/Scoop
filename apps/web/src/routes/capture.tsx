@@ -268,6 +268,8 @@ function CaptureScreen() {
           </Label>
           <Textarea
             id="capture-text"
+            // The most common action on this screen: start typing.
+            autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
             onPaste={handlePaste}

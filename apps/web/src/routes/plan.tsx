@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   CalendarCheck,
@@ -21,7 +21,14 @@ import { EmptyState } from "@/components/empty-state";
 import { TypeBadge } from "@/components/type-badge";
 import { Button } from "@/components/ui/button";
 import { downloadIcs, googleCalendarUrl } from "@/lib/calendar";
-import { formatWhen, matchesFilter, type DraftItem, type PlanFilter, type PlanItem } from "@/lib/plan";
+import {
+  formatWhen,
+  isOverdue,
+  matchesFilter,
+  type DraftItem,
+  type PlanFilter,
+  type PlanItem,
+} from "@/lib/plan";
 import {
   addPlanItems,
   deletePlanItem,
@@ -89,6 +96,8 @@ function PlanScreen() {
   const [adding, setAdding] = useState(false);
   const [newDraft, setNewDraft] = useState<DraftItem | null>(null);
   const [savingNew, setSavingNew] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
   async function reload() {
     setLoading(true);
@@ -109,10 +118,49 @@ function PlanScreen() {
     void reload();
   }, []);
 
-  const visible = useMemo(
-    () => items.filter((item) => matchesFilter(item, filter)),
-    [items, filter],
-  );
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((item) => {
+      if (!matchesFilter(item, filter)) return false;
+      if (!q) return true;
+      return [item.title, item.location ?? "", item.notes ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+  }, [items, filter, query]);
+
+  // Keyboard shortcuts. `n` for a new item, `/` to search, Escape to back out —
+  // the three things you reach for on a list you keep open in a tab.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      if (event.key === "Escape") {
+        if (editingId !== null) cancelEdit();
+        else if (adding) cancelAdd();
+        else if (query) setQuery("");
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      const typing =
+        !!target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      if (typing) return;
+
+      if (event.key === "/") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      } else if (event.key === "n" || event.key === "N") {
+        event.preventDefault();
+        startAdd();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [adding, cancelAdd, cancelEdit, editingId, query, startAdd]);
 
   async function toggleDone(item: PlanItem) {
     const next = !item.done;
@@ -272,6 +320,16 @@ function PlanScreen() {
         </p>
       </div>
 
+      <input
+        ref={searchRef}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        type="search"
+        placeholder="Search your plan…"
+        aria-label="Search your plan"
+        className="field mb-3 h-11 w-full"
+      />
+
       <div className="mb-6 inline-flex rounded-full border-thick border-ink bg-paper p-1 shadow-hard-sm">
         {FILTERS.map((f) => {
           const on = filter === f.id;
@@ -373,16 +431,29 @@ function PlanScreen() {
               ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="min-w-0 flex-1">
-                  <TypeBadge type={item.type} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <TypeBadge type={item.type} />
+                    {isOverdue(item) ? (
+                      <span className="rounded-full border-thick border-ink bg-hot px-2 py-0.5 font-display text-[10px] font-black tracking-widest text-paper uppercase">
+                        Overdue
+                      </span>
+                    ) : null}
+                  </div>
                   <h2
                     className={cn(
                       "mt-2 font-display text-lg font-bold tracking-tight",
                       item.done && "text-mute line-through",
+                      !item.done && isOverdue(item) && "text-hot",
                     )}
                   >
                     {item.title}
                   </h2>
-                  <p className="mt-1 text-sm font-medium text-mute tabular-nums">
+                  <p
+                    className={cn(
+                      "mt-1 text-sm font-medium text-mute tabular-nums",
+                      isOverdue(item) && "font-bold text-hot",
+                    )}
+                  >
                     {formatWhen(item)}
                   </p>
                   {item.location ? (
