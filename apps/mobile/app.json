@@ -31,6 +31,19 @@
       "expo-secure-store",
       "@clerk/expo",
       [
+        "expo-sharing",
+        {
+          "ios": {
+            "enabled": true,
+            "activationRule": { "supportsText": true }
+          },
+          "android": {
+            "enabled": true,
+            "singleShareMimeTypes": ["text/plain"]
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#FFD21C",

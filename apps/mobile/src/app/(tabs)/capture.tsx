@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { DraftCard } from '@/components/draft-card';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Panel } from '@/components/ui/panel';
 import { Border, Palette, Radius, Spacing } from '@/constants/theme';
 import { useApi } from '@/lib/api';
+import { takePendingShare } from '@/lib/incoming-share';
 import { deviceTimezone, type DraftItem } from '@/lib/plan';
 
 export default function CaptureScreen() {
@@ -25,6 +26,17 @@ function Capture() {
   const router = useRouter();
 
   const [text, setText] = useState('');
+
+  // A message shared into SCOOP from another app is handed over before this
+  // screen mounts; take it once and drop it in the box.
+  useEffect(() => {
+    const shared = takePendingShare();
+    if (!shared) return;
+    setText(shared);
+    setDrafts(null);
+    setNotice(null);
+    setCollapsed(false);
+  }, []);
   const [extracting, setExtracting] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [engine, setEngine] = useState<'groq' | 'local' | null>(null);
