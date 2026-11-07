@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
-import { getSql } from "@/lib/db";
 import { readTrimmedEnv } from "@/lib/groq";
-import { RateLimitError, consumeHourlyBudget } from "@/lib/server/rate-limit";
 
 /**
  * Voice notes: a recording in, text out.
@@ -20,7 +18,6 @@ const MODELS = ["whisper-large-v3-turbo", "whisper-large-v3"] as const;
 /** ~10 MB of audio, base64-encoded. A minute of speech is far smaller. */
 const MAX_BASE64_CHARS = 14_000_000;
 
-const HOURLY_LIMIT = 60;
 const REQUEST_TIMEOUT_MS = 15_000;
 
 const ALLOWED_TYPES = [
@@ -44,19 +41,9 @@ export const transcribeAudio = createServerFn({ method: "POST" })
     if (!ALLOWED_TYPES.includes(mimeType)) throw new Error("That audio format isn't supported.");
     return { audio, mimeType };
   })
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const apiKey = readTrimmedEnv(process.env, "GROQ_API_KEY");
     if (!apiKey) throw new Error("Voice notes aren't set up on this server yet.");
-
-    const sql = await getSql();
-    const budget = await consumeHourlyBudget(sql, `transcribe:${context.userId}`, HOURLY_LIMIT);
-    if (!budget.allowed) {
-      throw new RateLimitError(
-        `That's a lot of voice notes. Try again in about ${budget.retryAfterMinutes} minute${
-          budget.retryAfterMinutes === 1 ? "" : "s"
-        }.`,
-      );
-    }
 
     const bytes = Buffer.from(data.audio, "base64");
     let lastError = "Could not transcribe that recording.";

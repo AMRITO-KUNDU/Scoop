@@ -3,7 +3,6 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { parseExtractedItems } from "@/lib/extract-parse";
 import { DEFAULT_GROQ_MODEL, GROQ_FALLBACK_MODELS, readTrimmedEnv } from "@/lib/groq";
 import { localExtract } from "@/lib/local-extract";
-import { claimExtraction } from "@/lib/server/rate-limit";
 import type { ExtractedItem } from "@/lib/plan";
 
 export type ExtractEngine = "groq" | "local";
@@ -272,10 +271,7 @@ export const extractItems = createServerFn({ method: "POST" })
     if (text.length > 6000) throw new Error("That's too long — try a shorter excerpt.");
     return { text: text.slice(0, 6000) };
   })
-  .handler(async ({ data, context }) => {
-    // Refuse before spending: this is the only endpoint that costs money per call.
-    await claimExtraction(context.userId);
-
+  .handler(async ({ data }) => {
     const targets = toolCallingTargets();
 
     // The whole AI attempt gets a hard deadline, not a per-model one: a serverless
