@@ -50,10 +50,14 @@ export function parseExtractedItems(raw: string): ExtractedItem[] {
     const type = asString(rec.type);
     const title = asString(rec.title);
     if (!type || !title || !isItemType(type)) continue;
+    const date = normalizeDate(rec.date);
+    const endDate = normalizeDate(rec.endDate);
     out.push({
       type: type as ItemType,
       title: title.slice(0, 140),
-      date: normalizeDate(rec.date),
+      date,
+      // A range is only a range with a start, and only if it runs forwards.
+      endDate: endDate && date && endDate > date ? endDate : null,
       time: normalizeTime(rec.time),
       location: asString(rec.location)?.slice(0, 160) ?? null,
       notes: asString(rec.notes)?.slice(0, 280) ?? null,

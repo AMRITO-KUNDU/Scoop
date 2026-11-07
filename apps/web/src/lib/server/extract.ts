@@ -41,6 +41,12 @@ const EXTRACTION_TOOL = {
                 description: "Date in YYYY-MM-DD format or null",
                 pattern: "^\\d{4}-\\d{2}-\\d{2}$",
               },
+              endDate: {
+                type: ["string", "null"],
+                description:
+                  "Last day of a multi-day span in YYYY-MM-DD, or null for a single-day item",
+                pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+              },
               time: {
                 type: ["string", "null"],
                 description: "Time in HH:mm 24-hour format or null",
@@ -57,7 +63,7 @@ const EXTRACTION_TOOL = {
                 maxLength: 280,
               },
             },
-            required: ["type", "title", "date", "time", "location", "notes"],
+            required: ["type", "title", "date", "endDate", "time", "location", "notes"],
             additionalProperties: false,
           },
           maxItems: 12,
@@ -94,6 +100,10 @@ Rules that matter most
   attend it, and do not repeat the same information as a second item.
 - Skip the noise: greetings, sign-offs, signatures, thanks, contact details,
   office hours, and anything purely informational ("we had a lovely week").
+- Spans are one item, not two. "Closed from today to three days after" is a
+  single item with date = today and endDate = today + 3 days. A half-term week,
+  a trip that returns the next evening, a two-day fair: one item, start and end.
+  Never split a span into an item per day.
 - An rsvp only when a reply is actually requested. A deadline only when there is
   a due date or an explicit "by …". Do not turn a date mentioned in passing into
   an item.
@@ -104,6 +114,9 @@ Fields
   notice about…" padding. Write the thing itself: "Museum trip consent form".
 - date: YYYY-MM-DD, resolved against TODAY (given below). If the message gives no
   date, use null. Never guess one.
+- endDate: the last day of a span, or null when the thing happens on one day. Only
+  set it when the message states a range — "until Friday", "closed Monday to
+  Wednesday", "returns the next day". Never set it equal to date.
 - time: HH:mm, 24-hour, only when a time is stated. Otherwise null.
 - location: only when stated. Otherwise null.
 - notes: one short line that adds something the title does not — what to bring,

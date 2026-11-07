@@ -15,6 +15,7 @@ type Row = {
   type: string;
   title: string;
   date: string | null;
+  end_date?: string | null;
   time: string | null;
   location: string | null;
   notes: string | null;
@@ -63,6 +64,7 @@ function toItem(row: Row): PlanItem {
     type: (isItemType(row.type) ? row.type : "task") as ItemType,
     title: row.title,
     date: isValidCalendarDate(row.date) ? row.date : null,
+    endDate: isValidCalendarDate(row.end_date) ? (row.end_date as string) : null,
     time: isValidTimeStr(row.time) ? row.time : null,
     location: row.location,
     notes: row.notes,
@@ -78,12 +80,18 @@ function cleanItem(input: ExtractedItem): ExtractedItem | null {
   if (!title) return null;
   const type = isItemType(input.type) ? input.type : "task";
   const dateRaw = input.date?.trim() || null;
+  const endRaw = input.endDate?.trim() || null;
   const timeRaw = input.time?.trim() || null;
+
+  const date = isValidCalendarDate(dateRaw) ? dateRaw : null;
+  // A range only means something with a start, and only if it runs forwards.
+  const endDate = isValidCalendarDate(endRaw) && date && endRaw > date ? endRaw : null;
 
   return {
     type,
     title: title.slice(0, 140),
-    date: isValidCalendarDate(dateRaw) ? dateRaw : null,
+    date,
+    endDate,
     time: isValidTimeStr(timeRaw) ? timeRaw : null,
     location: input.location?.trim() ? input.location.trim().slice(0, 160) : null,
     notes: input.notes?.trim() ? input.notes.trim().slice(0, 280) : null,
@@ -130,7 +138,7 @@ export const listPlanItems = createServerFn({ method: "GET" })
     if (!context.userId) throw new Error("Unauthorized");
     const sql = await getSql();
     const rows = await sql<Row>`
-      select id, type, title, date, time, location, notes, done, created_at,
+      select id, type, title, date, end_date, time, location, notes, done, created_at,
              calendar_event_id, tasks_task_id
       from plan_items
       where user_id = ${context.userId}
@@ -162,7 +170,7 @@ export const addPlanItems = createServerFn({ method: "POST" })
     const userId = context.userId;
 
     const existingItems = await sql<Row>`
-      select id, type, title, date, time, location, notes
+      select id, type, title, date, end_date, time, location, notes
       from plan_items
       where user_id = ${userId}
     `;
@@ -171,6 +179,7 @@ export const addPlanItems = createServerFn({ method: "POST" })
       type: (isItemType(row.type) ? row.type : "task") as ItemType,
       title: row.title,
       date: row.date,
+      endDate: row.end_date ?? null,
       time: row.time,
       location: row.location,
       notes: row.notes,
@@ -185,12 +194,13 @@ export const addPlanItems = createServerFn({ method: "POST" })
 
       if (!isDuplicateInDb && !isDuplicateInBatch) {
         const rows = await sql<{ id: number }>`
-          insert into plan_items (user_id, type, title, date, time, location, notes)
+          insert into plan_items (user_id, type, title, date, end_date, time, location, notes)
           values (
             ${userId},
             ${item.type},
             ${item.title},
             ${item.date},
+            ${item.endDate},
             ${item.time},
             ${item.location},
             ${item.notes}
@@ -340,6 +350,7 @@ export const updatePlanItem = createServerFn({ method: "POST" })
       set type = ${data.item.type},
           title = ${data.item.title},
           date = ${data.item.date},
+          end_date = ${data.item.endDate},
           time = ${data.item.time},
           location = ${data.item.location},
           notes = ${data.item.notes}

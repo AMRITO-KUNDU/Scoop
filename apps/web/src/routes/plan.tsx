@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { MonthCalendar } from "@/components/month-calendar";
 import { DraftCard } from "@/components/draft-card";
 import { EmptyState } from "@/components/empty-state";
 import { TypeBadge } from "@/components/type-badge";
@@ -97,6 +98,11 @@ function PlanScreen() {
   const [newDraft, setNewDraft] = useState<DraftItem | null>(null);
   const [savingNew, setSavingNew] = useState(false);
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"list" | "calendar">("list");
+  const [month, setMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   async function reload() {
@@ -320,6 +326,23 @@ function PlanScreen() {
         </p>
       </div>
 
+      <div className="mb-4 inline-flex rounded-full border-thick border-ink bg-paper p-1 shadow-hard-sm">
+        {(["list", "calendar"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={view === option}
+            onClick={() => setView(option)}
+            className={cn(
+              "h-9 rounded-full px-4 font-display text-xs font-black uppercase tracking-wide",
+              view === option ? "bg-ink text-paper" : "text-ink hover:bg-paper-2",
+            )}
+          >
+            {option === "list" ? "List" : "Calendar"}
+          </button>
+        ))}
+      </div>
+
       <input
         ref={searchRef}
         value={query}
@@ -374,7 +397,18 @@ function PlanScreen() {
         </Button>
       )}
 
-      {loading ? (
+      {view === "calendar" ? (
+        <MonthCalendar
+          month={month}
+          items={items}
+          onMonthChange={setMonth}
+          onToday={() => {
+            const now = new Date();
+            setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+          }}
+          onEditItem={startEdit}
+        />
+      ) : loading ? (
         <div className="space-y-3">
           <div className="h-24 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />
           <div className="h-24 animate-pulse rounded-2xl border-thick border-ink bg-paper-2" />

@@ -92,6 +92,19 @@ export function DraftCard({
           </div>
         </div>
         <div className="space-y-1.5">
+          <Label htmlFor={`ends-${item.key}`}>Ends</Label>
+          <Input
+            id={`ends-${item.key}`}
+            type="date"
+            value={item.endDate ?? ""}
+            min={item.date ?? undefined}
+            onChange={(e) => set("endDate", e.target.value || null)}
+          />
+          <p className="text-[11px] font-medium text-mute">
+            Only for something that runs more than one day — a closure, a half-term.
+          </p>
+        </div>
+        <div className="space-y-1.5">
           <Label htmlFor={`loc-${item.key}`}>Location</Label>
           <div className="relative">
             <MapPin className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-mute" />

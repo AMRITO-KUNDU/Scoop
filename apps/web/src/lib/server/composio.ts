@@ -376,9 +376,10 @@ export async function createCalendarEvent(
     full.event_duration_hour = Math.floor(DEFAULT_EVENT_MINUTES / 60);
     full.event_duration_minutes = DEFAULT_EVENT_MINUTES % 60;
   } else {
-    // All-day: `start_date` inclusive, `end_date` exclusive.
+    // All-day: `start_date` inclusive, `end_date` exclusive. A multi-day span ends
+    // the day after its last day, so a closure to Wednesday blocks Mon-Wed.
     full.start_date = item.date;
-    const end = new Date(`${item.date}T00:00:00`);
+    const end = new Date(`${item.endDate && item.endDate > item.date ? item.endDate : item.date}T00:00:00`);
     end.setDate(end.getDate() + 1);
     full.end_date = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(
       end.getDate(),
