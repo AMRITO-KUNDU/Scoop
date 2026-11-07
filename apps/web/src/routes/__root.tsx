@@ -33,6 +33,8 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      // iOS home-screen icon: 180x180, flat, no transparency (iOS masks it).
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
       {
         rel: "preload",
         as: "font",

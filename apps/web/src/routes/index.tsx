@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
   headers: () => ({ "Cache-Control": "private, max-age=0, must-revalidate" }),
   head: () => ({
     meta: [
-      { title: "SCOOP — Turn school emails & WhatsApp chaos into a family plan" },
+      { title: "SCOOP — Turn school chaos into a family plan" },
       {
         name: "description",
         content:
@@ -105,6 +105,21 @@ const FEATURES = [
   { icon: ListChecks, title: "One calm plan", tone: "bg-hot text-paper" },
 ];
 
+const HOME_FAQ = [
+  {
+    q: "Do I have to paste everything?",
+    a: "No. Paste the things that need doing — the letter with a date on it, the form that has to go back, the invitation that wants a reply. Newsletters you only skim can stay where they are.",
+  },
+  {
+    q: "What happens if it reads a date wrong?",
+    a: "You see every item before it is saved, and you can change the title, date, time, location and notes — or delete it. Nothing reaches your plan until you confirm it, and you can edit it again afterwards.",
+  },
+  {
+    q: "Does it work for things that aren't school?",
+    a: "Yes. Club schedules, appointments, family trips and payment reminders work the same way: paste it, check the items, keep the plan.",
+  },
+];
+
 function Home() {
   const { user, isPending } = useCurrentUserState();
   // IMPORTANT: never block the landing page on auth. Clerk resolves on the client
@@ -155,8 +170,8 @@ function Landing({
                 <span className="text-grape">school stuff.</span>
               </h1>
               <p className="mt-5 max-w-md text-lead font-medium">
-                SCOOP turns school letters, party invites and WhatsApp chaos into a calm family plan
-                — in seconds.
+                Stop sweating the school stuff. SCOOP turns school letters, party invites and
+                WhatsApp chaos into a calm family plan — in seconds.
               </p>
               <Button asChild size="lg" variant="yolk" className="mt-8 w-full sm:w-auto">
                 <Link to={destination}>
@@ -220,6 +235,61 @@ function Landing({
                 );
               })}
             </div>
+          </div>
+        </section>
+
+        <section className="border-b-thick border-ink bg-paper-2 px-4 py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="font-display text-title font-black uppercase tracking-tight">
+              What lands in your inbox, and what you get back.
+            </h2>
+            <p className="mt-4 text-sm font-medium leading-relaxed text-ink">
+              School life arrives in pieces: a newsletter on Monday, a consent form on Wednesday, a
+              party invitation in a group chat on Friday, and a payment reminder somewhere in
+              between. None of it is difficult. It is just spread out, and the one thing that ties it
+              together — the date — is usually buried in the middle of a paragraph.
+            </p>
+            <p className="mt-3 text-sm font-medium leading-relaxed text-ink">
+              SCOOP reads the message and hands back the four things that actually need you: events
+              that happen on a date, deadlines with something to hand in, tasks with no fixed slot,
+              and RSVPs that need a reply. You check them, fix anything it read wrong, and they land
+              in one plan you can filter to today, this week or everything.
+            </p>
+            <p className="mt-3 text-sm font-medium leading-relaxed text-ink">
+              It works on the school newsletter and on everything competing with it — club
+              schedules, dentist appointments, trip letters, party invitations, and the form that has
+              to be signed by Friday.
+            </p>
+            <p className="mt-4 text-sm font-medium text-mute">
+              Read{" "}
+              <Link
+                to="/how-it-works"
+                className="underline decoration-2 underline-offset-4 hover:text-ink"
+              >
+                how the four item types work
+              </Link>{" "}
+              or{" "}
+              <Link to="/about" className="underline decoration-2 underline-offset-4 hover:text-ink">
+                why we built it
+              </Link>
+              .
+            </p>
+          </div>
+        </section>
+
+        <section className="border-b-thick border-ink px-4 py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="font-display text-title font-black uppercase tracking-tight">
+              Questions parents ask.
+            </h2>
+            <dl className="mt-8 space-y-4">
+              {HOME_FAQ.map((entry) => (
+                <div key={entry.q} className="panel p-5">
+                  <dt className="font-display text-lg font-black tracking-tight">{entry.q}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-mute">{entry.a}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </section>
 
