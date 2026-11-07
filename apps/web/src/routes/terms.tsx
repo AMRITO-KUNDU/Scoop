@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero, PublicShell, Section } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/terms`;
 const PAGE_TITLE = "Terms of use | SCOOP";
 const PAGE_DESCRIPTION =
-  "The terms that apply when you use SCOOP, including how AI-extracted items should be treated.";
+  "The terms that apply when you use SCOOP: what the app does, how extracted items should be treated, and where responsibility sits.";
 
 const CONTACT_EMAIL = "amritokundu719@gmail.com";
 // Default jurisdiction — change if the operator is established elsewhere.
@@ -140,6 +140,17 @@ function Terms() {
                 <a className="font-bold text-ink underline" href={`mailto:${CONTACT_EMAIL}`}>
                   {CONTACT_EMAIL}
                 </a>
+                .
+              </p>
+              <p>
+                How we handle personal data is set out in the 
+                <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                  privacy policy
+                </Link>
+                , and what the app actually does is covered in 
+                <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                  how it works
+                </Link>
                 .
               </p>
             </Section>

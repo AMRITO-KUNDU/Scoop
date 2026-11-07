@@ -1,11 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHero, PublicShell, Section } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/privacy`;
 const PAGE_TITLE = "Privacy policy | SCOOP";
 const PAGE_DESCRIPTION =
-  "What SCOOP collects, how it's used, and how the AI extraction step handles the text you paste.";
+  "What SCOOP collects, why it needs it, how the text you paste is handled, and what we never do with it. Plain English, no surprises.";
 
 const CONTACT_EMAIL = "amritokundu719@gmail.com";
 const LAST_UPDATED = "14 October 2026";
@@ -180,6 +180,17 @@ function Privacy() {
                 <a className="font-bold text-ink underline" href={`mailto:${CONTACT_EMAIL}`}>
                   {CONTACT_EMAIL}
                 </a>
+                .
+              </p>
+              <p>
+                For how the extraction step fits into the product, see 
+                <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                  how it works
+                </Link>
+                . The rules for using SCOOP are in the 
+                <Link to="/terms" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                  terms of use
+                </Link>
                 .
               </p>
             </Section>

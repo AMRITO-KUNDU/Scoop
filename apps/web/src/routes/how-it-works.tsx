@@ -15,7 +15,7 @@ import { CtaBand, PageHero, PublicShell } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
 
 const PAGE_URL = `${SITE_URL}/how-it-works`;
-const PAGE_TITLE = "How it works — turn school messages into a family plan | SCOOP";
+const PAGE_TITLE = "How SCOOP works — messy school messages, one family plan";
 const PAGE_DESCRIPTION =
   "Paste a school email, WhatsApp thread, newsletter or flyer and SCOOP pulls out events, deadlines, tasks and RSVPs into one editable family plan.";
 
@@ -307,6 +307,22 @@ function HowItWorks() {
                 </Link>
               </Button>
             </div>
+          </div>
+        </section>
+
+        <section className="border-b-thick border-ink px-4 py-10">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-sm font-medium text-mute">
+              Read 
+              <Link to="/about" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                why we built SCOOP
+              </Link>
+              , or 
+              <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                how the text you paste is handled
+              </Link>
+              .
+            </p>
           </div>
         </section>
 

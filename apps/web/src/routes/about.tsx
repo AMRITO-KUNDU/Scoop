@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Lightbulb, ShieldCheck, Sparkles } from "lucide-react";
 import { CtaBand, PageHero, PublicShell } from "@/components/public-shell";
 import { SITE_URL } from "@/lib/site";
@@ -209,6 +209,22 @@ function About() {
                 );
               })}
             </div>
+          </div>
+        </section>
+
+        <section className="border-b-thick border-ink px-4 py-10">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-sm font-medium text-mute">
+              See 
+              <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                how the four item types work
+              </Link>
+              , or read 
+              <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
+                how your data is handled
+              </Link>
+              .
+            </p>
           </div>
         </section>
 
