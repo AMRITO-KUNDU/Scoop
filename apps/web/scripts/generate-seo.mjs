@@ -20,6 +20,24 @@ const configured =
 const withScheme = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`;
 const origin = withScheme.replace(/\/+$/, "");
 
+// Vercel knows the host this project is actually served on. If the configured
+// origin names a different one, every canonical, og:url, og:image and sitemap
+// entry will point somewhere other than the URL a visitor lands on — which is
+// exactly how `www` ended up in the sitemap of a site served on the apex.
+//
+// Warn rather than rewrite: which host is canonical is the owner's decision, and
+// silently changing it here would make the built output disagree with the
+// environment it was built from.
+const platformHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+const bare = (value) =>
+  value.replace(/^https?:\/\//i, "").replace(/\/+$/, "").toLowerCase();
+if (platformHost && bare(platformHost) !== bare(origin)) {
+  console.warn(
+    `[seo] WARNING: VITE_SITE_URL is "${origin}" but this deployment serves on "${bare(platformHost)}".\n` +
+      `[seo]          Canonical, og:url and the sitemap will all name "${bare(origin)}".`,
+  );
+}
+
 /** Public, indexable routes only — anything with a `noindex` meta must NOT appear. */
 const ROUTES = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
