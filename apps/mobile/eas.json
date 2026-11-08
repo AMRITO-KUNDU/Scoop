@@ -8,7 +8,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ"
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuc2Nvb3BmYW1pbHkueHl6JA"
       },
       "android": {
         "buildType": "apk"
@@ -18,7 +18,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuc2Nvb3BmYW1pbHkueHl6JA",
         "EXPO_ABI_SPLIT": "true",
         "EXPO_MINIFY": "true"
       },
@@ -30,7 +30,7 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://scoopfamily.xyz",
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW9kZXN0LWRvbmtleS02NTE1LmNsZXJrLmFjY291bnRzLmRldiQ"
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsuc2Nvb3BmYW1pbHkueHl6JA"
       },
       "android": {
         "buildType": "app-bundle"
