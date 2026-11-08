@@ -183,15 +183,15 @@ function Privacy() {
                 .
               </p>
               <p>
-                For how the extraction step fits into the product, see 
+                {"For how the extraction step fits into the product, see "}
                 <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
                   how it works
                 </Link>
-                . The rules for using SCOOP are in the 
+                {". The rules for using SCOOP are in the "}
                 <Link to="/terms" className="font-bold text-ink underline decoration-2 underline-offset-4">
                   terms of use
                 </Link>
-                .
+                {"."}
               </p>
             </Section>
           </div>

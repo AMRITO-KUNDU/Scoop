@@ -143,15 +143,15 @@ function Terms() {
                 .
               </p>
               <p>
-                How we handle personal data is set out in the 
+                {"How we handle personal data is set out in the "}
                 <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
                   privacy policy
                 </Link>
-                , and what the app actually does is covered in 
+                {", and what the app actually does is covered in "}
                 <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
                   how it works
                 </Link>
-                .
+                {"."}
               </p>
             </Section>
           </div>

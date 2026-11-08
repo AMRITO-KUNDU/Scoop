@@ -313,15 +313,15 @@ function HowItWorks() {
         <section className="border-b-thick border-ink px-4 py-10">
           <div className="mx-auto max-w-3xl">
             <p className="text-sm font-medium text-mute">
-              Read 
+              {"Read "}
               <Link to="/about" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 why we built SCOOP
               </Link>
-              , or 
+              {", or "}
               <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 how the text you paste is handled
               </Link>
-              .
+              {"."}
             </p>
           </div>
         </section>

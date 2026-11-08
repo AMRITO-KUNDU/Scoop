@@ -215,15 +215,15 @@ function About() {
         <section className="border-b-thick border-ink px-4 py-10">
           <div className="mx-auto max-w-3xl">
             <p className="text-sm font-medium text-mute">
-              See 
+              {"See "}
               <Link to="/how-it-works" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 how the four item types work
               </Link>
-              , or read 
+              {", or read "}
               <Link to="/privacy" className="font-bold text-ink underline decoration-2 underline-offset-4">
                 how your data is handled
               </Link>
-              .
+              {"."}
             </p>
           </div>
         </section>
