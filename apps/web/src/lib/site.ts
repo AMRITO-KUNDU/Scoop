@@ -8,4 +8,9 @@ const envUrl =
 const configured = envUrl?.trim() || "https://scoopfamily.xyz";
 const withScheme = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`;
 
-export const SITE_URL = withScheme.replace(/\/+$/, "");
+// The canonical host is the apex. Everything else in this repo already assumes it
+// (the sitemap, llms.txt, the mobile API origin), and www 301s here — so a `www.`
+// in the env would make every page claim a URL that redirects back to itself.
+// Search Console showed the cost: pages "unknown to Google" with a sitemap
+// pending for a week, because the canonical pointed at a redirect.
+export const SITE_URL = withScheme.replace(/\/+$/, "").replace(/^(https?:\/\/)www\./i, "$1");

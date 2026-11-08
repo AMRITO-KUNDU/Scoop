@@ -18,7 +18,9 @@ const configured =
 // Must be absolute: both the sitemap <loc> entries and the robots.txt `Sitemap:`
 // line need a scheme, or Google rejects the sitemap as invalid.
 const withScheme = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`;
-const origin = withScheme.replace(/\/+$/, "");
+// Same rule as `src/lib/site.ts`: the apex is canonical, so a `www.` in the
+// environment never reaches robots.txt or the sitemap.
+const origin = withScheme.replace(/\/+$/, "").replace(/^(https?:\/\/)www\./i, "$1");
 
 // Vercel knows the host this project is actually served on. If the configured
 // origin names a different one, every canonical, og:url, og:image and sitemap
