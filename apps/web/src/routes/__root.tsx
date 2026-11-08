@@ -65,7 +65,9 @@ export const Route = createRootRoute({
               "@id": `${SITE_URL}/#organization`,
               name: "SCOOP",
               url: `${SITE_URL}/`,
-              logo: `${SITE_URL}/og-image.png`,
+              // A square mark, not the 1200x630 social card: Google expects
+              // Organization.logo to be a logo, and renders it in brand surfaces.
+              logo: `${SITE_URL}/logo-512.png`,
               contactPoint: {
                 "@type": "ContactPoint",
                 contactType: "customer support",

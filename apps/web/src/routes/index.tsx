@@ -67,6 +67,20 @@ export const Route = createFileRoute("/")({
           offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         }),
       },
+      {
+        // Mirrors the visible FAQ below. If those questions change, this changes
+        // with them — schema that disagrees with the page is worse than none.
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: HOME_FAQ.map((entry) => ({
+            "@type": "Question",
+            name: entry.q,
+            acceptedAnswer: { "@type": "Answer", text: entry.a },
+          })),
+        }),
+      },
     ],
   }),
   component: Home,
