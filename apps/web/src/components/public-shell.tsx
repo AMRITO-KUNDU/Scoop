@@ -8,6 +8,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 const FOOTER_LINKS = [
   { to: "/how-it-works" as const, label: "How it works" },
+  { to: "/guides" as const, label: "Guides" },
   { to: "/about" as const, label: "About" },
   { to: "/privacy" as const, label: "Privacy" },
   { to: "/terms" as const, label: "Terms" },

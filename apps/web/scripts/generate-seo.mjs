@@ -45,6 +45,10 @@ const ROUTES = [
   { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/how-it-works", priority: "0.8", changefreq: "monthly" },
   { path: "/about", priority: "0.6", changefreq: "monthly" },
+  { path: "/guides", priority: "0.7", changefreq: "monthly" },
+  { path: "/guides/school-emails", priority: "0.6", changefreq: "monthly" },
+  { path: "/guides/permission-slips", priority: "0.6", changefreq: "monthly" },
+  { path: "/guides/whatsapp-school-groups", priority: "0.6", changefreq: "monthly" },
   { path: "/privacy", priority: "0.3", changefreq: "yearly" },
   { path: "/terms", priority: "0.3", changefreq: "yearly" },
 ];
